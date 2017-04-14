@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module gtd.XML;
+module gtd.XMLReader;
 
 import std.algorithm;
 import std.array;

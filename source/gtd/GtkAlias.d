@@ -23,7 +23,7 @@ import std.string : splitLines, strip;
 
 import gtd.GtkType;
 import gtd.GtkWrapper;
-import gtd.XML;
+import gtd.XMLReader;
 
 final class GtkAlias
 {

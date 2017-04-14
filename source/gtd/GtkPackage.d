@@ -33,7 +33,7 @@ import gtd.GtkFunction;
 import gtd.GtkStruct;
 import gtd.GtkWrapper;
 import gtd.IndentedStringBuilder;
-import gtd.XML;
+import gtd.XMLReader;
 import gtd.LinkedHasMap: Map = LinkedHashMap;
 
 class GtkPackage

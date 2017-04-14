@@ -32,7 +32,7 @@ import gtd.GtkFunction;
 import gtd.GtkPackage;
 import gtd.GtkType;
 import gtd.GtkWrapper;
-import gtd.XML;
+import gtd.XMLReader;
 import gtd.LinkedHasMap: Map = LinkedHashMap;
 import gtd.IndentedStringBuilder;
 

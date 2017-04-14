@@ -29,7 +29,7 @@ import gtd.GtkEnum;
 import gtd.GtkStruct;
 import gtd.GtkType;
 import gtd.GtkWrapper;
-import gtd.XML;
+import gtd.XMLReader;
 
 enum GtkFunctionType : string
 {

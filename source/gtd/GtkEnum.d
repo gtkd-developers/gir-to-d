@@ -24,7 +24,7 @@ import std.string : splitLines, strip, toUpper;
 
 import gtd.GtkPackage;
 import gtd.GtkWrapper;
-import gtd.XML;
+import gtd.XMLReader;
 
 final class GtkEnum
 {

@@ -20,7 +20,7 @@
 module gtd.GtkType;
 
 import gtd.GtkWrapper;
-import gtd.XML;
+import gtd.XMLReader;
 
 import std.algorithm: among, canFind;
 import std.array: replace;
