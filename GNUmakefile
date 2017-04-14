@@ -31,8 +31,8 @@ endif
 
 .DEFAULT_GOAL = $(BINNAME)
 
-SOURCES = $(wildcard src/*.d)
-BINNAME = gtkwrap
+SOURCES = $(wildcard source/*.d) $(wildcard source/gtd/*.d)
+BINNAME = girtod
 
 $(BINNAME): $(SOURCES)
 	$(DC) $^ $(output) $(DCFLAGS) $(LDFLAGS)

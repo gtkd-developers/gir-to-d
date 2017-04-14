@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module utils.GlibTypes;
+module gtd.GlibTypes;
 
 enum string[string] glibTypes = [
 	"volatile": "",

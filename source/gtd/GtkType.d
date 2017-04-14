@@ -17,10 +17,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module utils.GtkType;
+module gtd.GtkType;
 
-import utils.GtkWrapper;
-import utils.XML;
+import gtd.GtkWrapper;
+import gtd.XML;
 
 import std.algorithm: among, canFind;
 import std.array: replace;

@@ -17,83 +17,23 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module utils.GtkWrapper;
+module gtd.GtkWrapper;
 
 import std.algorithm;
 import std.array;
 import std.file;
-import std.getopt;
 import std.uni;
 import std.path;
 import std.stdio;
-import core.stdc.stdlib;
 
-import utils.DefReader;
-import utils.IndentedStringBuilder;
-import utils.GlibTypes;
-import utils.GtkPackage;
-import utils.GtkStruct;
-import utils.GtkFunction;
-import utils.GtkType;
-import utils.WrapError;
-
-void main(string[] args)
-{
-
-	bool printFree;
-	bool useRuntimeLinker = true;
-	string inputDir;
-	string outputDir;
-
-	try
-	{
-		auto helpInformation = getopt(
-			args,
-			"input|i",            "Directory containing the API description (Default: ./)", &inputDir,
-			"output|o",           "Output directory for the generated binding. (Default: {input dir}/out)", &outputDir,
-			"use-runtime-linker", "Link the gtk functions with the runtime linker", &useRuntimeLinker,
-			"print-free",         "Print functions that don't have a parrent module", &printFree
-		);
-
-		if (helpInformation.helpWanted)
-		{
-			defaultGetoptPrinter("gir-d-generator is an utility that generates D bindings using the GObject introspection files.\nOptions:", helpInformation.options);
-			exit(0);
-		}
-	}
-	catch (GetOptException e)
-	{
-		writeln ("Unable to parse parameters: ", e.msg);
-		exit (1);
-	}
-
-	if ( inputDir.empty )
-		inputDir = "./";
-	if ( outputDir.empty )
-		outputDir = buildPath(inputDir, "out");
-
-	//Read in the GIR and API files.
-	GtkWrapper wrapper = new GtkWrapper(inputDir, outputDir, useRuntimeLinker);
-	wrapper.proccess("APILookup.txt");
-
-	if ( printFree )
-		wrapper.printFreeFunctions();
-
-	//Generate the D binding
-	foreach(pack; GtkWrapper.packages)
-	{
-		if ( pack.name == "cairo" )
-			continue;
-
-		if ( useRuntimeLinker )
-			pack.writeLoaderTable();
-		else
-			pack.writeExternalFunctions();
-
-		pack.writeTypes();
-		pack.writeClasses();
-	}
-}
+import gtd.DefReader;
+import gtd.IndentedStringBuilder;
+import gtd.GlibTypes;
+import gtd.GtkPackage;
+import gtd.GtkStruct;
+import gtd.GtkFunction;
+import gtd.GtkType;
+import gtd.WrapError;
 
 class GtkWrapper
 {

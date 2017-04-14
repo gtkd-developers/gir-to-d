@@ -17,14 +17,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module utils.DefReader;
+module gtd.DefReader;
 
 import std.algorithm;
 import std.array;
 import std.file;
 import std.string : splitLines, strip, indexOf;
 
-import utils.WrapError;
+import gtd.WrapError;
 
 public class DefReader
 {

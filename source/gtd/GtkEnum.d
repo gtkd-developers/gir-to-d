@@ -17,14 +17,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module utils.GtkEnum;
+module gtd.GtkEnum;
 
 import std.algorithm;
 import std.string : splitLines, strip, toUpper;
 
-import utils.GtkPackage;
-import utils.GtkWrapper;
-import utils.XML;
+import gtd.GtkPackage;
+import gtd.GtkWrapper;
+import gtd.XML;
 
 final class GtkEnum
 {

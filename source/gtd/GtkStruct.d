@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module utils.GtkStruct;
+module gtd.GtkStruct;
 
 import std.algorithm: among, sort, uniq, startsWith, endsWith, canFind;
 import std.array : replace;
@@ -28,13 +28,13 @@ import std.uni: toUpper, toLower;
 import std.range;
 import std.string: capitalize, splitLines, strip, chomp;
 
-import utils.GtkFunction;
-import utils.GtkPackage;
-import utils.GtkType;
-import utils.GtkWrapper;
-import utils.XML;
-import utils.LinkedHasMap: Map = LinkedHashMap;
-import utils.IndentedStringBuilder;
+import gtd.GtkFunction;
+import gtd.GtkPackage;
+import gtd.GtkType;
+import gtd.GtkWrapper;
+import gtd.XML;
+import gtd.LinkedHasMap: Map = LinkedHashMap;
+import gtd.IndentedStringBuilder;
 
 enum GtkStructType : string
 {

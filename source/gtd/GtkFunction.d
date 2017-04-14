@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module utils.GtkFunction;
+module gtd.GtkFunction;
 
 import std.algorithm: among, startsWith, endsWith;
 import std.conv;
@@ -25,11 +25,11 @@ import std.range;
 import std.string : chomp, splitLines, strip, removechars;
 import std.uni: toUpper, toLower;
 
-import utils.GtkEnum;
-import utils.GtkStruct;
-import utils.GtkType;
-import utils.GtkWrapper;
-import utils.XML;
+import gtd.GtkEnum;
+import gtd.GtkStruct;
+import gtd.GtkType;
+import gtd.GtkWrapper;
+import gtd.XML;
 
 enum GtkFunctionType : string
 {

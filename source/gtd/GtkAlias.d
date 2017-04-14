@@ -17,13 +17,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module utils.GtkAlias;
+module gtd.GtkAlias;
 
 import std.string : splitLines, strip;
 
-import utils.GtkType;
-import utils.GtkWrapper;
-import utils.XML;
+import gtd.GtkType;
+import gtd.GtkWrapper;
+import gtd.XML;
 
 final class GtkAlias
 {

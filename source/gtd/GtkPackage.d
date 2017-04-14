@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module utils.GtkPackage;
+module gtd.GtkPackage;
 
 import std.algorithm;
 import std.array: empty;
@@ -27,14 +27,14 @@ import std.string : splitLines, strip, split;
 import std.uni;
 import std.stdio;
 
-import utils.GtkAlias;
-import utils.GtkEnum;
-import utils.GtkFunction;
-import utils.GtkStruct;
-import utils.GtkWrapper;
-import utils.IndentedStringBuilder;
-import utils.XML;
-import utils.LinkedHasMap: Map = LinkedHashMap;
+import gtd.GtkAlias;
+import gtd.GtkEnum;
+import gtd.GtkFunction;
+import gtd.GtkStruct;
+import gtd.GtkWrapper;
+import gtd.IndentedStringBuilder;
+import gtd.XML;
+import gtd.LinkedHasMap: Map = LinkedHashMap;
 
 class GtkPackage
 {
