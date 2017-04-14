@@ -481,16 +481,16 @@ class GtkWrapper
 		if ( file == "cairo" )
 		{
 			if ( useRuntimeLinker )
-				copy(buildNormalizedPath(to, "gtkc/cairo-runtime.d"), buildNormalizedPath(to, "../gtkc/cairo.d"));
+				copy(buildNormalizedPath(to, bindDir, "cairo-runtime.d"), buildNormalizedPath(to, "..", bindDir, "cairo.d"));
 			else
-				copy(buildNormalizedPath(to, "gtkc/cairo-compiletime.d"), buildNormalizedPath(to, "../gtkc/cairo.d"));
+				copy(buildNormalizedPath(to, bindDir, "cairo-compiletime.d"), buildNormalizedPath(to, "..", bindDir, "cairo.d"));
 
-			copy(buildNormalizedPath(to, "gtkc/cairotypes.d"), buildNormalizedPath(to, "../gtkc/cairotypes.d"));
+			copy(buildNormalizedPath(to, bindDir, "cairotypes.d"), buildNormalizedPath(to, "..", bindDir, "cairotypes.d"));
 
-			remove(buildNormalizedPath(to, "gtkc/cairo-runtime.d"));
-			remove(buildNormalizedPath(to, "gtkc/cairo-compiletime.d"));
-			remove(buildNormalizedPath(to, "gtkc/cairotypes.d"));
-			remove(buildNormalizedPath(to, "gtkc"));
+			remove(buildNormalizedPath(to, bindDir, "cairo-runtime.d"));
+			remove(buildNormalizedPath(to, bindDir, "cairo-compiletime.d"));
+			remove(buildNormalizedPath(to, bindDir, "cairotypes.d"));
+			remove(buildNormalizedPath(to, bindDir));
 		}
 	}
 

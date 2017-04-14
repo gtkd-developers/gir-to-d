@@ -341,9 +341,9 @@ class GtkPackage
 		buff ~= "import "~ bindDir ~"."~ name ~"types;\n";
 
 		if ( name == "glib" )
-			buff ~= "import gtkc.gobjecttypes;\n";
+			buff ~= "import " ~ bindDir ~ ".gobjecttypes;\n";
 		if ( name == "gdk" || name == "pango" )
-			buff ~= "import gtkc.cairotypes;\n";
+			buff ~= "import " ~ bindDir ~ ".cairotypes;\n";
 
 		buff ~= "import gtkd.Loader;\n"
 			~ "import gtkd.paths;\n\n"
@@ -429,9 +429,9 @@ class GtkPackage
 		buff ~= "import "~ bindDir ~"."~ name ~"types;\n";
 
 		if ( name == "glib" )
-			buff ~= "import gtkc.gobjecttypes;\n";
+			buff ~= "import " ~ bindDir ~ ".gobjecttypes;\n";
 		if ( name == "gdk" || name == "pango" )
-			buff ~= "import gtkc.cairotypes;\n";
+			buff ~= "import " ~ bindDir ~ ".cairotypes;\n";
 
 		buff ~= "\n\n__gshared extern(C)\n"
 			~ "{\n";
