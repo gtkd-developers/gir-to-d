@@ -25,6 +25,7 @@ import std.file;
 import std.uni;
 import std.path;
 import std.stdio;
+import std.string;
 
 import gtd.DefReader;
 import gtd.IndentedStringBuilder;
@@ -386,6 +387,21 @@ class GtkWrapper
 						                    "Can't copy the file when srcDir is not set");
 
 					copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
+					break;
+				case "version":
+					if ( defReader.value == "end" )
+						break;
+
+					if ( defReader.value == "start" )
+						break;
+
+					size_t index = defReader.value.indexOf(':');
+					defReader.key = defReader.value[0 .. max(index, 0)].strip();
+					defReader.value = defReader.value[index +1 .. $].strip();
+
+					if ( !defReader.key.empty )
+						continue;
+
 					break;
 				default:
 					throw new WrapError(defReader, "Unknown key: "~defReader.key);

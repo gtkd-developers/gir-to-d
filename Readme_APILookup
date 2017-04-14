@@ -171,3 +171,10 @@ array: func_name param_array [param_length]
 copy: filename
     Copies filename form inputRoot to outputRoot/srcDir.
 
+version X.XX: command: value
+	Only include the command if the version specified in the Gir file is >= X.XX.
+
+version X.XX: (block)
+	The same as above but applies to all commands between the start and end tag.
+	For the end tag the version number is optional.
+

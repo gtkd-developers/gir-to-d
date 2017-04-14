@@ -30,6 +30,7 @@ public class DefReader
 {
 	string filename;
 	string key;
+	string subKey;
 	string value;
 
 	int lineNumber;
@@ -70,6 +71,13 @@ public class DefReader
 
 			key   = line[0 .. max(index, 0)].strip();
 			value = line[index +1 .. $].strip();
+
+			index = key.indexOf(' ');
+			if ( index != -1 )
+			{
+				subKey = key[index +1 .. $].strip();
+				key    = key[0 .. index].strip();
+			}
 		}
 		else
 		{
