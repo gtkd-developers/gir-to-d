@@ -776,8 +776,6 @@ final class GtkStruct
 			{
 				imports ~= "std.algorithm";
 				imports ~= "gobject.Signals";
-				imports ~= "gtkc.gdktypes";
-
 			}
 
 			if ( func.type == GtkFunctionType.Constructor )
