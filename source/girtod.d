@@ -31,7 +31,7 @@ void main(string[] args)
 {
 
 	bool printFree;
-	bool useRuntimeLinker = true;
+	bool useRuntimeLinker;
 	string inputDir;
 	string outputDir;
 
