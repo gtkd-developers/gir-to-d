@@ -82,7 +82,7 @@ final class GtkAlias
 			buff ~= " */";
 		}
 
-		buff ~= "public alias "~ tokenToGtkD(baseType.cType, wrapper.aliasses) ~" "~ tokenToGtkD(cType, wrapper.aliasses) ~";";
+		buff ~= "public alias "~ stringToGtkD(baseType.cType, wrapper.aliasses) ~" "~ tokenToGtkD(cType, wrapper.aliasses) ~";";
 
 		return buff;
 	}
