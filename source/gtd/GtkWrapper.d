@@ -87,6 +87,9 @@ class GtkWrapper
 					srcDir = defReader.value;
 					break;
 				case "bindDir":
+					if ( !defReader.value.findAmong("./\\").empty )
+						throw new WrapError(defReader, "Paths are not allowed as the bindDir.");
+
 					bindDir = defReader.value;
 					break;
 				case "copy":
