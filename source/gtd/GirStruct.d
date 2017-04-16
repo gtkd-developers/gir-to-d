@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module gtd.GtkStruct;
+module gtd.GirStruct;
 
 import std.algorithm: among, sort, uniq, startsWith, endsWith, canFind;
 import std.array : replace;
@@ -28,15 +28,15 @@ import std.uni: toUpper, toLower;
 import std.range;
 import std.string: capitalize, splitLines, strip, chomp;
 
-import gtd.GtkFunction;
-import gtd.GtkPackage;
-import gtd.GtkType;
-import gtd.GtkWrapper;
+import gtd.GirFunction;
+import gtd.GirPackage;
+import gtd.GirType;
+import gtd.GirWrapper;
 import gtd.XMLReader;
 import gtd.LinkedHasMap: Map = LinkedHashMap;
 import gtd.IndentedStringBuilder;
 
-enum GtkStructType : string
+enum GirStructType : string
 {
 	Class = "class",
 	Interface = "interface",
@@ -44,10 +44,10 @@ enum GtkStructType : string
 	Union = "union"
 }
 
-final class GtkStruct
+final class GirStruct
 {
 	string name;
-	GtkStructType type;
+	GirStructType type;
 	string doc;
 	string cType;
 	string parent;
@@ -67,24 +67,24 @@ final class GtkStruct
 
 	string[] implements;
 	string[] imports;
-	GtkField[] fields;
+	GirField[] fields;
 	string[] virtualFunctions;
-	Map!(string, GtkFunction) functions;
+	Map!(string, GirFunction) functions;
 
-	GtkWrapper wrapper;
-	GtkPackage pack;
+	GirWrapper wrapper;
+	GirPackage pack;
 
-	private GtkStruct parentStruct;
+	private GirStruct parentStruct;
 
-	this(GtkWrapper wrapper, GtkPackage pack)
+	this(GirWrapper wrapper, GirPackage pack)
 	{
 		this.wrapper = wrapper;
 		this.pack = pack;
 	}
 
-	GtkStruct dup()
+	GirStruct dup()
 	{
-		GtkStruct copy = new GtkStruct(wrapper, pack);
+		GirStruct copy = new GirStruct(wrapper, pack);
 
 		foreach ( i, field; this.tupleof )
 			copy.tupleof[i] = field;
@@ -95,7 +95,7 @@ final class GtkStruct
 	void parse(T)(XMLReader!T reader)
 	{
 		name = reader.front.attributes["name"];
-		type = cast(GtkStructType)reader.front.value;
+		type = cast(GirStructType)reader.front.value;
 
 		if ( "c:type" in reader.front.attributes )
 			cType = reader.front.attributes["c:type"];
@@ -135,21 +135,21 @@ final class GtkStruct
 					reader.popFront();
 					break;
 				case "field":
-					GtkField field = new GtkField(wrapper);
+					GirField field = new GirField(wrapper);
 					field.parse(reader);
 					fields ~= field;
 					break;
 				case "record":
-					GtkField field = new GtkField(wrapper);
-					GtkStruct strct = new GtkStruct(wrapper, null);
+					GirField field = new GirField(wrapper);
+					GirStruct strct = new GirStruct(wrapper, null);
 					strct.parse(reader);
 					strct.cType = strct.cType.toUpper()[0..1] ~ strct.cType[1 .. $];
 					field.gtkStruct = strct;
 					fields ~= field;
 					break;
 				case "union":
-					GtkField field = new GtkField(wrapper);
-					GtkUnion uni = new GtkUnion(wrapper);
+					GirField field = new GirField(wrapper);
+					GirUnion uni = new GirUnion(wrapper);
 					uni.parse(reader);
 					field.gtkUnion = uni;
 					fields ~= field;
@@ -157,13 +157,13 @@ final class GtkStruct
 				case "constructor":
 				case "method":
 				case "glib:signal":
-					if ( type == GtkStructType.Record )
-						type = GtkStructType.Class;
+					if ( type == GirStructType.Record )
+						type = GirStructType.Class;
 					goto case "function";
 				case "function":
-					GtkFunction func = new GtkFunction(wrapper, this);
+					GirFunction func = new GirFunction(wrapper, this);
 					func.parse(reader);
-					if ( func.type == GtkFunctionType.Signal )
+					if ( func.type == GirFunctionType.Signal )
 						functions[func.name~"-signal"] = func;
 					else
 						functions[func.name] = func;
@@ -182,7 +182,7 @@ final class GtkStruct
 					reader.skipTag();
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GtkStruct: "~ name);
+					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirStruct: "~ name);
 			}
 
 			reader.popFront();
@@ -194,10 +194,10 @@ final class GtkStruct
 				vFunc.virtual = true;
 		}
 
-		if ( type == GtkStructType.Union )
+		if ( type == GirStructType.Union )
 		{
-			GtkField field = new GtkField(wrapper);
-			GtkUnion uni = new GtkUnion(wrapper);
+			GirField field = new GirField(wrapper);
+			GirUnion uni = new GirUnion(wrapper);
 			uni.fields = fields;
 			field.gtkUnion = uni;
 			fields = [field];
@@ -206,17 +206,17 @@ final class GtkStruct
 			if ( cType.empty )
 				cType = name;
 
-			type = GtkStructType.Record;
+			type = GirStructType.Record;
 
 			foreach ( funct; functions )
 			{
-				if ( funct.type != GtkFunctionType.Function )
-					type = GtkStructType.Class;
+				if ( funct.type != GirFunctionType.Function )
+					type = GirStructType.Class;
 			}
 		}
 	}
 
-	GtkStruct getParent()
+	GirStruct getParent()
 	{
 		if ( !parentStruct )
 			parentStruct = pack.getStruct(parent);
@@ -231,7 +231,7 @@ final class GtkStruct
 
 		string[] buff;
 
-		if ( doc !is null && wrapper.includeComments && type == GtkStructType.Record )
+		if ( doc !is null && wrapper.includeComments && type == GirStructType.Record )
 		{
 			buff ~= "/**";
 			foreach ( line; doc.splitLines() )
@@ -250,7 +250,7 @@ final class GtkStruct
 		{
 			buff ~= "struct "~ tokenToGtkD(cType, wrapper.aliasses);
 			buff ~= "{";
-			buff ~= GtkField.getFieldDeclarations(fields, wrapper);
+			buff ~= GirField.getFieldDeclarations(fields, wrapper);
 			buff ~= "}";
 		}
 		else
@@ -268,13 +268,13 @@ final class GtkStruct
 		if ( noCode )
 			return;
 
-		if ( type == GtkStructType.Record && !(lookupClass || lookupInterface) && (functions.empty && lookupCode.empty ) )
+		if ( type == GirStructType.Record && !(lookupClass || lookupInterface) && (functions.empty && lookupCode.empty ) )
 			return;
 
 		parentStruct = pack.getStruct(parent);
 		resolveImports();
 
-		if ( type == GtkStructType.Record && !(lookupClass || lookupInterface) )
+		if ( type == GirStructType.Record && !(lookupClass || lookupInterface) )
 		{
 			writeDStruct();
 			return;
@@ -317,7 +317,7 @@ final class GtkStruct
 			if ( parentStruct && interf.canFind(".") && parentStruct.implements.canFind(interf.split('.')[1]) )
 				continue;
 
-			GtkStruct strct = pack.getStruct(interf);
+			GirStruct strct = pack.getStruct(interf);
 
 			if ( strct && first )
 			{
@@ -412,7 +412,7 @@ final class GtkStruct
 				if ( parentStruct && interf.canFind(".") && parentStruct.implements.canFind(interf.split('.')[1]) )
 					continue;
 
-				GtkStruct strct = pack.getStruct(interf);
+				GirStruct strct = pack.getStruct(interf);
 
 				if ( strct )
 				{
@@ -436,13 +436,13 @@ final class GtkStruct
 
 		foreach ( func; functions )
 		{
-			if ( func.noCode || func.isVariadic() || func.type == GtkFunctionType.Callback )
+			if ( func.noCode || func.isVariadic() || func.type == GirFunctionType.Callback )
 				continue;
 
-			if ( isInterface() && func.type == GtkFunctionType.Constructor )
+			if ( isInterface() && func.type == GirFunctionType.Constructor )
 				continue;
 
-			if ( func.type == GtkFunctionType.Signal )
+			if ( func.type == GirFunctionType.Signal )
 			{
 				buff ~= "\n";
 				buff ~= indenter.format(func.getDelegateWrapperDeclaration());
@@ -516,10 +516,10 @@ final class GtkStruct
 
 			foreach ( func; functions )
 			{
-				if ( func.noCode || func.isVariadic() || func.type == GtkFunctionType.Callback || func.type == GtkFunctionType.Constructor )
+				if ( func.noCode || func.isVariadic() || func.type == GirFunctionType.Callback || func.type == GirFunctionType.Constructor )
 					continue;
 
-				if ( func.type == GtkFunctionType.Signal )
+				if ( func.type == GirFunctionType.Signal )
 				{
 					string[] dec = func.getAddListenerDeclaration();
 					dec[$-1] ~= ";";
@@ -570,7 +570,7 @@ final class GtkStruct
 
 		foreach ( func; functions )
 		{
-			if ( func.noCode || func.isVariadic() || !( func.type == GtkFunctionType.Function || func.type == GtkFunctionType.Method ) )
+			if ( func.noCode || func.isVariadic() || !( func.type == GirFunctionType.Function || func.type == GirFunctionType.Method ) )
 				continue;
 
 			buff ~= "\n";
@@ -620,7 +620,7 @@ final class GtkStruct
 			return true;
 		if ( lookupClass )
 			return false;
-		if ( type == GtkStructType.Interface )
+		if ( type == GirStructType.Interface )
 			return true;
 
 		return false;
@@ -628,10 +628,10 @@ final class GtkStruct
 
 	bool isNamespace()
 	{
-		return type == GtkStructType.Record && !(lookupClass || lookupInterface) && !noNamespace;
+		return type == GirStructType.Record && !(lookupClass || lookupInterface) && !noNamespace;
 	}
 
-	void merge(GtkStruct mergeStruct)
+	void merge(GirStruct mergeStruct)
 	{
 		foreach ( func; mergeStruct.functions )
 		{
@@ -640,7 +640,7 @@ final class GtkStruct
 		}
 	}
 
-	GtkStruct getAncestor()
+	GirStruct getAncestor()
 	{
 		if ( parent.empty )
 			return this;
@@ -692,27 +692,27 @@ final class GtkStruct
 				imports ~= "glib.GException";
 			}
 
-			void getReturnImport(GtkType type)
+			void getReturnImport(GirType type)
 			{
 				if ( type.name in structWrap || type.name in aliases )
 					return;
 
-				GtkStruct dType = pack.getStruct(type.name);
+				GirStruct dType = pack.getStruct(type.name);
 
-				if ( dType && (dType.type != GtkStructType.Record || dType.lookupClass || dType.lookupInterface) )
+				if ( dType && (dType.type != GirStructType.Record || dType.lookupClass || dType.lookupInterface) )
 				{
 					if ( !dType.pack.name.among("cairo", "glib", "gthread") )
 						imports ~= "gobject.ObjectG";
 
-					if ( dType.type == GtkStructType.Interface && func.name.startsWith("new") )
+					if ( dType.type == GirStructType.Interface && func.name.startsWith("new") )
 						return;
 
-					if ( dType is this && dType.type != GtkStructType.Interface )
+					if ( dType is this && dType.type != GirStructType.Interface )
 						return;
 
 					imports ~= dType.pack.name ~"."~ dType.name;
 
-					if ( dType.type == GtkStructType.Interface || dType.lookupInterface )
+					if ( dType.type == GirStructType.Interface || dType.lookupInterface )
 						imports ~= dType.pack.name ~"."~ dType.name ~"IF";
 				}
 				else if ( type.name.among("utf8", "filename") || type.cType.among("guchar**") )
@@ -727,26 +727,26 @@ final class GtkStruct
 					getReturnImport(func.returnType.elementType);
 			}
 
-			void getParamImport(GtkType type)
+			void getParamImport(GirType type)
 			{
 				if ( type.name in structWrap || type.name in aliases )
 					return;
 
-				GtkStruct dType = pack.getStruct(type.name);
+				GirStruct dType = pack.getStruct(type.name);
 
 				if ( dType is this )
 					return;
 			
-				if ( func.type == GtkFunctionType.Signal && type.name.startsWith("Gdk.Event") )
+				if ( func.type == GirFunctionType.Signal && type.name.startsWith("Gdk.Event") )
 					imports ~= "gdk.Event";
 
-				if ( dType && (dType.type != GtkStructType.Record || dType.lookupClass || dType.lookupInterface) )
+				if ( dType && (dType.type != GirStructType.Record || dType.lookupClass || dType.lookupInterface) )
 				{
-					if ( dType.type == GtkStructType.Interface || dType.lookupInterface )
+					if ( dType.type == GirStructType.Interface || dType.lookupInterface )
 					{
 						imports ~= dType.pack.name ~"."~ dType.name ~"IF";
 
-						if ( func.type == GtkFunctionType.Signal )
+						if ( func.type == GirFunctionType.Signal )
 							imports ~= dType.pack.name ~"."~ dType.name;
 					}
 					else
@@ -768,17 +768,17 @@ final class GtkStruct
 				if ( param.type.elementType )
 					getParamImport(param.type.elementType);
 
-				if ( param.direction != GtkParamDirection.Default )
+				if ( param.direction != GirParamDirection.Default )
 					getReturnImport(param.type);
 			}
 
-			if ( func.type == GtkFunctionType.Signal )
+			if ( func.type == GirFunctionType.Signal )
 			{
 				imports ~= "std.algorithm";
 				imports ~= "gobject.Signals";
 			}
 
-			if ( func.type == GtkFunctionType.Constructor )
+			if ( func.type == GirFunctionType.Constructor )
 				imports ~= "glib.ConstructionException";
 		}
 
@@ -787,7 +787,7 @@ final class GtkStruct
 			if ( parentStruct && parentStruct.implements.canFind(interf) )
 				continue;
 
-			GtkStruct strct = pack.getStruct(interf);
+			GirStruct strct = pack.getStruct(interf);
 
 			if ( strct )
 			{
@@ -833,19 +833,19 @@ final class GtkStruct
 		}
 	}
 
-	private GtkFunction getTypeFunction(string cIdentifier)
+	private GirFunction getTypeFunction(string cIdentifier)
 	{
-		GtkType returnType = new GtkType(wrapper);
+		GirType returnType = new GirType(wrapper);
 		returnType.name = "GObject.GType";
 		returnType.cType = "GType";
 
-		GtkFunction func = new GtkFunction(wrapper, this);
-		func.type = GtkFunctionType.Function;
+		GirFunction func = new GirFunction(wrapper, this);
+		func.type = GirFunctionType.Function;
 		func.name = "get_type";
 		func.cType = cIdentifier;
 		func.returnType = returnType;
 
-		if ( type == GtkStructType.Interface )
+		if ( type == GirStructType.Interface )
 			func.noCode = true;
 
 		return func;
@@ -857,19 +857,19 @@ final class GtkStruct
 	 * 
 	 * This for backwards compatibility with the documentation based wrapper.
 	 */
-	private string[] getGenericEventSignal(GtkFunction func)
+	private string[] getGenericEventSignal(GirFunction func)
 	{
-		GtkFunction signal = func.dup();
+		GirFunction signal = func.dup();
 		string[] buff;
 		
 		for ( size_t i; i < signal.params.length; i++ )
 		{
 			if ( signal.params[i].type.name.startsWith("Gdk.Event") )
 			{
-				GtkType eventType = new GtkType(wrapper);
+				GirType eventType = new GirType(wrapper);
 				eventType.name = "Gdk.Event";
 				
-				GtkParam newParam = new GtkParam(wrapper);
+				GirParam newParam = new GirParam(wrapper);
 				newParam.name = signal.params[i].name;
 				newParam.doc  = signal.params[i].doc;
 				newParam.type = eventType;
@@ -895,20 +895,20 @@ final class GtkStruct
 	}
 }
 
-final class GtkField
+final class GirField
 {
 	string name;
 	string doc;
-	GtkType type;
+	GirType type;
 	int bits = -1;
 
-	GtkFunction callback;
-	GtkUnion gtkUnion;
-	GtkStruct gtkStruct;
+	GirFunction callback;
+	GirUnion gtkUnion;
+	GirStruct gtkStruct;
 
-	GtkWrapper wrapper;
+	GirWrapper wrapper;
 
-	this(GtkWrapper wrapper)
+	this(GirWrapper wrapper)
 	{
 		this.wrapper = wrapper;
 	}
@@ -946,15 +946,15 @@ final class GtkField
 					break;
 				case "array":
 				case "type":
-					type = new GtkType(wrapper);
+					type = new GirType(wrapper);
 					type.parse(reader);
 					break;
 				case "callback":
-					callback = new GtkFunction(wrapper, null);
+					callback = new GirFunction(wrapper, null);
 					callback.parse(reader);
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GtkField: "~ name);
+					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirField: "~ name);
 			}
 			reader.popFront();
 		}
@@ -964,7 +964,7 @@ final class GtkField
 	 * A special case for fields, we need to know about all of then
 	 * to properly construct the bitfields.
 	 */
-	static string[] getFieldDeclarations(GtkField[] fields, GtkWrapper wrapper)
+	static string[] getFieldDeclarations(GirField[] fields, GirWrapper wrapper)
 	{
 		string[] buff;
 		int bitcount;
@@ -1077,15 +1077,15 @@ final class GtkField
 	}
 }
 
-final class GtkUnion
+final class GirUnion
 {
 	string name;
 	string doc;
-	GtkField[] fields;
+	GirField[] fields;
 
-	GtkWrapper wrapper;
+	GirWrapper wrapper;
 
-	this(GtkWrapper wrapper)
+	this(GirWrapper wrapper)
 	{
 		this.wrapper = wrapper;
 	}
@@ -1112,20 +1112,20 @@ final class GtkUnion
 					reader.popFront();
 					break;
 				case "field":
-					GtkField field = new GtkField(wrapper);
+					GirField field = new GirField(wrapper);
 					field.parse(reader);
 					fields ~= field;
 					break;
 				case "record":
-					GtkField field = new GtkField(wrapper);
-					GtkStruct strct = new GtkStruct(wrapper, null);
+					GirField field = new GirField(wrapper);
+					GirStruct strct = new GirStruct(wrapper, null);
 					strct.parse(reader);
 					strct.cType = strct.cType.toUpper()[0..1] ~ strct.cType[1 .. $];
 					field.gtkStruct = strct;
 					fields ~= field;
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GtkUnion: "~ name);
+					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirUnion: "~ name);
 			}
 			reader.popFront();
 		}
@@ -1148,7 +1148,7 @@ final class GtkUnion
 			buff ~= "union";
 
 		buff ~= "{";
-		buff ~= GtkField.getFieldDeclarations(fields, wrapper);
+		buff ~= GirField.getFieldDeclarations(fields, wrapper);
 		buff ~= "}";
 
 		if ( name )

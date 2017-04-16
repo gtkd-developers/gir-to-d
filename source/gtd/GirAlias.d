@@ -17,24 +17,24 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module gtd.GtkAlias;
+module gtd.GirAlias;
 
 import std.string : splitLines, strip;
 
-import gtd.GtkType;
-import gtd.GtkWrapper;
+import gtd.GirType;
+import gtd.GirWrapper;
 import gtd.XMLReader;
 
-final class GtkAlias
+final class GirAlias
 {
 	string name;
 	string cType;
 	string doc;
 
-	GtkType baseType;
-	GtkWrapper wrapper;
+	GirType baseType;
+	GirWrapper wrapper;
 
-	this(GtkWrapper wrapper)
+	this(GirWrapper wrapper)
 	{
 		this.wrapper = wrapper;
 	}
@@ -51,7 +51,7 @@ final class GtkAlias
 			switch(reader.front.value)
 			{
 				case "type":
-					baseType = new GtkType(wrapper);
+					baseType = new GirType(wrapper);
 					baseType.parse(reader);
 					break;
 				case "doc":
@@ -65,7 +65,7 @@ final class GtkAlias
 					reader.popFront();
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GtkAlias: "~ name);
+					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirAlias: "~ name);
 			}
 			reader.popFront();
 		}

@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module gtd.GtkPackage;
+module gtd.GirPackage;
 
 import std.algorithm;
 import std.array: empty;
@@ -27,22 +27,22 @@ import std.string : splitLines, strip, split;
 import std.uni;
 import std.stdio;
 
-import gtd.GtkAlias;
-import gtd.GtkEnum;
-import gtd.GtkFunction;
-import gtd.GtkStruct;
-import gtd.GtkWrapper;
+import gtd.GirAlias;
+import gtd.GirEnum;
+import gtd.GirFunction;
+import gtd.GirStruct;
+import gtd.GirWrapper;
 import gtd.IndentedStringBuilder;
 import gtd.XMLReader;
 import gtd.LinkedHasMap: Map = LinkedHashMap;
 
-class GtkPackage
+class GirPackage
 {
 	string name;
 	string cTypePrefix;
 	string srcDir;
 	string bindDir;
-	GtkWrapper wrapper;
+	GirWrapper wrapper;
 
 	string[] publicImports;
 	string[] lookupAliases;     /// Aliases defined in the lookupfile.
@@ -51,24 +51,24 @@ class GtkPackage
 	string[] lookupFuncts;      /// Functions defined in the lookupfile.
 	string[] lookupConstants;   /// Constants defined in the lookupfile.
 	
-	static GtkPackage[string] namespaces;
+	static GirPackage[string] namespaces;
 
-	Map!(string, GtkAlias)    collectedAliases; /// Aliases defined in the gir file.
-	Map!(string, GtkEnum)     collectedEnums;   /// Enums defined in the gir file.
-	Map!(string, GtkStruct)   collectedStructs;
-	Map!(string, GtkFunction) collectedCallbacks;
-	Map!(string, GtkFunction) collectedFunctions;
-	GtkEnum stockIDs;           /// The StockID enum (Deprecated).
-	GtkEnum GdkKeys;            /// The GdkKey enum.
+	Map!(string, GirAlias)    collectedAliases; /// Aliases defined in the gir file.
+	Map!(string, GirEnum)     collectedEnums;   /// Enums defined in the gir file.
+	Map!(string, GirStruct)   collectedStructs;
+	Map!(string, GirFunction) collectedCallbacks;
+	Map!(string, GirFunction) collectedFunctions;
+	GirEnum stockIDs;           /// The StockID enum (Deprecated).
+	GirEnum GdkKeys;            /// The GdkKey enum.
 
-	public this(string pack, GtkWrapper wrapper, string srcDir, string bindDir)
+	public this(string pack, GirWrapper wrapper, string srcDir, string bindDir)
 	{
 		this.name = pack;
 		this.wrapper = wrapper;
 		this.srcDir = srcDir;
 		this.bindDir = bindDir;
-		this.stockIDs = new GtkEnum(wrapper, this);
-		this.GdkKeys  = new GtkEnum(wrapper, this);
+		this.stockIDs = new GirEnum(wrapper, this);
+		this.GdkKeys  = new GirEnum(wrapper, this);
 
 		try
 		{
@@ -131,7 +131,7 @@ class GtkPackage
 			switch (reader.front.value)
 			{
 				case "alias":
-					GtkAlias gtkAlias = new GtkAlias(wrapper);
+					GirAlias gtkAlias = new GirAlias(wrapper);
 					gtkAlias.parse(reader);
 
 					if ( gtkAlias.cType == "GType" )
@@ -144,7 +144,7 @@ class GtkPackage
 					break;
 				case "bitfield":
 				case "enumeration":
-					GtkEnum gtkEnum = new GtkEnum(wrapper, this);
+					GirEnum gtkEnum = new GirEnum(wrapper, this);
 					gtkEnum.parse(reader);
 					collectedEnums[gtkEnum.name] = gtkEnum;
 					break;
@@ -152,7 +152,7 @@ class GtkPackage
 				case "interface":
 				case "record":
 				case "union":
-					GtkStruct gtkStruct = new GtkStruct(wrapper, this);
+					GirStruct gtkStruct = new GirStruct(wrapper, this);
 					gtkStruct.parse(reader);
 
 					//Workaround: Dont overwrite the regular pango classes.
@@ -168,7 +168,7 @@ class GtkPackage
 						gtkStruct.name = "Pg"~gtkStruct.name;
 					break;
 				case "callback":
-					GtkFunction callback = new GtkFunction(wrapper, null);
+					GirFunction callback = new GirFunction(wrapper, null);
 					callback.parse(reader);
 					collectedCallbacks[callback.name] = callback;
 					break;
@@ -179,7 +179,7 @@ class GtkPackage
 					parseFunction(reader);
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GtkPackage: "~ name);
+					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirPackage: "~ name);
 			}
 			reader.popFront();
 		}
@@ -189,7 +189,7 @@ class GtkPackage
 	{
 		if ( reader.front.attributes["name"].startsWith("STOCK_") )
 		{
-			GtkEnumMember member = GtkEnumMember(wrapper);
+			GirEnumMember member = GirEnumMember(wrapper);
 			member.parse(reader);
 			member.name = member.name[6..$];
 
@@ -198,7 +198,7 @@ class GtkPackage
 		}
 		else if ( reader.front.attributes["c:type"].startsWith("GDK_KEY_") )
 		{
-			GtkEnumMember member = GtkEnumMember(wrapper);
+			GirEnumMember member = GirEnumMember(wrapper);
 			member.parse(reader);
 			member.name = "GDK_"~ member.name[4..$];
 
@@ -212,14 +212,14 @@ class GtkPackage
 
 	void parseFunction(T)(XMLReader!T reader)
 	{
-		GtkFunction funct = new GtkFunction(wrapper, null);
+		GirFunction funct = new GirFunction(wrapper, null);
 		funct.parse(reader);
 		collectedFunctions[funct.name] = funct;
 	}
 
-	GtkStruct getStruct(string name)
+	GirStruct getStruct(string name)
 	{
-		GtkPackage pack = this;
+		GirPackage pack = this;
 
 		if ( name.canFind(".") )
 		{
@@ -234,9 +234,9 @@ class GtkPackage
 		return pack.collectedStructs.get(name, pack.collectedStructs.get("lookup"~name, null));
 	}
 
-	GtkEnum getEnum(string name)
+	GirEnum getEnum(string name)
 	{
-		GtkPackage pack = this;
+		GirPackage pack = this;
 
 		if ( name.canFind(".") )
 		{
@@ -359,7 +359,7 @@ class GtkPackage
 
 			foreach ( funct; strct.functions )
 			{
-				if ( funct.type == GtkFunctionType.Callback || funct.type == GtkFunctionType.Signal || funct.name.empty )
+				if ( funct.type == GirFunctionType.Callback || funct.type == GirFunctionType.Signal || funct.name.empty )
 					continue;
 
 				buff ~= "\tLinker.link("~ funct.cType ~", \""~ funct.cType ~"\", "~ getLibrary(funct.cType) ~");\n";
@@ -389,7 +389,7 @@ class GtkPackage
 
 			foreach ( funct; strct.functions )
 			{
-				if ( funct.type == GtkFunctionType.Callback || funct.type == GtkFunctionType.Signal || funct.name.empty )
+				if ( funct.type == GirFunctionType.Callback || funct.type == GirFunctionType.Signal || funct.name.empty )
 					continue;
 
 				buff ~= "\t"~ funct.getLinkerExternal() ~"\n";
@@ -407,7 +407,7 @@ class GtkPackage
 
 			foreach ( funct; strct.functions )
 			{
-				if ( funct.type == GtkFunctionType.Callback || funct.type == GtkFunctionType.Signal || funct.name.empty )
+				if ( funct.type == GirFunctionType.Callback || funct.type == GirFunctionType.Signal || funct.name.empty )
 					continue;
 
 				if (name == "glgdk")
@@ -445,7 +445,7 @@ class GtkPackage
 
 			foreach ( funct; strct.functions )
 			{
-				if ( funct.type == GtkFunctionType.Callback || funct.type == GtkFunctionType.Signal || funct.name.empty )
+				if ( funct.type == GirFunctionType.Callback || funct.type == GirFunctionType.Signal || funct.name.empty )
 					continue;
 
 				buff ~= "\t"~ funct.getExternal() ~"\n";

@@ -25,7 +25,7 @@ import std.path;
 import std.stdio;
 import core.stdc.stdlib;
 
-import gtd.GtkWrapper;
+import gtd.GirWrapper;
 
 void main(string[] args)
 {
@@ -63,14 +63,14 @@ void main(string[] args)
 		outputDir = buildPath(inputDir, "out");
 
 	//Read in the GIR and API files.
-	GtkWrapper wrapper = new GtkWrapper(inputDir, outputDir, useRuntimeLinker);
+	GirWrapper wrapper = new GirWrapper(inputDir, outputDir, useRuntimeLinker);
 	wrapper.proccess("APILookup.txt");
 
 	if ( printFree )
 		wrapper.printFreeFunctions();
 
 	//Generate the D binding
-	foreach(pack; GtkWrapper.packages)
+	foreach(pack; wrapper.packages)
 	{
 		if ( pack.name == "cairo" )
 			continue;

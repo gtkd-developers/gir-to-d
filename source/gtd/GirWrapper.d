@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module gtd.GtkWrapper;
+module gtd.GirWrapper;
 
 import std.algorithm;
 import std.array;
@@ -30,13 +30,13 @@ import std.string;
 import gtd.DefReader;
 import gtd.IndentedStringBuilder;
 import gtd.GlibTypes;
-import gtd.GtkPackage;
-import gtd.GtkStruct;
-import gtd.GtkFunction;
-import gtd.GtkType;
+import gtd.GirPackage;
+import gtd.GirStruct;
+import gtd.GirFunction;
+import gtd.GirType;
 import gtd.WrapError;
 
-class GtkWrapper
+class GirWrapper
 {
 	bool includeComments;
 	bool useRuntimeLinker;
@@ -50,7 +50,7 @@ class GtkWrapper
 	static string licence;
 	static string[string] aliasses;
 
-	static GtkPackage[string] packages;
+	static GirPackage[string] packages;
 
 	public this(string apiRoot, string outputRoot, bool useRuntimeLinker)
 	{
@@ -133,15 +133,15 @@ class GtkWrapper
 
 	public void wrapPackage(DefReader defReader)
 	{
-		GtkPackage pack;
-		GtkStruct currentStruct;
+		GirPackage pack;
+		GirStruct currentStruct;
 
 		try
 		{
 			if (defReader.value in packages)
 				throw new WrapError(defReader, "Package: "~ defReader.value ~"already defined.");
 
-			pack = new GtkPackage(defReader.value, this, srcDir, bindDir);
+			pack = new GirPackage(defReader.value, this, srcDir, bindDir);
 			packages[defReader.value] = pack;
 			defReader.popFront();
 		}
@@ -200,7 +200,7 @@ class GtkWrapper
 					currentStruct.cType = defReader.value;
 					break;
 				case "namespace":
-					currentStruct.type = GtkStructType.Record;
+					currentStruct.type = GirStructType.Record;
 					currentStruct.lookupClass = false;
 					currentStruct.lookupInterface = false;
 
@@ -225,9 +225,9 @@ class GtkWrapper
 						currentStruct.implements ~= defReader.value;
 					break;
 				case "merge":
-					GtkStruct mergeStruct = pack.getStruct(defReader.value);
+					GirStruct mergeStruct = pack.getStruct(defReader.value);
 					currentStruct.merge(mergeStruct);
-					GtkStruct copy = currentStruct.dup();
+					GirStruct copy = currentStruct.dup();
 					copy.noCode = true;
 					copy.noExternal = true;
 					mergeStruct.pack.collectedStructs[mergeStruct.name] = copy;
@@ -237,7 +237,7 @@ class GtkWrapper
 					if ( vals.length <= 1 )
 						throw new WrapError(defReader, "No destination for move: "~ defReader.value);
 					string newFuncName = ( vals.length == 3 ) ? vals[2] : vals[0];
-					GtkStruct dest = pack.getStruct(vals[1]);
+					GirStruct dest = pack.getStruct(vals[1]);
 					if ( dest is null )
 						dest = createClass(pack, vals[1]);
 
@@ -247,7 +247,7 @@ class GtkWrapper
 						dest.functions[newFuncName] = currentStruct.functions[vals[0]];
 						dest.functions[newFuncName].name = newFuncName;
 						if ( newFuncName.startsWith("new") )
-							dest.functions[newFuncName].type = GtkFunctionType.Constructor;
+							dest.functions[newFuncName].type = GirFunctionType.Constructor;
 						if ( currentStruct.virtualFunctions.canFind(vals[0]) )
 							dest.virtualFunctions ~= newFuncName;
 						currentStruct.functions.remove(vals[0]);
@@ -313,20 +313,20 @@ class GtkWrapper
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
 						throw new WrapError(defReader, "Unknown function: "~ vals[0]);
-					findParam(currentStruct, vals[0], vals[1]).direction = GtkParamDirection.Default;
+					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Default;
 					break;
 				case "out":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
 						throw new WrapError(defReader, "Unknown function: "~ vals[0]);
-					findParam(currentStruct, vals[0], vals[1]).direction = GtkParamDirection.Out;
+					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Out;
 					break;
 				case "inout":
 				case "ref":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
 						throw new WrapError(defReader, "Unknown function: "~ vals[0]);
-					findParam(currentStruct, vals[0], vals[1]).direction = GtkParamDirection.InOut;
+					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.InOut;
 					break;
 				case "array":
 					string[] vals = defReader.value.split();
@@ -334,7 +334,7 @@ class GtkWrapper
 					if ( vals[0] !in currentStruct.functions )
 						throw new WrapError(defReader, "Unknown function: "~ vals[0]);
 
-					GtkFunction func = currentStruct.functions[vals[0]];
+					GirFunction func = currentStruct.functions[vals[0]];
 
 					if ( vals[1] == "Return" )
 					{
@@ -344,7 +344,7 @@ class GtkWrapper
 							break;
 						}
 
-						GtkType elementType = new GtkType(this);
+						GirType elementType = new GirType(this);
 
 						elementType.name = func.returnType.name;
 						elementType.cType = func.returnType.cType[0..$-1];
@@ -358,8 +358,8 @@ class GtkWrapper
 					}
 					else
 					{
-						GtkParam param = findParam(currentStruct, vals[0], vals[1]);
-						GtkType elementType = new GtkType(this);
+						GirParam param = findParam(currentStruct, vals[0], vals[1]);
+						GirType elementType = new GirType(this);
 
 						elementType.name = param.type.name;
 						elementType.cType = param.type.cType[0..$-1];
@@ -426,7 +426,7 @@ class GtkWrapper
 		}
 	}
 
-	private GtkParam findParam(GtkStruct strct, string func, string name)
+	private GirParam findParam(GirStruct strct, string func, string name)
 	{
 		foreach( param; strct.functions[func].params )
 		{
@@ -497,12 +497,12 @@ class GtkWrapper
 		}
 	}
 
-	private GtkStruct createClass(GtkPackage pack, string name)
+	private GirStruct createClass(GirPackage pack, string name)
 	{
-		GtkStruct strct = new GtkStruct(this, pack);
+		GirStruct strct = new GirStruct(this, pack);
 		strct.name = name;
 		strct.cType = pack.cTypePrefix ~ name;
-		strct.type = GtkStructType.Record;
+		strct.type = GirStructType.Record;
 		strct.noDecleration = true;
 		pack.collectedStructs["lookup"~name] = strct;
 

@@ -17,9 +17,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module gtd.GtkType;
+module gtd.GirType;
 
-import gtd.GtkWrapper;
+import gtd.GirWrapper;
 import gtd.XMLReader;
 
 import std.algorithm: among, canFind;
@@ -29,7 +29,7 @@ import std.conv: to;
 /**
  * Represent sthe type of an field or a parameter.
  */
-final class GtkType
+final class GirType
 {
 	string name;
 	string cType;
@@ -40,12 +40,12 @@ final class GtkType
 	int size = -1;   /// The size of a fixed size array.
 	int length = -1; /// The index of the param representing the length, not counting the instance param.
 	bool zeroTerminated; /// Is this array zero-terminated.
-	GtkType elementType; /// The type of the array elements, also set for Glib.List, Glib.SList Glib.Array and GLib.HashTable.
-	GtkType keyType;     /// The key type of a HashTable;
+	GirType elementType; /// The type of the array elements, also set for Glib.List, Glib.SList Glib.Array and GLib.HashTable.
+	GirType keyType;     /// The key type of a HashTable;
 
-	GtkWrapper wrapper;
+	GirWrapper wrapper;
 
-	this(GtkWrapper wrapper)
+	this(GirWrapper wrapper)
 	{
 		this.wrapper = wrapper;
 	}
@@ -100,7 +100,7 @@ final class GtkType
 			if ( elementType )
 				keyType = elementType;
 
-			elementType = new GtkType(wrapper);
+			elementType = new GirType(wrapper);
 			elementType.parse(reader);
 
 			reader.popFront();

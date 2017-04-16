@@ -17,27 +17,27 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module gtd.GtkEnum;
+module gtd.GirEnum;
 
 import std.algorithm;
 import std.string : splitLines, strip, toUpper;
 
-import gtd.GtkPackage;
-import gtd.GtkWrapper;
+import gtd.GirPackage;
+import gtd.GirWrapper;
 import gtd.XMLReader;
 
-final class GtkEnum
+final class GirEnum
 {
 	string name;
 	string cName;
 	string libVersion;
 	string doc;
 
-	GtkEnumMember[] members;
-	GtkWrapper wrapper;
-	GtkPackage pack;
+	GirEnumMember[] members;
+	GirWrapper wrapper;
+	GirPackage pack;
 
-	this(GtkWrapper wrapper, GtkPackage pack)
+	this(GirWrapper wrapper, GirPackage pack)
 	{
 		this.wrapper = wrapper;
 		this.pack = pack;
@@ -73,7 +73,7 @@ final class GtkEnum
 						break;
 					}
 
-					GtkEnumMember member = GtkEnumMember(wrapper);
+					GirEnumMember member = GirEnumMember(wrapper);
 					member.parse(reader);
 					members ~= member;
 					break;
@@ -84,7 +84,7 @@ final class GtkEnum
 					reader.skipTag();
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GtkEnum: "~ name);
+					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirEnum: "~ name);
 			}
 			reader.popFront();
 		}
@@ -126,17 +126,17 @@ final class GtkEnum
 	}
 }
 
-struct GtkEnumMember
+struct GirEnumMember
 {
 	string name;
 	string value;
 	string doc;
 
-	GtkWrapper wrapper;
+	GirWrapper wrapper;
 
 	@disable this();
 
-	this(GtkWrapper wrapper)
+	this(GirWrapper wrapper)
 	{
 		this.wrapper = wrapper;
 	}
@@ -170,7 +170,7 @@ struct GtkEnumMember
 						value = "\""~ value ~"\"";
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GtkEnumMember: "~ name);
+					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirEnumMember: "~ name);
 			}
 			reader.popFront();
 		}
