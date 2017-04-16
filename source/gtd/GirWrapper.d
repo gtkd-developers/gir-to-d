@@ -483,6 +483,10 @@ class GirWrapper
 
 		if ( file == "cairo" )
 		{
+			string cairoDest = buildNormalizedPath(to, "..", bindDir);
+			if ( !exists(cairoDest) )
+				mkdir(cairoDest);
+
 			if ( useRuntimeLinker )
 				copy(buildNormalizedPath(to, bindDir, "cairo-runtime.d"), buildNormalizedPath(to, "..", bindDir, "cairo.d"));
 			else
