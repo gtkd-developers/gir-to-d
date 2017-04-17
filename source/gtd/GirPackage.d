@@ -21,6 +21,7 @@ module gtd.GirPackage;
 
 import std.algorithm;
 import std.array: empty;
+import std.conv;
 import std.file;
 import std.path;
 import std.string : splitLines, strip, split;
@@ -31,6 +32,7 @@ import gtd.GirAlias;
 import gtd.GirEnum;
 import gtd.GirFunction;
 import gtd.GirStruct;
+import gtd.GirVersion;
 import gtd.GirWrapper;
 import gtd.IndentedStringBuilder;
 import gtd.XMLReader;
@@ -42,6 +44,7 @@ class GirPackage
 	string cTypePrefix;
 	string srcDir;
 	string bindDir;
+	GirVersion _version;
 	GirWrapper wrapper;
 
 	string[] publicImports;
@@ -117,6 +120,9 @@ class GirPackage
 
 		namespaces[reader.front.attributes["name"]] = this;
 		cTypePrefix = reader.front.attributes["c:identifier-prefixes"];
+
+		if (_version < reader.front.attributes["version"])
+			_version = GirVersion(reader.front.attributes["version"]);
 
 		reader.popFront();
 
@@ -204,6 +210,19 @@ class GirPackage
 
 			GdkKeys.members ~= member;
 			return;
+		}
+		// The version attribute of the namspace tag is usualy set to MAJOR.0.
+		else if ( reader.front.attributes["name"].startsWith("MAJOR_VERSION") )
+		{
+			_version.major = to!uint(reader.front.attributes["value"]);
+		}
+		else if ( reader.front.attributes["name"].startsWith("MINOR_VERSION") )
+		{
+			_version.minor = to!uint(reader.front.attributes["value"]);
+		}
+		else if ( reader.front.attributes["name"].startsWith("MICRO_VERSION") )
+		{
+			_version.micro = to!uint(reader.front.attributes["value"]);
 		}
 
 		//TODO: other constants.

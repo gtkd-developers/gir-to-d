@@ -31,6 +31,7 @@ import std.string: capitalize, splitLines, strip, chomp;
 import gtd.GirFunction;
 import gtd.GirPackage;
 import gtd.GirType;
+import gtd.GirVersion;
 import gtd.GirWrapper;
 import gtd.XMLReader;
 import gtd.LinkedHasMap: Map = LinkedHashMap;
@@ -102,7 +103,11 @@ final class GirStruct
 		if ( "parent" in reader.front.attributes )
 			parent = reader.front.attributes["parent"];
 		if ( "version" in reader.front.attributes )
+		{
 			libVersion = reader.front.attributes["version"];
+			if ( pack._version < libVersion )
+				pack._version = GirVersion(libVersion);
+		}
 
 		if ( !parent.empty )
 		{

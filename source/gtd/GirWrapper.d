@@ -34,6 +34,7 @@ import gtd.GirPackage;
 import gtd.GirStruct;
 import gtd.GirFunction;
 import gtd.GirType;
+import gtd.GirVersion;
 import gtd.WrapError;
 
 class GirWrapper
@@ -395,8 +396,21 @@ class GirWrapper
 					if ( defReader.value == "end" )
 						break;
 
+					if ( defReader.subKey.empty )
+						throw new WrapError(defReader, "Error, no version number specified.");
+
+					GirVersion vers = GirVersion(defReader.subKey);
+
 					if ( defReader.value == "start" )
-						break;
+					{
+						if ( vers <= pack._version )
+							break;
+						else
+							defReader.readBlock();
+					}
+
+					if ( vers > pack._version )
+						break; 
 
 					size_t index = defReader.value.indexOf(':');
 					defReader.key = defReader.value[0 .. max(index, 0)].strip();

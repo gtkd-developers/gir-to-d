@@ -28,6 +28,7 @@ import std.uni: toUpper, toLower;
 import gtd.GirEnum;
 import gtd.GirStruct;
 import gtd.GirType;
+import gtd.GirVersion;
 import gtd.GirWrapper;
 import gtd.XMLReader;
 
@@ -98,7 +99,11 @@ final class GirFunction
 		if ( "c:identifier" in reader.front.attributes )
 			cType = reader.front.attributes["c:identifier"];
 		if ( "version" in reader.front.attributes )
+		{
 			libVersion = reader.front.attributes["version"];
+			if ( strct && strct.pack._version < libVersion )
+				strct.pack._version = GirVersion(libVersion);
+		}
 		if ( "throws" in reader.front.attributes )
 			throws = reader.front.attributes["throws"] == "1";
 		if ( "moved-to" in reader.front.attributes )

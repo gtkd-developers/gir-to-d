@@ -10,6 +10,7 @@ source = [
 	'source/gtd/GirPackage.d',
 	'source/gtd/GirStruct.d',
 	'source/gtd/GirType.d',
+	'source/gtd/GirVersion.d',
 	'source/gtd/GirWrapper.d',
 	'source/gtd/IndentedStringBuilder.d',
 	'source/gtd/LinkedHasMap.d',
