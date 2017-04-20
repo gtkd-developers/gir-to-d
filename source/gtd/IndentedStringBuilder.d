@@ -84,7 +84,7 @@ public class IndentedStringBuilder
 			text = tabs ~ line ~"\n";
 		}
 
-		if ( startsWith(line, "if", "else", "version", "debug", "do", "while") && !endsWith(line, "}", ";") )
+		if ( startsWith(line, "if", "else", "static if","version", "debug", "do", "while") && !endsWith(line, "}", ";") )
 		{
 			statement = true;
 		}
