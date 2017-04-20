@@ -234,6 +234,9 @@ class GirPackage
 		GirFunction funct = new GirFunction(wrapper, null);
 		funct.parse(reader);
 		collectedFunctions[funct.name] = funct;
+
+		if (_version < funct.libVersion)
+			_version = GirVersion(funct.libVersion);
 	}
 
 	GirStruct getStruct(string name)
