@@ -1214,7 +1214,7 @@ final class GirFunction
 				string[] lines = returnType.doc.splitLines();
 				if ( doc )
 					buff ~= " *";
-				buff ~= " * Return: "~ lines[0];
+				buff ~= " * Returns: "~ lines[0];
 
 				foreach( line; lines[1..$] )
 					buff ~= " *     "~ line.strip();
