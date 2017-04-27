@@ -98,9 +98,6 @@ class GirPackage
 
 	void parseGIR(string girFile)
 	{
-		if ( !isAbsolute(girFile) )
-			girFile = buildNormalizedPath("/usr/share/gir-1.0", girFile);
-
 		auto reader = new XMLReader!string(readText(girFile), girFile);
 
 		while ( !reader.empty && reader.front.value != "repository" )

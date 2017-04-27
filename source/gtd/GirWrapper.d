@@ -43,10 +43,10 @@ class GirWrapper
 	bool useRuntimeLinker;
 
 	string apiRoot;
-	string inputRoot;
 	string outputRoot;
 	string srcDir;
 	string bindDir;
+	string commandlineGirPath;
 
 	static string licence;
 	static string[string] aliasses;
@@ -78,7 +78,8 @@ class GirWrapper
 					loadAA(aliasses, defReader);
 					break;
 				case "inputRoot":
-					inputRoot = defReader.value;
+					stderr.writefln("Warning %s(%s) : Don't use inputRoot, it has been removed as it was never implemented.",
+							defReader.filename, defReader.lineNumber);
 					break;
 				case "outputRoot":
 					if ( outputRoot == buildPath(apiRoot, "out") )
@@ -113,8 +114,6 @@ class GirWrapper
 					proccess(defReader.value);
 					break;
 				case "wrap":
-					if ( inputRoot.empty )
-						throw new WrapError(defReader, "Found wrap while inputRoot isn't set");
 					if ( outputRoot.empty )
 						throw new WrapError(defReader, "Found wrap while outputRoot isn't set");
 					if ( srcDir.empty )
@@ -169,7 +168,16 @@ class GirWrapper
 					pack.lookupConstants ~= defReader.readBlock();
 					break;
 				case "file":
-					pack.parseGIR(defReader.value);
+					if ( !isAbsolute(defReader.value) )
+					{
+						pack.parseGIR(getAbsoluteGirPath(defReader.value));
+					}
+					else
+					{
+						stderr.writefln("Warning %s(%s): Don't use absolute paths for specifying gir files.",
+							defReader.filename, defReader.lineNumber);
+						pack.parseGIR(defReader.value);
+					}
 					break;
 				case "struct":
 					if ( defReader.value.empty )
@@ -437,6 +445,71 @@ class GirWrapper
 				if ( func.movedTo.empty )
 					writefln("%s: %s", pack.name, func.name);
 			}
+		}
+	}
+
+	private string getAbsoluteGirPath(string girFile)
+	{
+		if ( commandlineGirPath )
+		{
+			string cmdGirFile = buildNormalizedPath(commandlineGirPath, girFile);
+
+			if ( exists(cmdGirFile) )
+				return cmdGirFile;
+		}
+
+		return buildNormalizedPath(getGirDirectory(), girFile);
+	}
+
+	private string getGirDirectory()
+	{
+		version(Windows)
+		{
+			import std.process : environment;
+
+			static string path;
+
+			if (path !is null)
+				return path;
+
+			foreach (path; splitter(environment.get("PATH"), ';'))
+			{
+				string dllPath = buildNormalizedPath(path, "libgtk-3-0.dll");
+
+				if ( exists(dllPath) )
+					path = path.buildNormalizedPath("../share/gir-1.0");
+			}
+
+			return path;
+		}
+		else version(OSX)
+		{
+			import std.process : environment;
+
+			static string path;
+
+			if (path !is null)
+				return path;
+
+			path = environment.get("GTK_BASEPATH");
+			if(path)
+			{
+				path = path.buildNormalizedPath("../share/gir-1.0");
+			}
+			else
+			{
+				path = environment.get("HOMEBREW_ROOT");
+				if(path)
+				{
+					path = path.buildNormalizedPath("share/gir-1.0");
+				}
+			}
+
+			return path;
+		}
+		else
+		{
+			return "/usr/share/gir-1.0";
 		}
 	}
 

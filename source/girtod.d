@@ -34,6 +34,7 @@ void main(string[] args)
 	bool useRuntimeLinker;
 	string inputDir;
 	string outputDir;
+	string girDir;
 
 	try
 	{
@@ -42,6 +43,7 @@ void main(string[] args)
 			"input|i",            "Directory containing the API description (Default: ./)", &inputDir,
 			"output|o",           "Output directory for the generated binding. (Default: {input dir}/out)", &outputDir,
 			"use-runtime-linker", "Link the gtk functions with the runtime linker", &useRuntimeLinker,
+			"gir-directory|g",    "Directory to search for gir files befor the system directrry.", &girDir,
 			"print-free",         "Print functions that don't have a parrent module", &printFree
 		);
 
@@ -64,6 +66,9 @@ void main(string[] args)
 
 	//Read in the GIR and API files.
 	GirWrapper wrapper = new GirWrapper(inputDir, outputDir, useRuntimeLinker);
+
+	wrapper.commandlineGirPath = girDir;
+
 	wrapper.proccess("APILookup.txt");
 
 	if ( printFree )
