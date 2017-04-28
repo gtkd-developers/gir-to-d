@@ -43,7 +43,7 @@ void main(string[] args)
 			"input|i",            "Directory containing the API description (Default: ./)", &inputDir,
 			"output|o",           "Output directory for the generated binding. (Default: {input dir}/out)", &outputDir,
 			"use-runtime-linker", "Link the gtk functions with the runtime linker", &useRuntimeLinker,
-			"gir-directory|g",    "Directory to search for gir files befor the system directrry.", &girDir,
+			"gir-directory|g",    "Directory to search for gir files before the system directory.", &girDir,
 			"print-free",         "Print functions that don't have a parrent module", &printFree
 		);
 
