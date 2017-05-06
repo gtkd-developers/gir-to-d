@@ -16,9 +16,6 @@ includeComments: (true/false)
 alias: ctype dtype
     Replace ctype with dtype in the generated code.
 
-inputRoot: path
-    Currently unused.
-
 outputRoot: path
     Directory where the generated code is stored.
 

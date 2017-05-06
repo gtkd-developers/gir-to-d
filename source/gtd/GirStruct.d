@@ -105,8 +105,7 @@ final class GirStruct
 		if ( "version" in reader.front.attributes )
 		{
 			libVersion = reader.front.attributes["version"];
-			if ( pack._version < libVersion )
-				pack._version = GirVersion(libVersion);
+			pack.checkVersion(libVersion);
 		}
 
 		if ( !parent.empty )
@@ -354,8 +353,10 @@ final class GirStruct
 				buff ~= "\n";
 			}
 			buff ~= indenter.format("/** Get the main Gtk struct */");
-			buff ~= indenter.format("public "~ cType ~"* "~ getHandleFunc() ~"()");
+			buff ~= indenter.format("public "~ cType ~"* "~ getHandleFunc() ~"(bool transferOwnership = false)");
 			buff ~= indenter.format("{");
+			buff ~= indenter.format("if (transferOwnership)");
+			buff ~= indenter.format("ownedRef = false;");
 
 			if ( isInterface() )
 				buff ~= indenter.format("return cast("~ cType ~"*)getStruct();");
@@ -407,6 +408,25 @@ final class GirStruct
 
 				buff ~= indenter.format("}");
 				buff ~= "\n";
+
+				if ( shouldFree() )
+				{
+					buff ~= indenter.format("~this ()");
+					buff ~= indenter.format("{");
+
+					if ( wrapper.useRuntimeLinker )
+						buff ~= indenter.format("if (  Linker.isLoaded(LIBRARY."~ pack.name.toUpper() ~") && ownedRef )");
+					else
+						buff ~= indenter.format("if (  ownedRef )");
+
+					if ( "unref" in functions )
+						buff ~= indenter.format("unref();");
+					else
+						buff ~= indenter.format("free();");
+
+					buff ~= indenter.format("}");
+					buff ~= "\n";
+				}
 			}
 
 			foreach ( interf; implements )
@@ -504,7 +524,7 @@ final class GirStruct
 		if ( cType )
 		{
 			buff ~= indenter.format("/** Get the main Gtk struct */");
-			buff ~= indenter.format("public "~ cType ~"* "~ getHandleFunc() ~"();");
+			buff ~= indenter.format("public "~ cType ~"* "~ getHandleFunc() ~"(bool transferOwnership = false);");
 			buff ~= "\n";
 
 			buff ~= indenter.format("/** the main Gtk struct as a void* */");
@@ -670,6 +690,27 @@ final class GirStruct
 		return parentStruct.hasFunction(funct);
 	}
 
+	bool shouldFree()
+	{
+		if ( !parent.empty && parent != "Boxed" )
+			return false;
+		if ( name.among("Object", "Boxed") )
+			return false;
+
+		if ( auto u = "unref" in functions )
+		{
+			if ( u.noCode == false && u.params.empty )
+				return true;
+		}
+
+		if ( auto f = "free" in functions )
+		{
+			if ( f.noCode == false && f.params.empty )
+				return true;
+		}
+		return false;
+	}
+
 	private void resolveImports()
 	{
 		if ( parentStruct && parentStruct.name != name)
@@ -685,6 +726,12 @@ final class GirStruct
 
 		imports ~= pack.bindDir ~"."~ pack.name;
 		imports ~= pack.bindDir ~"."~ pack.name ~"types";
+
+		if ( wrapper.useRuntimeLinker && shouldFree() )
+		{
+			imports ~= "gtkd.paths";
+			imports ~= "gtkd.Loader";
+		}
 
 		foreach( func; functions )
 		{

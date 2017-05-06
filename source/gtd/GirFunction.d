@@ -101,8 +101,8 @@ final class GirFunction
 		if ( "version" in reader.front.attributes )
 		{
 			libVersion = reader.front.attributes["version"];
-			if ( strct && strct.pack._version < libVersion )
-				strct.pack._version = GirVersion(libVersion);
+			if ( strct )
+				strct.pack.checkVersion(libVersion);
 		}
 		if ( "throws" in reader.front.attributes )
 			throws = reader.front.attributes["throws"] == "1";
@@ -605,7 +605,11 @@ final class GirFunction
 						gtkCall ~= "("~ id ~" is null) ? null : ";
 						if ( dType.cType != param.type.cType.removechars("*") && !param.type.cType.among("gpointer", "gconstpointer") )
 							gtkCall ~= "cast("~ stringToGtkD(param.type.cType, wrapper.aliasses, localAliases()) ~")";
-						gtkCall ~= id ~"."~ dType.getHandleFunc ~"()";
+
+						if ( param.ownership == GirTransferOwnership.Full && dType.shouldFree() )
+							gtkCall ~= id ~"."~ dType.getHandleFunc ~"(true)";
+						else
+							gtkCall ~= id ~"."~ dType.getHandleFunc ~"()";
 					}
 				}
 			}
@@ -1560,7 +1564,7 @@ final class GirParam
 	string doc;
 	string name;
 	GirType type;
-	GirTransferOwnership ownerschip = GirTransferOwnership.None;
+	GirTransferOwnership ownership = GirTransferOwnership.None;
 	GirParamDirection direction = GirParamDirection.Default;
 
 	GirParam lengthFor;
@@ -1576,7 +1580,7 @@ final class GirParam
 		name = reader.front.attributes["name"];
 
 		if ( "transfer-ownership" in reader.front.attributes )
-			ownerschip = cast(GirTransferOwnership)reader.front.attributes["transfer-ownership"];
+			ownership = cast(GirTransferOwnership)reader.front.attributes["transfer-ownership"];
 		if ( "direction" in reader.front.attributes )
 			direction = cast(GirParamDirection)reader.front.attributes["direction"];
 

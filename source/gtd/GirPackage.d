@@ -117,9 +117,7 @@ class GirPackage
 
 		namespaces[reader.front.attributes["name"]] = this;
 		cTypePrefix = reader.front.attributes["c:identifier-prefixes"];
-
-		if (_version < reader.front.attributes["version"])
-			_version = GirVersion(reader.front.attributes["version"]);
+		checkVersion(reader.front.attributes["version"]);
 
 		reader.popFront();
 
@@ -232,8 +230,7 @@ class GirPackage
 		funct.parse(reader);
 		collectedFunctions[funct.name] = funct;
 
-		if (_version < funct.libVersion)
-			_version = GirVersion(funct.libVersion);
+		checkVersion(funct.libVersion);
 	}
 
 	GirStruct getStruct(string name)
@@ -268,6 +265,18 @@ class GirPackage
 			name = vals[1];
 		}
 		return pack.collectedEnums.get(name, null);
+	}
+
+	void checkVersion(string _version)
+	{
+		if (this._version < _version)
+			this._version = GirVersion(_version);
+	}
+
+	void checkVersion(GirVersion _version)
+	{
+		if (this._version < _version)
+			this._version = _version;
 	}
 
 	void writeClasses()
