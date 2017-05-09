@@ -794,6 +794,11 @@ final class GirFunction
 				buff ~= outToD;
 			}
 
+			if ( name == "free" && strct && strct.shouldFree() )
+			{
+				buff ~= "ownedRef = false;";
+			}
+
 			return buff;
 		}
 		else if ( type == GirFunctionType.Constructor )

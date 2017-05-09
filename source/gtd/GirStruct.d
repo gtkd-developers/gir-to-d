@@ -420,9 +420,9 @@ final class GirStruct
 						buff ~= indenter.format("if (  ownedRef )");
 
 					if ( "unref" in functions )
-						buff ~= indenter.format("unref();");
+						buff ~= indenter.format(functions["unref"].cType ~"("~ getHandleVar ~");");
 					else
-						buff ~= indenter.format("free();");
+						buff ~= indenter.format(functions["free"].cType ~"("~ getHandleVar ~");");
 
 					buff ~= indenter.format("}");
 					buff ~= "\n";
