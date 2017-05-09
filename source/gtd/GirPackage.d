@@ -20,13 +20,15 @@
 module gtd.GirPackage;
 
 import std.algorithm;
-import std.array: empty;
+import std.array : join;
 import std.conv;
 import std.file;
 import std.path;
-import std.string : splitLines, strip, split;
-import std.uni;
+import std.range : array, back, empty;
+import std.regex : ctRegex, matchFirst;
 import std.stdio;
+import std.string : split, splitLines, strip;
+import std.uni;
 
 import gtd.GirAlias;
 import gtd.GirEnum;
@@ -53,9 +55,10 @@ class GirPackage
 	string[] lookupStructs;     /// Structs defined in the lookupfile.
 	string[] lookupFuncts;      /// Functions defined in the lookupfile.
 	string[] lookupConstants;   /// Constants defined in the lookupfile.
-	
+
 	static GirPackage[string] namespaces;
 
+	string[] libraries;
 	Map!(string, GirAlias)    collectedAliases; /// Aliases defined in the gir file.
 	Map!(string, GirEnum)     collectedEnums;   /// Enums defined in the gir file.
 	Map!(string, GirStruct)   collectedStructs;
@@ -116,8 +119,14 @@ class GirPackage
 			reader.popFront();
 
 		namespaces[reader.front.attributes["name"]] = this;
-		cTypePrefix = reader.front.attributes["c:identifier-prefixes"];
 		checkVersion(reader.front.attributes["version"]);
+		cTypePrefix = reader.front.attributes["c:identifier-prefixes"];
+
+		libraries ~= reader.front.attributes["shared-library"].split(',');
+		version(OSX)
+			libraries = sort(libraries).uniq.map!(a => baseName(a)).array;
+		else
+			libraries = sort(libraries).uniq.array;
 
 		reader.popFront();
 
@@ -373,10 +382,9 @@ class GirPackage
 		if ( name == "gdk" || name == "pango" )
 			buff ~= "import " ~ bindDir ~ ".cairotypes;\n";
 
-		buff ~= "import gtkd.Loader;\n"
-			~ "import gtkd.paths;\n\n"
-			~ "shared static this()\n"
-			~ "{";
+		buff ~= "import gtkd.Loader;\n\n";
+		buff ~= getLibraries();
+		buff ~= "\n\nshared static this()\n{";
 
 		foreach ( strct; collectedStructs )
 		{
@@ -390,7 +398,7 @@ class GirPackage
 				if ( funct.type == GirFunctionType.Callback || funct.type == GirFunctionType.Signal || funct.name.empty )
 					continue;
 
-				buff ~= "\tLinker.link("~ funct.cType ~", \""~ funct.cType ~"\", "~ getLibrary(funct.cType) ~");\n";
+				buff ~= "\tLinker.link("~ funct.cType ~", \""~ funct.cType ~"\", LIBRARY_"~ name.toUpper() ~");\n";
 			}
 		}
 
@@ -459,7 +467,9 @@ class GirPackage
 		if ( name == "glib" )
 			buff ~= "import " ~ bindDir ~ ".gobjecttypes;\n";
 		if ( name == "gdk" || name == "pango" )
-			buff ~= "import " ~ bindDir ~ ".cairotypes;\n";
+			buff ~= "import " ~ bindDir ~ ".cairotypes;\n\n";
+
+		buff ~= getLibraries();
 
 		buff ~= "\n\n__gshared extern(C)\n"
 			~ "{\n";
@@ -485,17 +495,139 @@ class GirPackage
 		std.file.write(buildPath(wrapper.outputRoot, srcDir, bindDir, name ~".d"), buff);
 	}
 
-	private string getLibrary(string funct)
+	private string getLibraries()
 	{
-		string library = "LIBRARY."~ name.toUpper();
+		string lib = "version (Windows)\n\t";
+		lib ~= "static immutable LIBRARY_"~ name.toUpper() ~" = ["~ getDllNames() ~"];";
+		lib ~= "\nelse version (OSX)\n\t";
+		lib ~= "static immutable LIBRARY_"~ name.toUpper() ~" = ["~ getDylibNames() ~"];";
+		lib ~= "\nelse\n\t";
+		lib ~= "static immutable LIBRARY_"~ name.toUpper() ~" = ["~ getSoNames() ~"];";
 
-		if ( startsWith(funct, "gdk") && !startsWith(funct, "gdk_gl") )
-			return library ~ ", LIBRARY.GDKPIXBUF";
-		else if	( startsWith(funct, "pango_cairo") )
-			return library ~ ", LIBRARY.PANGOCAIRO";
-		else if	( startsWith(funct, "g_module") )
-			return library ~ ", LIBRARY.GMODULE";
+		return lib;
+	}
+
+	private auto dllRegex = ctRegex!(`([a-z0-9]+)-([0-9\.]+)-([0-9]+)\.dll`);
+	private auto dylibRegex = ctRegex!(`([a-z0-9]+)-([0-9\.]+)\.([0-9]+)\.dylib`);
+	private auto soRegex = ctRegex!(`([a-z0-9]+)-([0-9\.]+)\.so\.([0-9]+)`);
+
+	private string getDllNames()
+	{
+		version (Windows)
+		{
+			return "\""~ libraries.join("\", \"") ~"\"";
+		}
+		else version (OSX)
+		{
+			string libs;
+
+			foreach ( lib; libraries )
+			{
+				auto match = matchFirst(lib, dylibRegex);
+
+				libs ~= "\""~ match[1] ~"-"~ match[2] ~"-"~ match[3] ~".dll\"";
+
+				if ( lib != libraries.back )
+					libs ~= ", ";
+			}
+
+			return libs;
+		}
 		else
-			return library;
+		{
+			string libs;
+
+			foreach ( lib; libraries )
+			{
+				auto match = matchFirst(lib, soRegex);
+
+				libs ~= "\""~ match[1] ~"-"~ match[2] ~"-"~ match[3] ~".dll\"";
+
+				if ( lib != libraries.back )
+					libs ~= ", ";
+			}
+
+			return libs;
+		}
+	}
+
+	private string getDylibNames()
+	{
+		version (Windows)
+		{
+			string libs;
+
+			foreach ( lib; libraries )
+			{
+				auto match = matchFirst(lib, dllRegex);
+
+				libs ~= "\""~ match[1] ~"-"~ match[2] ~"."~ match[3] ~".dylib\"";
+
+				if ( lib != libraries.back )
+					libs ~= ", ";
+			}
+
+			return libs;
+		}
+		version (OSX)
+		{
+			return "\""~ libraries.join("\", \"") ~"\"";
+		}
+		else
+		{
+			string libs;
+
+			foreach ( lib; libraries )
+			{
+				auto match = matchFirst(lib, soRegex);
+
+				libs ~= "\""~ match[1] ~"-"~ match[2] ~"."~ match[3] ~".dylib\"";
+
+				if ( lib != libraries.back )
+					libs ~= ", ";
+			}
+
+			return libs;
+		}
+	}
+
+	private string getSoNames()
+	{
+		version (Windows)
+		{
+			string libs;
+
+			foreach ( lib; libraries )
+			{
+				auto match = matchFirst(lib, dllRegex);
+
+				libs ~= "\""~ match[1] ~"-"~ match[2] ~".so."~ match[3] ~"\"";
+
+				if ( lib != libraries.back )
+					libs ~= ", ";
+			}
+
+			return libs;
+		}
+		else version (OSX)
+		{
+			string libs;
+
+			foreach ( lib; libraries )
+			{
+				auto match = matchFirst(lib, dylibRegex);
+
+				libs ~= "\""~ match[1] ~"-"~ match[2] ~".so."~ match[3] ~"\"";
+
+				if ( lib != libraries.back )
+					libs ~= ", ";
+			}
+
+			return libs;
+		}
+		else
+		{
+			return "\""~ libraries.join("\", \"") ~"\"";
+		}
 	}
 }
