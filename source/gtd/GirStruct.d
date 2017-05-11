@@ -415,7 +415,7 @@ final class GirStruct
 					buff ~= indenter.format("{");
 
 					if ( wrapper.useRuntimeLinker )
-						buff ~= indenter.format("if (  Linker.isLoaded(LIBRARY."~ pack.name.toUpper() ~") && ownedRef )");
+						buff ~= indenter.format("if (  Linker.isLoaded(LIBRARY_"~ pack.name.toUpper() ~") && ownedRef )");
 					else
 						buff ~= indenter.format("if (  ownedRef )");
 
@@ -729,7 +729,6 @@ final class GirStruct
 
 		if ( wrapper.useRuntimeLinker && shouldFree() )
 		{
-			imports ~= "gtkd.paths";
 			imports ~= "gtkd.Loader";
 		}
 
