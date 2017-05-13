@@ -507,9 +507,9 @@ class GirPackage
 		return lib;
 	}
 
-	private auto dllRegex = ctRegex!(`([a-z0-9]+)-([0-9\.]+)-([0-9]+)\.dll`);
-	private auto dylibRegex = ctRegex!(`([a-z0-9]+)-([0-9\.]+)\.([0-9]+)\.dylib`);
-	private auto soRegex = ctRegex!(`([a-z0-9]+)-([0-9\.]+)\.so\.([0-9]+)`);
+	private auto dllRegex = ctRegex!(`([a-z0-9_]+)-([0-9\.]+)-([0-9]+)\.dll`);
+	private auto dylibRegex = ctRegex!(`([a-z0-9_]+)-([0-9\.]+)\.([0-9]+)\.dylib`);
+	private auto soRegex = ctRegex!(`([a-z0-9_]+)-([0-9\.]+)\.so\.([0-9]+)`);
 
 	private string getDllNames()
 	{
@@ -569,7 +569,7 @@ class GirPackage
 
 			return libs;
 		}
-		version (OSX)
+		else version (OSX)
 		{
 			return "\""~ libraries.join("\", \"") ~"\"";
 		}

@@ -472,12 +472,12 @@ class GirWrapper
 			if (path !is null)
 				return path;
 
-			foreach (path; splitter(environment.get("PATH"), ';'))
+			foreach (p; splitter(environment.get("PATH"), ';'))
 			{
-				string dllPath = buildNormalizedPath(path, "libgtk-3-0.dll");
+				string dllPath = buildNormalizedPath(p, "libgtk-3-0.dll");
 
 				if ( exists(dllPath) )
-					path = path.buildNormalizedPath("../share/gir-1.0");
+					path = p.buildNormalizedPath("../share/gir-1.0");
 			}
 
 			return path;
@@ -584,7 +584,7 @@ class GirWrapper
 			remove(buildNormalizedPath(to, bindDir, "cairo-runtime.d"));
 			remove(buildNormalizedPath(to, bindDir, "cairo-compiletime.d"));
 			remove(buildNormalizedPath(to, bindDir, "cairotypes.d"));
-			remove(buildNormalizedPath(to, bindDir));
+			rmdir(buildNormalizedPath(to, bindDir));
 		}
 	}
 
