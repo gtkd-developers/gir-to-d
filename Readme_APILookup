@@ -22,9 +22,6 @@ outputRoot: path
 srcDir: directory
     The source for the following component is placed in this directory.
 
-bindDir: directory
-    Directory used for the c definitions.
-
 copy: filename
     Copies filename form inputRoot to outputRoot/srcDir.
 

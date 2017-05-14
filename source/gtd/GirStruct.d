@@ -724,8 +724,8 @@ final class GirStruct
 			structWrap[parent] = QParent;
 		}
 
-		imports ~= pack.bindDir ~"."~ pack.name;
-		imports ~= pack.bindDir ~"."~ pack.name ~"types";
+		imports ~= pack.name ~".c.functions";
+		imports ~= pack.name ~".c.types";
 
 		if ( wrapper.useRuntimeLinker && shouldFree() )
 		{

@@ -45,7 +45,6 @@ class GirWrapper
 	string apiRoot;
 	string outputRoot;
 	string srcDir;
-	string bindDir;
 	string commandlineGirPath;
 
 	static string licence;
@@ -89,10 +88,8 @@ class GirWrapper
 					srcDir = defReader.value;
 					break;
 				case "bindDir":
-					if ( !defReader.value.findAmong("./\\").empty )
-						throw new WrapError(defReader, "Paths are not allowed as the bindDir.");
-
-					bindDir = defReader.value;
+					stderr.writefln("Warning %s(%s) : Don't use bindDir, it is no longer used since the c definitions have moved.",
+							defReader.filename, defReader.lineNumber);
 					break;
 				case "copy":
 					if ( srcDir.empty )
@@ -118,8 +115,6 @@ class GirWrapper
 						throw new WrapError(defReader, "Found wrap while outputRoot isn't set");
 					if ( srcDir.empty )
 						throw new WrapError(defReader, "Found wrap while srcDir isn't set");
-					if ( bindDir.empty )
-						throw new WrapError(defReader, "Found wrap while bindDir isn't set");
 
 					wrapPackage(defReader);
 					break;
@@ -141,7 +136,7 @@ class GirWrapper
 			if (defReader.value in packages)
 				throw new WrapError(defReader, "Package: "~ defReader.value ~"already defined.");
 
-			pack = new GirPackage(defReader.value, this, srcDir, bindDir);
+			pack = new GirPackage(defReader.value, this, srcDir);
 			packages[defReader.value] = pack;
 			defReader.popFront();
 		}
@@ -570,21 +565,13 @@ class GirWrapper
 
 		if ( file == "cairo" )
 		{
-			string cairoDest = buildNormalizedPath(to, "..", bindDir);
-			if ( !exists(cairoDest) )
-				mkdir(cairoDest);
-
 			if ( useRuntimeLinker )
-				copy(buildNormalizedPath(to, bindDir, "cairo-runtime.d"), buildNormalizedPath(to, "..", bindDir, "cairo.d"));
+				copy(buildNormalizedPath(to, "c", "functions-runtime.d"), buildNormalizedPath(to, "c", "functions.d"));
 			else
-				copy(buildNormalizedPath(to, bindDir, "cairo-compiletime.d"), buildNormalizedPath(to, "..", bindDir, "cairo.d"));
+				copy(buildNormalizedPath(to, "c", "functions-compiletime.d"), buildNormalizedPath(to, "c", "functions.d"));
 
-			copy(buildNormalizedPath(to, bindDir, "cairotypes.d"), buildNormalizedPath(to, "..", bindDir, "cairotypes.d"));
-
-			remove(buildNormalizedPath(to, bindDir, "cairo-runtime.d"));
-			remove(buildNormalizedPath(to, bindDir, "cairo-compiletime.d"));
-			remove(buildNormalizedPath(to, bindDir, "cairotypes.d"));
-			rmdir(buildNormalizedPath(to, bindDir));
+			remove(buildNormalizedPath(to, "c", "functions-runtime.d"));
+			remove(buildNormalizedPath(to, "c", "functions-compiletime.d"));
 		}
 	}
 

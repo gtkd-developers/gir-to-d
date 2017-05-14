@@ -45,11 +45,9 @@ class GirPackage
 	string name;
 	string cTypePrefix;
 	string srcDir;
-	string bindDir;
 	GirVersion _version;
 	GirWrapper wrapper;
 
-	string[] publicImports;
 	string[] lookupAliases;     /// Aliases defined in the lookupfile.
 	string[] lookupEnums;       /// Enums defined in the lookupfile.
 	string[] lookupStructs;     /// Structs defined in the lookupfile.
@@ -67,24 +65,13 @@ class GirPackage
 	GirEnum stockIDs;           /// The StockID enum (Deprecated).
 	GirEnum GdkKeys;            /// The GdkKey enum.
 
-	public this(string pack, GirWrapper wrapper, string srcDir, string bindDir)
+	public this(string pack, GirWrapper wrapper, string srcDir)
 	{
 		this.name = pack;
 		this.wrapper = wrapper;
 		this.srcDir = srcDir;
-		this.bindDir = bindDir;
 		this.stockIDs = new GirEnum(wrapper, this);
 		this.GdkKeys  = new GirEnum(wrapper, this);
-
-		try
-		{
-			if ( !exists(buildPath(wrapper.outputRoot, srcDir, bindDir)) )
-				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, bindDir));
-		}
-		catch (Exception)
-		{
-			throw new Exception("Failed to create directory: "~ buildPath(wrapper.outputRoot, srcDir, bindDir));
-		}
 
 		try
 		{
@@ -96,7 +83,15 @@ class GirPackage
 			throw new Exception("Failed to create directory: "~ buildPath(wrapper.outputRoot, srcDir, pack));
 		}
 
-		publicImports ~= bindDir ~"."~ pack;
+		try
+		{
+			if ( !exists(buildPath(wrapper.outputRoot, srcDir, pack, "c")) )
+				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, pack, "c"));
+		}
+		catch (Exception)
+		{
+			throw new Exception("Failed to create directory: "~ buildPath(wrapper.outputRoot, srcDir, pack, "c"));
+		}
 	}
 
 	void parseGIR(string girFile)
@@ -299,7 +294,7 @@ class GirPackage
 		string buff = wrapper.licence;
 		auto indenter = new IndentedStringBuilder();
 
-		buff ~= "module "~ bindDir ~"."~ name ~"types;\n\n";
+		buff ~= "module "~ name ~".c.types;\n\n";
 
 		buff ~= indenter.format(lookupAliases);
 		foreach ( a; collectedAliases )
@@ -344,7 +339,7 @@ class GirPackage
 		if ( GdkKeys.members !is null )
 			writeGdkKeys();
 
-		std.file.write(buildPath(wrapper.outputRoot, srcDir, bindDir, name ~"types.d"), buff);
+		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c/types.d"), buff);
 	}
 
 	void writeGdkKeys()
@@ -373,14 +368,14 @@ class GirPackage
 	{
 		string buff = wrapper.licence;
 
-		buff ~= "module "~ bindDir ~"."~ name ~";\n\n";
+		buff ~= "module "~ name ~".c.functions;\n\n";
 		buff ~= "import std.stdio;\n";
-		buff ~= "import "~ bindDir ~"."~ name ~"types;\n";
+		buff ~= "import "~ name ~".c.types;\n";
 
 		if ( name == "glib" )
-			buff ~= "import " ~ bindDir ~ ".gobjecttypes;\n";
+			buff ~= "import gobject.c.types;\n";
 		if ( name == "gdk" || name == "pango" )
-			buff ~= "import " ~ bindDir ~ ".cairotypes;\n";
+			buff ~= "import cairo.c.types;\n";
 
 		buff ~= "import gtkd.Loader;\n\n";
 		buff ~= getLibraries();
@@ -453,21 +448,21 @@ class GirPackage
 			}
 		}
 
-		std.file.write(buildPath(wrapper.outputRoot, srcDir, bindDir, name ~".d"), buff);
+		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c", "functions.d"), buff);
 	}
 
 	void writeExternalFunctions()
 	{
 		string buff = wrapper.licence;
 
-		buff ~= "module "~ bindDir ~"."~ name ~";\n\n";
+		buff ~= "module "~ name ~".c.functions;\n\n";
 		buff ~= "import std.stdio;\n";
-		buff ~= "import "~ bindDir ~"."~ name ~"types;\n";
+		buff ~= "import "~ name ~".c.types;\n";
 
 		if ( name == "glib" )
-			buff ~= "import " ~ bindDir ~ ".gobjecttypes;\n";
+			buff ~= "import gobject.c.types;\n";
 		if ( name == "gdk" || name == "pango" )
-			buff ~= "import " ~ bindDir ~ ".cairotypes;\n\n";
+			buff ~= "import cairo.c.types;\n\n";
 
 		buff ~= getLibraries();
 
@@ -492,7 +487,7 @@ class GirPackage
 
 		buff ~= "}";
 
-		std.file.write(buildPath(wrapper.outputRoot, srcDir, bindDir, name ~".d"), buff);
+		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c", "functions.d"), buff);
 	}
 
 	private string getLibraries()
