@@ -20,6 +20,7 @@
 module gtd.IndentedStringBuilder;
 
 import std.algorithm: canFind, startsWith, endsWith;
+import std.range: empty;
 import std.string: strip;
 
 /** Keeps track of indentation level while building up a string */
@@ -74,7 +75,11 @@ public class IndentedStringBuilder
 			paramList = false;
 		}
 
-		if ( statement )
+		if ( line.empty )
+		{
+			return "\n";
+		}
+		else if ( statement )
 		{
 			text = tabs ~"\t"~ line ~"\n";
 			statement = false;
