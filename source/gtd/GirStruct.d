@@ -727,6 +727,14 @@ final class GirStruct
 		imports ~= pack.name ~".c.functions";
 		imports ~= pack.name ~".c.types";
 
+		//Temporarily import the old bindDir.*types modules for backwards compatibility.
+		string[string] bindDirs = ["atk": "gtkc", "cairo": "gtkc", "gdk": "gtkc", "gdkpixbuf": "gtkc", "gio": "gtkc",
+			"glib": "gtkc", "gobject": "gtkc", "gtk": "gtkc", "pango": "gtkc", "gsv": "gsvc", "vte": "vtec",
+			"gstinterfaces": "gstreamerc", "gstreamer": "gstreamerc"];
+
+		if ( auto dir = pack.name in bindDirs )
+		imports ~= *dir ~"."~ pack.name ~"types";
+
 		if ( wrapper.useRuntimeLinker && shouldFree() )
 		{
 			imports ~= "gtkd.Loader";
