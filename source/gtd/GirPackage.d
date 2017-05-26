@@ -502,9 +502,9 @@ class GirPackage
 		return lib;
 	}
 
-	private auto dllRegex = ctRegex!(`([a-z0-9_]+)-([0-9\.]+)-([0-9]+)\.dll`);
-	private auto dylibRegex = ctRegex!(`([a-z0-9_]+)-([0-9\.]+)\.([0-9]+)\.dylib`);
-	private auto soRegex = ctRegex!(`([a-z0-9_]+)-([0-9\.]+)\.so\.([0-9]+)`);
+	private auto dllRegex = ctRegex!(`([a-z0-9_]+)(-[0-9\.]+)?(-[0-9]+)?\.dll`);
+	private auto dylibRegex = ctRegex!(`([a-z0-9_]+)(-[0-9\.]+?)?(\.[0-9]+)?\.dylib`);
+	private auto soRegex = ctRegex!(`([a-z0-9_]+)(-[0-9\.]+)?\.so(\.[0-9]+)?`);
 
 	private string getDllNames()
 	{
@@ -520,7 +520,12 @@ class GirPackage
 			{
 				auto match = matchFirst(lib, dylibRegex);
 
-				libs ~= "\""~ match[1] ~"-"~ match[2] ~"-"~ match[3] ~".dll\"";
+				libs ~= "\""~ match[1];
+				if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
+				if ( !match[3].empty )
+					libs ~= "-"~ match[3][1..$];
+				libs ~= ".dll\"";
 
 				if ( lib != libraries.back )
 					libs ~= ", ";
@@ -536,7 +541,12 @@ class GirPackage
 			{
 				auto match = matchFirst(lib, soRegex);
 
-				libs ~= "\""~ match[1] ~"-"~ match[2] ~"-"~ match[3] ~".dll\"";
+				libs ~= "\""~ match[1];
+				if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
+				if ( !match[3].empty )
+					libs ~= "-"~ match[3][1..$];
+				libs ~= ".dll\"";
 
 				if ( lib != libraries.back )
 					libs ~= ", ";
@@ -556,7 +566,12 @@ class GirPackage
 			{
 				auto match = matchFirst(lib, dllRegex);
 
-				libs ~= "\""~ match[1] ~"-"~ match[2] ~"."~ match[3] ~".dylib\"";
+				libs ~= "\""~ match[1];
+				if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
+				if ( !match[3].empty )
+					libs ~= "."~ match[3][1..$];
+				libs ~= ".dylib\"";
 
 				if ( lib != libraries.back )
 					libs ~= ", ";
@@ -576,7 +591,12 @@ class GirPackage
 			{
 				auto match = matchFirst(lib, soRegex);
 
-				libs ~= "\""~ match[1] ~"-"~ match[2] ~"."~ match[3] ~".dylib\"";
+				libs ~= "\""~ match[1];
+				if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
+				if ( !match[3].empty )
+					libs ~= "."~ match[3][1..$];
+				libs ~= ".dylib\"";
 
 				if ( lib != libraries.back )
 					libs ~= ", ";
@@ -596,7 +616,15 @@ class GirPackage
 			{
 				auto match = matchFirst(lib, dllRegex);
 
-				libs ~= "\""~ match[1] ~"-"~ match[2] ~".so."~ match[3] ~"\"";
+				libs ~= "\""~ match[1];
+				if ( !match[2].empty && !match[3].empty )
+					libs ~= "-"~ match[2][1..$];
+				libs ~= ".so";
+				if ( !match[2].empty && match[3].empty )
+					libs ~= "."~ match[2][1..$];
+				if ( !match[3].empty )
+					libs ~= "."~ match[3][1..$];
+				libs ~= "\"";
 
 				if ( lib != libraries.back )
 					libs ~= ", ";
@@ -612,7 +640,13 @@ class GirPackage
 			{
 				auto match = matchFirst(lib, dylibRegex);
 
-				libs ~= "\""~ match[1] ~"-"~ match[2] ~".so."~ match[3] ~"\"";
+				libs ~= "\""~ match[1];
+				if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
+				libs ~= ".so";
+				if ( !match[3].empty )
+					libs ~= "."~ match[3][1..$];
+				libs ~= "\"";
 
 				if ( lib != libraries.back )
 					libs ~= ", ";
