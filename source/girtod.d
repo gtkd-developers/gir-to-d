@@ -32,6 +32,7 @@ void main(string[] args)
 
 	bool printFree;
 	bool useRuntimeLinker;
+	bool useBindDir;
 	string inputDir;
 	string outputDir;
 	string girDir;
@@ -40,11 +41,12 @@ void main(string[] args)
 	{
 		auto helpInformation = getopt(
 			args,
-			"input|i",            "Directory containing the API description (Default: ./)", &inputDir,
+			"input|i",            "Directory containing the API description. (Default: ./)", &inputDir,
 			"output|o",           "Output directory for the generated binding. (Default: {input dir}/out)", &outputDir,
-			"use-runtime-linker", "Link the gtk functions with the runtime linker", &useRuntimeLinker,
+			"use-runtime-linker", "Link the gtk functions with the runtime linker.", &useRuntimeLinker,
 			"gir-directory|g",    "Directory to search for gir files before the system directory.", &girDir,
-			"print-free",         "Print functions that don't have a parrent module", &printFree
+			"print-free",         "Print functions that don't have a parrent module.", &printFree,
+			"use-bind-dir",       "Include public imports for the old gtkc package.", &useBindDir
 		);
 
 		if (helpInformation.helpWanted)
@@ -68,6 +70,7 @@ void main(string[] args)
 	GirWrapper wrapper = new GirWrapper(inputDir, outputDir, useRuntimeLinker);
 
 	wrapper.commandlineGirPath = girDir;
+	wrapper.useBindDir = useBindDir;
 
 	wrapper.proccess("APILookup.txt");
 

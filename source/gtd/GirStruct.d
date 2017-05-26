@@ -732,8 +732,11 @@ final class GirStruct
 			"glib": "gtkc", "gobject": "gtkc", "gtk": "gtkc", "pango": "gtkc", "gsv": "gsvc", "vte": "vtec",
 			"gstinterfaces": "gstreamerc", "gstreamer": "gstreamerc"];
 
-		if ( auto dir = pack.name in bindDirs )
-		imports ~= *dir ~"."~ pack.name ~"types";
+		if ( pack.wrapper.useBindDir )
+		{
+			if ( auto dir = pack.name in bindDirs )
+				imports ~= *dir ~"."~ pack.name ~"types";
+		}
 
 		if ( wrapper.useRuntimeLinker && shouldFree() )
 		{

@@ -41,6 +41,7 @@ class GirWrapper
 {
 	bool includeComments;
 	bool useRuntimeLinker;
+	bool useBindDir;
 
 	string apiRoot;
 	string outputRoot;
