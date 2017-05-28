@@ -26,7 +26,7 @@ import std.string : splitLines, strip, indexOf;
 
 import gtd.WrapException;
 
-public class DefReader
+public final class DefReader
 {
 	string fileName;
 	string key;

@@ -84,6 +84,7 @@ class XMLReader(T)
 	{
 		return document.line;
 	}
+	alias lineNumber = line;
 
 	void popFront()
 	{
@@ -541,8 +542,6 @@ struct ByChar
 
 struct CountLines(Source) if (isSomeChar!(ElementType!Source))
 {
-	import std.range.primitives : ElementType;
-
 	Source src;
 	size_t line = 1;
 

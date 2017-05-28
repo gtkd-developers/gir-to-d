@@ -25,56 +25,60 @@ import std.stdio;
 
 void warning(Args...)(Args args)
 {
-	stderr.write(Color.blue("Warning"), ": ");
-	stderr.writeln(args);
-}
-
-void warning(Args...)(Args args, string file, size_t line)
-{
-	stderr.write(Color.blue("Warning"), " ", file, "(", line, "): ");
-	stderr.writeln(args);
+	static if ( is(typeof(args[$-1].fileName)) && is(typeof(args[$-1].lineNumber)) )
+	{
+		stderr.writef("%s %s(%s): ", Color.blue("Warning"), args[$-1].fileName, args[$-1].lineNumber);
+		stderr.writeln(args[0..$-1]);
+	}
+	else
+	{
+		stderr.write(Color.blue("Warning"), ": ");
+		stderr.writeln(args);
+	}
 }
 
 void warningf(Args...)(Args args)
 {
+	static if ( is(typeof(args[$-1].fileName)) && is(typeof(args[$-1].lineNumber)) )
+	{
+		stderr.writef("%s %s(%s): ", Color.blue("Warning"), args[$-1].fileName, args[$-1].lineNumber);
+		stderr.writefln(args[0..$-1]);
+	}
+	else
+	{
 	stderr.write(Color.blue("Warning"), ": ");
 	stderr.writefln(args);
-}
-
-void warningf(Args...)(Args args, string file, size_t line)
-{
-	stderr.write(Color.blue("Warning"), " ", file, "(", line, "): ");
-	stderr.writeln(args);
+	}
 }
 
 void error(Args...)(Args args)
 {
-	stderr.write(Color.red("Error"), ": ");
-	stderr.writeln(args);
-
-	exit(1);
-}
-
-void error(Args...)(Args args, string file, size_t line)
-{
-	stderr.write(Color.red("Error"), " ", file, "(", line, "): ");
-	stderr.writeln(args[0..$-1]);
+	static if ( is(typeof(args[$-1].fileName)) && is(typeof(args[$-1].lineNumber)) )
+	{
+		stderr.writef("%s %s(%s): ", Color.red("Error"), args[$-1].fileName, args[$-1].lineNumber);
+		stderr.writeln(args[0..$-1]);
+	}
+	else
+	{
+		stderr.write(Color.red("Error"), ": ");
+		stderr.writeln(args);
+	}
 
 	exit(1);
 }
 
 void errorf(Args...)(Args args)
 {
-	stderr.write(Color.red("Error"), ": ");
-	stderr.writefln(args);
-
-	exit(1);
-}
-
-void errorf(Args...)(Args args, string file, size_t line)
-{
-	stderr.write(Color.red("Error"), " ", file, "(", line, "): ");
-	stderr.writeln(args[0..$-1]);
+	static if ( is(typeof(args[$-1].fileName)) && is(typeof(args[$-1].lineNumber)) )
+	{
+		stderr.writef("%s %s(%s): ", Color.red("Error"), args[$-1].fileName, args[$-1].lineNumber);
+		stderr.writefln(args[0..$-1]);
+	}
+	else
+	{
+		stderr.write(Color.red("Error"), ": ");
+		stderr.writefln(args);
+	}
 
 	exit(1);
 }
@@ -131,14 +135,6 @@ struct Color
 			return esc ~ text ~ reset;
 		else
 			return text;
-	}
-
-	void toString(scope void delegate(in char[]) sink) const
-	{
-		writeln("Test");
-		sink(esc);
-		sink(text);
-		sink(reset);
 	}
 
 	void useColor(bool val)

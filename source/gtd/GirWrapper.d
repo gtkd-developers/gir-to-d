@@ -81,8 +81,7 @@ class GirWrapper
 					loadAA(aliasses, defReader);
 					break;
 				case "inputRoot":
-					warning("Don't use inputRoot, it has been removed as it was never implemented.",
-						defReader.fileName, defReader.lineNumber);
+					warning("Don't use inputRoot, it has been removed as it was never implemented.", defReader);
 					break;
 				case "outputRoot":
 					if ( outputRoot == buildPath(apiRoot, "out") )
@@ -92,12 +91,11 @@ class GirWrapper
 					srcDir = defReader.value;
 					break;
 				case "bindDir":
-					warning("Don't use bindDir, it is no longer used since the c definitions have moved.",
-						defReader.fileName, defReader.lineNumber);
+					warning("Don't use bindDir, it is no longer used since the c definitions have moved.", defReader);
 					break;
 				case "copy":
 					if ( srcDir.empty )
-						throw new LookupException(defReader, "Can't copy the file when srcDir is not set");
+						error("Can't copy the file when srcDir is not set", defReader);
 
 					string outDir = buildPath(outputRoot, srcDir);
 
@@ -106,7 +104,7 @@ class GirWrapper
 						try
 							mkdirRecurse(outDir);
 						catch (FileException)
-							throw new LookupException(defReader, "Failed to create directory: "~ outDir);
+							error("Failed to create directory: ", outDir, defReader);
 					}
 
 					copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
@@ -116,14 +114,14 @@ class GirWrapper
 					break;
 				case "wrap":
 					if ( outputRoot.empty )
-						throw new LookupException(defReader, "Found wrap while outputRoot isn't set");
+						error("Found wrap while outputRoot isn't set", defReader);
 					if ( srcDir.empty )
-						throw new LookupException(defReader, "Found wrap while srcDir isn't set");
+						error("Found wrap while srcDir isn't set", defReader);
 
 					wrapPackage(defReader);
 					break;
 				default:
-					throw new LookupException(defReader, "Unknown key: "~defReader.key);
+					error("Unknown key: ", defReader.key, defReader);
 			}
 
 			defReader.popFront();
@@ -138,7 +136,7 @@ class GirWrapper
 		try
 		{
 			if (defReader.value in packages)
-				throw new LookupException(defReader, "Package: "~ defReader.value ~"already defined.");
+				error("Package: \"", defReader.value, "\" is already defined.", defReader);
 
 			pack = new GirPackage(defReader.value, this, srcDir);
 			packages[defReader.value] = pack;
@@ -173,8 +171,7 @@ class GirWrapper
 					}
 					else
 					{
-						warning("Don't use absolute paths for specifying gir files.",
-							defReader.fileName, defReader.lineNumber);
+						warning("Don't use absolute paths for specifying gir files.", defReader);
 
 						pack.parseGIR(defReader.value);
 					}
@@ -244,7 +241,7 @@ class GirWrapper
 				case "move":
 					string[] vals = defReader.value.split();
 					if ( vals.length <= 1 )
-						throw new LookupException(defReader, "No destination for move: "~ defReader.value);
+						error("No destination for move: ", defReader.value, defReader);
 					string newFuncName = ( vals.length == 3 ) ? vals[2] : vals[0];
 					GirStruct dest = pack.getStruct(vals[1]);
 					if ( dest is null )
@@ -269,7 +266,7 @@ class GirWrapper
 						pack.collectedFunctions.remove(vals[0]);
 					}
 					else
-						throw new LookupException(defReader, "unknown function "~ vals[0]);
+						error("Unknown function ", vals[0], defReader);
 					break;
 				case "import":
 					currentStruct.imports ~= defReader.value;
@@ -299,7 +296,7 @@ class GirWrapper
 						break;
 					}
 					if ( defReader.value !in currentStruct.functions )
-						throw new LookupException(defReader, "Unknown function: "~ defReader.value);
+						error("Unknown function ", defReader.value, defReader);
 
 					currentStruct.functions[defReader.value].noCode = true;
 					break;
@@ -321,27 +318,27 @@ class GirWrapper
 				case "in":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						throw new LookupException(defReader, "Unknown function: "~ vals[0]);
+						error("Unknown function ", vals[0], defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Default;
 					break;
 				case "out":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						throw new LookupException(defReader, "Unknown function: "~ vals[0]);
+						error("Unknown function ", vals[0], defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Out;
 					break;
 				case "inout":
 				case "ref":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						throw new LookupException(defReader, "Unknown function: "~ vals[0]);
+						error("Unknown function ", vals[0], defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.InOut;
 					break;
 				case "array":
 					string[] vals = defReader.value.split();
 
 					if ( vals[0] !in currentStruct.functions )
-						throw new LookupException(defReader, "Unknown function: "~ vals[0]);
+						error("Unknown function ", vals[0], defReader);
 
 					GirFunction func = currentStruct.functions[vals[0]];
 
@@ -395,8 +392,7 @@ class GirWrapper
 					break;
 				case "copy":
 					if ( srcDir.empty )
-						throw new LookupException(defReader,
-						                    "Can't copy the file when srcDir is not set");
+						error("Can't copy the file when srcDir is not set", defReader);
 
 					copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
 					break;
@@ -405,7 +401,7 @@ class GirWrapper
 						break;
 
 					if ( defReader.subKey.empty )
-						throw new LookupException(defReader, "Error, no version number specified.");
+						error("No version number specified.", defReader);
 
 					GirVersion vers = GirVersion(defReader.subKey);
 
@@ -429,7 +425,7 @@ class GirWrapper
 
 					break;
 				default:
-					throw new LookupException(defReader, "Unknown key: "~defReader.key);
+					error("Unknown key: ", defReader.key, defReader);
 			}
 
 			defReader.popFront();
@@ -534,7 +530,7 @@ class GirWrapper
 		if ( vals.length == 2 )
 			aa[vals[0]] = vals[1];
 		else
-			throw new LookupException(defReader, "Unknown key: "~defReader.key);
+			error("Worng amount of arguments for key: ", defReader.key, defReader);
 	}
 
 	private void copyFiles(string srcDir, string destDir, string file)
