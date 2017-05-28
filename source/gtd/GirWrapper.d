@@ -35,7 +35,7 @@ import gtd.GirStruct;
 import gtd.GirFunction;
 import gtd.GirType;
 import gtd.GirVersion;
-import gtd.WrapError;
+import gtd.Log;
 
 class GirWrapper
 {
@@ -62,6 +62,9 @@ class GirWrapper
 
 	public void proccess(string apiLookupDefinition)
 	{
+		if ( !exists(buildPath(apiRoot, apiLookupDefinition)) )
+			error("APILookup.txt not found, check '--help' for more information.");
+
 		DefReader defReader = new DefReader( buildPath(apiRoot, apiLookupDefinition) );
 
 		while ( !defReader.empty )
@@ -78,8 +81,8 @@ class GirWrapper
 					loadAA(aliasses, defReader);
 					break;
 				case "inputRoot":
-					stderr.writefln("Warning %s(%s) : Don't use inputRoot, it has been removed as it was never implemented.",
-							defReader.filename, defReader.lineNumber);
+					warning("Don't use inputRoot, it has been removed as it was never implemented.",
+						defReader.fileName, defReader.lineNumber);
 					break;
 				case "outputRoot":
 					if ( outputRoot == buildPath(apiRoot, "out") )
@@ -89,12 +92,12 @@ class GirWrapper
 					srcDir = defReader.value;
 					break;
 				case "bindDir":
-					stderr.writefln("Warning %s(%s) : Don't use bindDir, it is no longer used since the c definitions have moved.",
-							defReader.filename, defReader.lineNumber);
+					warning("Don't use bindDir, it is no longer used since the c definitions have moved.",
+						defReader.fileName, defReader.lineNumber);
 					break;
 				case "copy":
 					if ( srcDir.empty )
-						throw new WrapError(defReader, "Can't copy the file when srcDir is not set");
+						throw new LookupException(defReader, "Can't copy the file when srcDir is not set");
 
 					string outDir = buildPath(outputRoot, srcDir);
 
@@ -103,7 +106,7 @@ class GirWrapper
 						try
 							mkdirRecurse(outDir);
 						catch (FileException)
-							throw new WrapError(defReader, "Failed to create directory: "~ outDir);
+							throw new LookupException(defReader, "Failed to create directory: "~ outDir);
 					}
 
 					copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
@@ -113,14 +116,14 @@ class GirWrapper
 					break;
 				case "wrap":
 					if ( outputRoot.empty )
-						throw new WrapError(defReader, "Found wrap while outputRoot isn't set");
+						throw new LookupException(defReader, "Found wrap while outputRoot isn't set");
 					if ( srcDir.empty )
-						throw new WrapError(defReader, "Found wrap while srcDir isn't set");
+						throw new LookupException(defReader, "Found wrap while srcDir isn't set");
 
 					wrapPackage(defReader);
 					break;
 				default:
-					throw new WrapError(defReader, "Unknown key: "~defReader.key);
+					throw new LookupException(defReader, "Unknown key: "~defReader.key);
 			}
 
 			defReader.popFront();
@@ -135,14 +138,14 @@ class GirWrapper
 		try
 		{
 			if (defReader.value in packages)
-				throw new WrapError(defReader, "Package: "~ defReader.value ~"already defined.");
+				throw new LookupException(defReader, "Package: "~ defReader.value ~"already defined.");
 
 			pack = new GirPackage(defReader.value, this, srcDir);
 			packages[defReader.value] = pack;
 			defReader.popFront();
 		}
 		catch (Exception e)
-			throw new WrapError(defReader, e.msg);
+			throw new LookupException(defReader, e.msg);
 
 		while ( !defReader.empty )
 		{
@@ -170,8 +173,9 @@ class GirWrapper
 					}
 					else
 					{
-						stderr.writefln("Warning %s(%s): Don't use absolute paths for specifying gir files.",
-							defReader.filename, defReader.lineNumber);
+						warning("Don't use absolute paths for specifying gir files.",
+							defReader.fileName, defReader.lineNumber);
+
 						pack.parseGIR(defReader.value);
 					}
 					break;
@@ -240,7 +244,7 @@ class GirWrapper
 				case "move":
 					string[] vals = defReader.value.split();
 					if ( vals.length <= 1 )
-						throw new WrapError(defReader, "No destination for move: "~ defReader.value);
+						throw new LookupException(defReader, "No destination for move: "~ defReader.value);
 					string newFuncName = ( vals.length == 3 ) ? vals[2] : vals[0];
 					GirStruct dest = pack.getStruct(vals[1]);
 					if ( dest is null )
@@ -265,7 +269,7 @@ class GirWrapper
 						pack.collectedFunctions.remove(vals[0]);
 					}
 					else
-						throw new WrapError(defReader, "unknown function "~ vals[0]);
+						throw new LookupException(defReader, "unknown function "~ vals[0]);
 					break;
 				case "import":
 					currentStruct.imports ~= defReader.value;
@@ -295,7 +299,7 @@ class GirWrapper
 						break;
 					}
 					if ( defReader.value !in currentStruct.functions )
-						throw new WrapError(defReader, "Unknown function: "~ defReader.value);
+						throw new LookupException(defReader, "Unknown function: "~ defReader.value);
 
 					currentStruct.functions[defReader.value].noCode = true;
 					break;
@@ -317,27 +321,27 @@ class GirWrapper
 				case "in":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						throw new WrapError(defReader, "Unknown function: "~ vals[0]);
+						throw new LookupException(defReader, "Unknown function: "~ vals[0]);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Default;
 					break;
 				case "out":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						throw new WrapError(defReader, "Unknown function: "~ vals[0]);
+						throw new LookupException(defReader, "Unknown function: "~ vals[0]);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Out;
 					break;
 				case "inout":
 				case "ref":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						throw new WrapError(defReader, "Unknown function: "~ vals[0]);
+						throw new LookupException(defReader, "Unknown function: "~ vals[0]);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.InOut;
 					break;
 				case "array":
 					string[] vals = defReader.value.split();
 
 					if ( vals[0] !in currentStruct.functions )
-						throw new WrapError(defReader, "Unknown function: "~ vals[0]);
+						throw new LookupException(defReader, "Unknown function: "~ vals[0]);
 
 					GirFunction func = currentStruct.functions[vals[0]];
 
@@ -391,7 +395,7 @@ class GirWrapper
 					break;
 				case "copy":
 					if ( srcDir.empty )
-						throw new WrapError(defReader,
+						throw new LookupException(defReader,
 						                    "Can't copy the file when srcDir is not set");
 
 					copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
@@ -401,7 +405,7 @@ class GirWrapper
 						break;
 
 					if ( defReader.subKey.empty )
-						throw new WrapError(defReader, "Error, no version number specified.");
+						throw new LookupException(defReader, "Error, no version number specified.");
 
 					GirVersion vers = GirVersion(defReader.subKey);
 
@@ -414,7 +418,7 @@ class GirWrapper
 					}
 
 					if ( vers > pack._version )
-						break; 
+						break;
 
 					size_t index = defReader.value.indexOf(':');
 					defReader.key = defReader.value[0 .. max(index, 0)].strip();
@@ -425,7 +429,7 @@ class GirWrapper
 
 					break;
 				default:
-					throw new WrapError(defReader, "Unknown key: "~defReader.key);
+					throw new LookupException(defReader, "Unknown key: "~defReader.key);
 			}
 
 			defReader.popFront();
@@ -530,7 +534,7 @@ class GirWrapper
 		if ( vals.length == 2 )
 			aa[vals[0]] = vals[1];
 		else
-			throw new WrapError(defReader, "Unknown key: "~defReader.key);
+			throw new LookupException(defReader, "Unknown key: "~defReader.key);
 	}
 
 	private void copyFiles(string srcDir, string destDir, string file)

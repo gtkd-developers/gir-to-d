@@ -17,16 +17,17 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
  */
 
-module gtd.WrapError;
+module gtd.WrapException;
 
 import std.string;
 
 import gtd.DefReader;
 
-class WrapError : Error
+class WrapException : Exception
 {
-	this(DefReader defReader, string msg)
+	this(A...)(auto ref A a)
 	{
-		super(msg, defReader.filename, defReader.lineNumber);
-	}
+		import std.functional;
+		super(forward!a);
+	} 
 }

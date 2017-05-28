@@ -26,6 +26,8 @@ import std.stdio;
 import core.stdc.stdlib;
 
 import gtd.GirWrapper;
+import gtd.Log;
+import gtd.WrapException;
 
 void main(string[] args)
 {
@@ -51,7 +53,7 @@ void main(string[] args)
 
 		if (helpInformation.helpWanted)
 		{
-			defaultGetoptPrinter("gir-d-generator is an utility that generates D bindings using the GObject introspection files.\nOptions:", helpInformation.options);
+			defaultGetoptPrinter("girtod is an utility that generates D bindings using the GObject introspection files.\nOptions:", helpInformation.options);
 			exit(0);
 		}
 	}
@@ -66,29 +68,36 @@ void main(string[] args)
 	if ( outputDir.empty )
 		outputDir = buildPath(inputDir, "out");
 
-	//Read in the GIR and API files.
-	GirWrapper wrapper = new GirWrapper(inputDir, outputDir, useRuntimeLinker);
-
-	wrapper.commandlineGirPath = girDir;
-	wrapper.useBindDir = useBindDir;
-
-	wrapper.proccess("APILookup.txt");
-
-	if ( printFree )
-		wrapper.printFreeFunctions();
-
-	//Generate the D binding
-	foreach(pack; wrapper.packages)
+	try
 	{
-		if ( pack.name == "cairo" )
-			continue;
+		//Read in the GIR and API files.
+		GirWrapper wrapper = new GirWrapper(inputDir, outputDir, useRuntimeLinker);
 
-		if ( useRuntimeLinker )
-			pack.writeLoaderTable();
-		else
-			pack.writeExternalFunctions();
+		wrapper.commandlineGirPath = girDir;
+		wrapper.useBindDir = useBindDir;
 
-		pack.writeTypes();
-		pack.writeClasses();
+		wrapper.proccess("APILookup.txt");
+
+		if ( printFree )
+			wrapper.printFreeFunctions();
+
+		//Generate the D binding
+		foreach(pack; wrapper.packages)
+		{
+			if ( pack.name == "cairo" )
+				continue;
+
+			if ( useRuntimeLinker )
+				pack.writeLoaderTable();
+			else
+				pack.writeExternalFunctions();
+
+			pack.writeTypes();
+			pack.writeClasses();
+		}
+	}
+	catch (WrapException ex)
+	{
+		error(ex);
 	}
 }

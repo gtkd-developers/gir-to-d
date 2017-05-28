@@ -13,8 +13,9 @@ source = [
 	'source/gtd/GirVersion.d',
 	'source/gtd/GirWrapper.d',
 	'source/gtd/IndentedStringBuilder.d',
+	'source/gtd/Log.d',
 	'source/gtd/LinkedHasMap.d',
-	'source/gtd/WrapError.d',
+	'source/gtd/WrapException.d',
 	'source/gtd/XMLReader.d'
 ]
 

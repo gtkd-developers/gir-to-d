@@ -28,6 +28,8 @@ import std.string;
 import std.traits: isSomeChar;
 import std.uni;
 
+import gtd.WrapException;
+
 struct XMLNode
 {
 	XMLNodeType type;
@@ -482,7 +484,7 @@ bool endTag(T)(XMLReader!T reader, string[] tagNames ...)
 	return reader.front.type == XMLNodeType.EndTag && tagNames.canFind(reader.front.value);
 }
 
-class XMLException : Exception
+class XMLException : WrapException
 {
 	this (T)(XMLReader!T reader, string msg)
 	{

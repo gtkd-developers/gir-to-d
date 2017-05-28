@@ -24,11 +24,11 @@ import std.array;
 import std.file;
 import std.string : splitLines, strip, indexOf;
 
-import gtd.WrapError;
+import gtd.WrapException;
 
 public class DefReader
 {
-	string filename;
+	string fileName;
 	string key;
 	string subKey;
 	string value;
@@ -36,11 +36,11 @@ public class DefReader
 	int lineNumber;
 	string[] lines;
 
-	public this(string filename)
+	public this(string fileName)
 	{
-		this.filename = filename;
+		this.fileName = fileName;
 
-		lines = readText(filename).splitLines();
+		lines = readText(fileName).splitLines();
 		//Skip utf8 BOM.
 		lines[0].skipOver(x"efbbbf");
 
@@ -110,7 +110,7 @@ public class DefReader
 			lineNumber++;
 		}
 
-		throw new WrapError(this, "Found EOF while expecting: \""~key~": end\"");
+		throw new LookupException(this, "Found EOF while expecting: \""~key~": end\"");
 	}
 
 	/**
@@ -124,5 +124,13 @@ public class DefReader
 	public @property bool empty()
 	{
 		return lines.empty && key.empty;
+	}
+}
+
+class LookupException : WrapException
+{
+	this(DefReader defReader, string msg)
+	{
+		super(msg, defReader.fileName, defReader.lineNumber);
 	}
 }
