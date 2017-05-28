@@ -239,7 +239,7 @@ class GirWrapper
 					GirStruct copy = currentStruct.dup();
 					copy.noCode = true;
 					copy.noExternal = true;
-					mergeStruct.pack.collectedStructs[mergeStruct.name] = copy;
+					mergeStruct.pack.collectedStructs[defReader.value] = copy;
 					break;
 				case "move":
 					string[] vals = defReader.value.split();

@@ -167,10 +167,7 @@ class GirPackage
 
 					//Workaround: Dont overwrite the regular pango classes.
 					if ( gtkStruct.cType.among("PangoCairoFont", "PangoCairoFontMap") )
-					{
-						collectedStructs["FcFontMap"].merge(gtkStruct);
-						break;
-					}
+						gtkStruct.name = gtkStruct.cType;
 
 					collectedStructs[gtkStruct.name] = gtkStruct;
 
