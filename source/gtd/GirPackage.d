@@ -407,8 +407,8 @@ class GirPackage
 		{
 			buff ~= "\n\tversion(Win64)\n";
 			buff ~= "\t{\n";
-			buff ~= "\t\tLinker.link(g_module_name, \"g_module_name_uft8\", LIBRARY.GLIB, LIBRARY.GMODULE);\n";
-			buff ~= "\t\tLinker.link(g_module_open, \"g_module_open_utf8\", LIBRARY.GLIB, LIBRARY.GMODULE);\n";
+			buff ~= "\t\tLinker.link(g_module_name, \"g_module_name_uft8\", LIBRARY_GLIB);\n";
+			buff ~= "\t\tLinker.link(g_module_open, \"g_module_open_utf8\", LIBRARY_GLIB);\n";
 			buff ~= "\t}\n";
 		}
 
