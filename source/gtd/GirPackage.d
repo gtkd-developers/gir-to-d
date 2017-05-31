@@ -166,6 +166,9 @@ class GirPackage
 
 					collectedStructs[gtkStruct.name] = gtkStruct;
 
+					//Don't generate classes named Object.
+					if ( gtkStruct.name == "Object" )
+						gtkStruct.name = "Object"~ cTypePrefix;
 					if ( name == "pango" )
 						gtkStruct.name = "Pg"~gtkStruct.name;
 					break;
