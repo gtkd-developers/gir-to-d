@@ -48,6 +48,13 @@ addFuncts: (block)
 addConstants: (block)
     Add the contained text the the alias constant of the c definitions.
 
+dependency DEP: skip
+    When generating code don't assume dependency DEB is available.
+
+dependency DEP: (block)
+    Apply the lookup defenitions in this block to the dependency
+    before generating any code.
+
 file: path/filename
     Parse the a GIR file, the command can be used multiple times
     to combine different GIR files.

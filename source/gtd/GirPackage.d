@@ -30,17 +30,20 @@ import std.stdio;
 import std.string : split, splitLines, strip;
 import std.uni;
 
+import gtd.DefReader;
 import gtd.GirAlias;
 import gtd.GirEnum;
 import gtd.GirFunction;
 import gtd.GirStruct;
 import gtd.GirVersion;
 import gtd.GirWrapper;
+import gtd.GlibTypes;
 import gtd.IndentedStringBuilder;
 import gtd.XMLReader;
 import gtd.LinkedHasMap: Map = LinkedHashMap;
+import gtd.Log;
 
-class GirPackage
+final class GirPackage
 {
 	string name;
 	string cTypePrefix;
@@ -55,6 +58,7 @@ class GirPackage
 	string[] lookupConstants;   /// Constants defined in the lookupfile.
 
 	static GirPackage[string] namespaces;
+	static GirInclude[string] includes;
 
 	string[] libraries;
 	Map!(string, GirAlias)    collectedAliases; /// Aliases defined in the gir file.
@@ -72,26 +76,6 @@ class GirPackage
 		this.srcDir = srcDir;
 		this.stockIDs = new GirEnum(wrapper, this);
 		this.GdkKeys  = new GirEnum(wrapper, this);
-
-		try
-		{
-			if ( !exists(buildPath(wrapper.outputRoot, srcDir, pack)) )
-				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, pack));
-		}
-		catch (Exception)
-		{
-			throw new Exception("Failed to create directory: "~ buildPath(wrapper.outputRoot, srcDir, pack));
-		}
-
-		try
-		{
-			if ( !exists(buildPath(wrapper.outputRoot, srcDir, pack, "c")) )
-				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, pack, "c"));
-		}
-		catch (Exception)
-		{
-			throw new Exception("Failed to create directory: "~ buildPath(wrapper.outputRoot, srcDir, pack, "c"));
-		}
 	}
 
 	void parseGIR(string girFile)
@@ -105,7 +89,12 @@ class GirPackage
 
 		while ( !reader.empty && reader.front.value == "include" )
 		{
-			//TODO: parse imports.
+			string incName = reader.front.attributes["name"];
+
+			GirInclude inc = includes.get(incName, GirInclude.init);
+			inc.name = incName;
+			inc._version = reader.front.attributes["version"];
+			includes[incName] = inc;
 
 			reader.popFront();
 		}
@@ -117,12 +106,14 @@ class GirPackage
 		checkVersion(reader.front.attributes["version"]);
 		cTypePrefix = reader.front.attributes["c:identifier-prefixes"];
 
-		libraries ~= reader.front.attributes["shared-library"].split(',');
-		version(OSX)
-			libraries = sort(libraries).uniq.map!(a => baseName(a)).array;
-		else
-			libraries = sort(libraries).uniq.array;
-
+		if ( "shared-library" in reader.front.attributes )
+		{
+			libraries ~= reader.front.attributes["shared-library"].split(',');
+			version(OSX)
+				libraries = sort(libraries).uniq.map!(a => baseName(a)).array;
+			else
+				libraries = sort(libraries).uniq.array;
+		}
 		reader.popFront();
 
 		while ( !reader.empty && !reader.endTag("namespace") )
@@ -237,6 +228,21 @@ class GirPackage
 		checkVersion(funct.libVersion);
 	}
 
+	GirPackage getNamespace(string name)
+	{
+		if ( name !in namespaces )
+		{
+			if ( auto inc = name in includes )
+			{
+				if ( inc.skip ) return null;
+
+				namespaces[name] = inc.parse(wrapper, srcDir);
+			}
+		}
+
+		return namespaces.get(name, null);
+	}
+
 	GirStruct getStruct(string name)
 	{
 		GirPackage pack = this;
@@ -245,7 +251,7 @@ class GirPackage
 		{
 			string[] vals = name.split(".");
 
-			if ( vals[0] !in namespaces )
+			if ( !getNamespace(vals[0]) )
 				return null;
 
 			pack = namespaces[vals[0]];
@@ -262,7 +268,7 @@ class GirPackage
 		{
 			string[] vals = name.split(".");
 
-			if ( vals[0] !in namespaces )
+			if ( !getNamespace(vals[0]) )
 				return null;
 
 			pack = namespaces[vals[0]];
@@ -285,6 +291,16 @@ class GirPackage
 
 	void writeClasses()
 	{
+		try
+		{
+			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name)) )
+				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name));
+		}
+		catch (FileException ex)
+		{
+			error("Failed to create directory: ", ex);
+		}
+
 		foreach ( strct; collectedStructs )
 			strct.writeClass();
 	}
@@ -338,6 +354,16 @@ class GirPackage
 
 		if ( GdkKeys.members !is null )
 			writeGdkKeys();
+
+		try
+		{
+			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name, "c")) )
+				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name, "c"));
+		}
+		catch (FileException ex)
+		{
+			error("Failed to create directory: ", ex);
+		}
 
 		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c/types.d"), buff);
 	}
@@ -448,6 +474,16 @@ class GirPackage
 			}
 		}
 
+		try
+		{
+			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name, "c")) )
+				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name, "c"));
+		}
+		catch (FileException ex)
+		{
+			error("Failed to create directory: ", ex);
+		}
+
 		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c", "functions.d"), buff);
 	}
 
@@ -486,6 +522,16 @@ class GirPackage
 		}
 
 		buff ~= "}";
+
+		try
+		{
+			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name, "c")) )
+				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name, "c"));
+		}
+		catch (FileException ex)
+		{
+			error("Failed to create directory: ", ex);
+		}
 
 		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c", "functions.d"), buff);
 	}
@@ -658,5 +704,34 @@ class GirPackage
 		{
 			return "\""~ libraries.join("\", \"") ~"\"";
 		}
+	}
+}
+
+struct GirInclude
+{
+	string name;
+	string _version;
+
+	bool skip;
+	string[] lookupText;
+	string lookupFile;
+	size_t lookupLine;
+
+	string girFileName()
+	{
+		return name ~"-"~ _version ~".gir";
+	}
+
+	GirPackage parse(GirWrapper wrapper, string srcDir)
+	{
+		GirPackage inc = new GirPackage(name.toLower, wrapper, srcDir);
+		inc.parseGIR(wrapper.getAbsoluteGirPath(girFileName()));
+
+		if ( auto text = name in defaultLookupText )
+			wrapper.wrapPackage(inc, new DefReader(*text, "Default rules"));
+
+		wrapper.wrapPackage(inc, new DefReader(lookupText, lookupFile, lookupLine));
+
+		return inc;
 	}
 }

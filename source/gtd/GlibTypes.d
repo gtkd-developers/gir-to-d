@@ -89,3 +89,72 @@ enum string[string] glibTypes = [
 	"GLIB_SYSDEF_POLLNVAL": "=32",
 ];
 
+/**
+ * Set some defaults for the basic libraries.
+ */
+enum string[][string] defaultLookupText = [
+	"Atk": [
+		"struct: Implementor",
+		"interface: Implementor",
+		"merge: ImplementorIface"
+	],
+	"cairo": [
+		"struct: Context",
+		"class: Context",
+		"struct: Surface",
+		"class: Surface",
+		"struct: Matrix",
+		"class: Matrix",
+		"struct: Pattern",
+		"class: Pattern",
+		"struct: Region",
+		"class: Region",
+		"struct: FontOptions",
+		"class: FontOption",
+		"struct: FontFace",
+		"class: FontFace",
+		"struct: ScaledFont",
+		"class: ScaledFont"
+	],
+	"Gdk": [
+		"struct: Atom",
+		"namespace:",
+		"struct: Monitor",
+		"class: MonitorG",
+		"struct: Rectangle",
+		"noCode: get_type",
+		"namespace:"
+	],
+	"GLib": [
+		"struct: Array",
+		"class: ArrayG",
+		"struct: ByteArray",
+		"class: ByteArray",
+		"struct: Error",
+		"class: ErrorG",
+		"struct: HashTable",
+		"class: HashTable",
+		"struct: List",
+		"class: ListG",
+		"struct: SList",
+		"class: ListSG",
+		"struct: MarkupParseContext",
+		"class: SimpleXML",
+		"struct: PtrArray",
+		"class: PtrArray",
+		"struct: Scanner",
+		"class: ScannerG",
+		"struct: String",
+		"class: StringG",
+		"struct: Tree",
+		"class: BBTree"
+	],
+	"GModule": [
+		"wrap: glib"
+	],
+	"Pango": [
+		"struct: AttrList",
+		"class: PgAttributeList"
+	]
+];
+

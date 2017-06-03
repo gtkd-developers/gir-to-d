@@ -109,6 +109,9 @@ class GirWrapper
 
 					copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
 					break;
+				case "dependency":
+					loadDependency(defReader);
+					break;
 				case "lookup":
 					proccess(defReader.value);
 					break;
@@ -117,8 +120,14 @@ class GirWrapper
 						error("Found wrap while outputRoot isn't set", defReader);
 					if ( srcDir.empty )
 						error("Found wrap while srcDir isn't set", defReader);
+					if (defReader.value in packages)
+						error("Package '", defReader.value, "' is already defined.", defReader);
 
-					wrapPackage(defReader);
+					GirPackage pack = new GirPackage(defReader.value, this, srcDir);
+					packages[defReader.value] = pack;
+					defReader.popFront();
+
+					wrapPackage(pack, defReader);
 					break;
 				default:
 					error("Unknown key: ", defReader.key, defReader);
@@ -128,22 +137,9 @@ class GirWrapper
 		}
 	}
 
-	public void wrapPackage(DefReader defReader)
+	public void wrapPackage(GirPackage pack, DefReader defReader)
 	{
-		GirPackage pack;
 		GirStruct currentStruct;
-
-		try
-		{
-			if (defReader.value in packages)
-				error("Package: \"", defReader.value, "\" is already defined.", defReader);
-
-			pack = new GirPackage(defReader.value, this, srcDir);
-			packages[defReader.value] = pack;
-			defReader.popFront();
-		}
-		catch (Exception e)
-			throw new LookupException(defReader, e.msg);
 
 		while ( !defReader.empty )
 		{
@@ -164,6 +160,10 @@ class GirWrapper
 				case "addConstants":
 					pack.lookupConstants ~= defReader.readBlock();
 					break;
+				case "wrap":
+					//Only for dependencies?
+					pack.name = defReader.value;
+					break;
 				case "file":
 					if ( !isAbsolute(defReader.value) )
 					{
@@ -175,6 +175,9 @@ class GirWrapper
 
 						pack.parseGIR(defReader.value);
 					}
+					break;
+				case "dependency":
+					loadDependency(defReader);
 					break;
 				case "struct":
 					if ( defReader.value.empty )
@@ -444,7 +447,7 @@ class GirWrapper
 		}
 	}
 
-	private string getAbsoluteGirPath(string girFile)
+	string getAbsoluteGirPath(string girFile)
 	{
 		if ( commandlineGirPath )
 		{
@@ -520,7 +523,7 @@ class GirWrapper
 		return null;
 	}
 
-	private void loadAA (ref string[string] aa, DefReader defReader)
+	private void loadAA (ref string[string] aa, const DefReader defReader)
 	{
 		string[] vals = defReader.value.split();
 
@@ -531,6 +534,31 @@ class GirWrapper
 			aa[vals[0]] = vals[1];
 		else
 			error("Worng amount of arguments for key: ", defReader.key, defReader);
+	}
+
+	private void loadDependency(DefReader defReader)
+	{
+		if ( defReader.value == "end" )
+			return;
+
+		if ( defReader.subKey.empty )
+			error("No dependency specified.", defReader);
+
+		GirInclude inc = GirPackage.includes.get(defReader.subKey, GirInclude.init);
+
+		if ( defReader.value == "skip" )
+			inc.skip = true;
+		else if ( defReader.value == "start" )
+		{
+			inc.lookupFile = defReader.fileName;
+			inc.lookupLine = defReader.lineNumber;
+
+			inc.lookupText = defReader.readBlock();
+		}
+		else
+			error("Missing 'skip' or 'start' for dependency: ", defReader.subKey, defReader);
+
+		GirPackage.includes[defReader.subKey] = inc;
 	}
 
 	private void copyFiles(string srcDir, string destDir, string file)

@@ -33,8 +33,9 @@ public final class DefReader
 	string subKey;
 	string value;
 
-	int lineNumber;
-	string[] lines;
+	private size_t _lineNumber;
+	private size_t lineOffset;
+	private string[] lines;
 
 	public this(string fileName)
 	{
@@ -47,6 +48,18 @@ public final class DefReader
 		this.popFront();
 	}
 
+	/**
+	 * Proccess the _lines defined in lines.
+	 * The fileName and lineOffset are only used for error reporting.
+	 */
+	public this(string[] lines, string fileName = "", size_t lineOffset = 0)
+	{
+		this.lines = lines;
+		this.fileName = fileName;
+		this.lineOffset = lineOffset;
+		this.popFront();
+	}
+
 	public void popFront()
 	{
 		string line;
@@ -55,13 +68,13 @@ public final class DefReader
 		{
 			line = lines.front.strip();
 			lines.popFront();
-			lineNumber++;
+			_lineNumber++;
 
 			while ( !lines.empty && ( line.empty || line.startsWith("#") ) )
 			{
 				line = lines.front.strip();
 				lines.popFront();
-				lineNumber++;
+				_lineNumber++;
 			}
 		}
 
@@ -101,13 +114,13 @@ public final class DefReader
 			if ( startsWith(lines.front.strip(), key) )
 			{
 				lines.popFront();
-				lineNumber++;
+				_lineNumber++;
 				return block;
 			}
 
 			block ~= lines.front ~ '\n';
 			lines.popFront();
-			lineNumber++;
+			_lineNumber++;
 		}
 
 		throw new LookupException(this, "Found EOF while expecting: \""~key~": end\"");
@@ -116,14 +129,19 @@ public final class DefReader
 	/**
 	 * Gets the current value as a bool
 	 */
-	public @property bool valueBool()
+	public @property bool valueBool() const
 	{
 		return !!value.among("1", "ok", "OK", "Ok", "true", "TRUE", "True", "Y", "y", "yes", "YES", "Yes");
 	}
 
-	public @property bool empty()
+	public @property bool empty() const
 	{
 		return lines.empty && key.empty;
+	}
+
+	public @property size_t lineNumber() const
+	{
+		return _lineNumber + lineOffset;
 	}
 }
 
