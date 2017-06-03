@@ -19,12 +19,12 @@
 
 module gtd.GirType;
 
-import gtd.GirWrapper;
-import gtd.XMLReader;
-
 import std.algorithm: among, canFind;
 import std.array: replace;
 import std.conv: to;
+
+import gtd.GirWrapper;
+import gtd.XMLReader;
 
 /**
  * Represent sthe type of an field or a parameter.

@@ -39,9 +39,9 @@ import gtd.GirVersion;
 import gtd.GirWrapper;
 import gtd.GlibTypes;
 import gtd.IndentedStringBuilder;
-import gtd.XMLReader;
 import gtd.LinkedHasMap: Map = LinkedHashMap;
 import gtd.Log;
+import gtd.XMLReader;
 
 final class GirPackage
 {
@@ -175,7 +175,7 @@ final class GirPackage
 					parseFunction(reader);
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirPackage: "~ name);
+					error("Unexpected tag: ", reader.front.value, " in GirPackage: ", name, reader);
 			}
 			reader.popFront();
 		}

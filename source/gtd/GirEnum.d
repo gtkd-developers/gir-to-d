@@ -84,7 +84,7 @@ final class GirEnum
 					reader.skipTag();
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirEnum: "~ name);
+					error("Unexpected tag: ", reader.front.value, " in GirEnum: ", name, reader);
 			}
 			reader.popFront();
 		}
@@ -170,7 +170,7 @@ struct GirEnumMember
 						value = "\""~ value ~"\"";
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirEnumMember: "~ name);
+					error("Unexpected tag: ", reader.front.value, " in GirEnumMember: ", name, reader);
 			}
 			reader.popFront();
 		}

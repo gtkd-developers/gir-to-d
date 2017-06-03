@@ -28,13 +28,13 @@ import std.stdio;
 import std.string;
 
 import gtd.DefReader;
-import gtd.IndentedStringBuilder;
-import gtd.GlibTypes;
+import gtd.GirFunction;
 import gtd.GirPackage;
 import gtd.GirStruct;
-import gtd.GirFunction;
 import gtd.GirType;
 import gtd.GirVersion;
+import gtd.GlibTypes;
+import gtd.IndentedStringBuilder;
 import gtd.Log;
 
 class GirWrapper

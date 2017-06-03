@@ -19,10 +19,6 @@
 
 module gtd.WrapException;
 
-import std.string;
-
-import gtd.DefReader;
-
 class WrapException : Exception
 {
 	this(A...)(auto ref A a)

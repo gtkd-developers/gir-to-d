@@ -65,7 +65,7 @@ final class GirAlias
 					reader.popFront();
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirAlias: "~ name);
+					error("Unexpected tag: ", reader.front.value, " in GirAlias: ", name, reader);
 			}
 			reader.popFront();
 		}

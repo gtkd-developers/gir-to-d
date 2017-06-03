@@ -33,9 +33,10 @@ import gtd.GirPackage;
 import gtd.GirType;
 import gtd.GirVersion;
 import gtd.GirWrapper;
-import gtd.XMLReader;
-import gtd.LinkedHasMap: Map = LinkedHashMap;
 import gtd.IndentedStringBuilder;
+import gtd.LinkedHasMap: Map = LinkedHashMap;
+import gtd.Log;
+import gtd.XMLReader;
 
 enum GirStructType : string
 {
@@ -186,7 +187,7 @@ final class GirStruct
 					reader.skipTag();
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirStruct: "~ name);
+					error("Unexpected tag: ", reader.front.value, " in GirStruct: ", name, reader);
 			}
 
 			reader.popFront();
@@ -1016,7 +1017,7 @@ final class GirField
 					callback.parse(reader);
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirField: "~ name);
+					error("Unexpected tag: ", reader.front.value, " in GirField: ", name, reader);
 			}
 			reader.popFront();
 		}
@@ -1187,7 +1188,7 @@ final class GirUnion
 					fields ~= field;
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirUnion: "~ name);
+					error("Unexpected tag: ", reader.front.value, " in GirUnion: ", name, reader);
 			}
 			reader.popFront();
 		}
