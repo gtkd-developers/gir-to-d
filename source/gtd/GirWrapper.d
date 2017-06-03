@@ -406,17 +406,20 @@ class GirWrapper
 					if ( defReader.subKey.empty )
 						error("No version number specified.", defReader);
 
-					GirVersion vers = GirVersion(defReader.subKey);
+					bool parseVersion = checkOsVersion(defReader.subKey);
+
+					if ( !parseVersion && defReader.subKey[0].isNumber() )
+						parseVersion = defReader.subKey <= pack._version;
 
 					if ( defReader.value == "start" )
 					{
-						if ( vers <= pack._version )
+						if ( parseVersion )
 							break;
 						else
 							defReader.readBlock();
 					}
 
-					if ( vers > pack._version )
+					if ( !parseVersion )
 						break;
 
 					size_t index = defReader.value.indexOf(':');
@@ -615,6 +618,34 @@ class GirWrapper
 
 		return strct;
 	}
+
+	private bool checkOsVersion(string _version)
+	{
+		if ( _version.empty || !(_version[0].isAlpha() || _version[0] == '!') )
+			return false;
+
+		version(Windows)
+		{
+			return _version.among("Windows", "!OSX", "!linux", "!Linux", "!Posix") != 0;
+		}
+		else version(OSX)
+		{
+			return _version.among("!Windows", "OSX", "!linux", "!Linux", "Posix") != 0;
+		}
+		else version(linux)
+		{
+			return _version.among("!Windows", "!OSX", "linux", "Linux", "Posix") != 0;
+		}
+		else version(Posix)
+		{
+			return _version.among("!Windows", "!OSX", "!linux", "!Linux", "Posix") != 0;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 }
 
 /**
