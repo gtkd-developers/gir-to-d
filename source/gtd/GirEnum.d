@@ -24,6 +24,7 @@ import std.string : splitLines, strip, toUpper;
 
 import gtd.GirPackage;
 import gtd.GirWrapper;
+import gtd.Log;
 import gtd.XMLReader;
 
 final class GirEnum

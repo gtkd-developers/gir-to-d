@@ -23,6 +23,7 @@ import std.string : splitLines, strip;
 
 import gtd.GirType;
 import gtd.GirWrapper;
+import gtd.Log;
 import gtd.XMLReader;
 
 final class GirAlias
