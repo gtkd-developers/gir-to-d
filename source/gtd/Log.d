@@ -129,7 +129,21 @@ struct Color
 		}
 	}
 
-	string toString()
+	void toString(scope void delegate(const(char)[]) sink) const
+	{
+		if ( _useColor )
+		{
+			sink(esc);
+			sink(text);
+			sink(reset);
+		}
+		else
+		{
+			sink(text);
+		}
+	}
+
+	string toString() const
 	{
 		if ( _useColor )
 			return esc ~ text ~ reset;
