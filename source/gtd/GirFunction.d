@@ -30,6 +30,7 @@ import gtd.GirStruct;
 import gtd.GirType;
 import gtd.GirVersion;
 import gtd.GirWrapper;
+import gtd.Log;
 import gtd.XMLReader;
 
 enum GirFunctionType : string
@@ -149,7 +150,7 @@ final class GirFunction
 								returnType.parse(reader);
 								break;
 							default:
-								throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirFunction: "~ name);
+								error("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
 						}
 						reader.popFront();
 					}
@@ -170,13 +171,13 @@ final class GirFunction
 								params ~= param;
 								break;
 							default:
-								throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirFunction: "~ name);
+								error("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
 						}
 						reader.popFront();
 					}
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirFunction: "~ name);
+					error("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
 			}
 			reader.popFront();
 		}
@@ -1622,7 +1623,7 @@ final class GirParam
 					type.cType = "...";
 					break;
 				default:
-					throw new XMLException(reader, "Unexpected tag: "~ reader.front.value ~" in GirParam: "~ name);
+					error("Unexpected tag: ", reader.front.value, " in GirParam: ", name, reader);
 			}
 
 			reader.popFront();

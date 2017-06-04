@@ -173,12 +173,12 @@ copy: filename
     Copies filename form inputRoot to outputRoot/srcDir.
 
 version X.XX: command: value
-	Only include the command if the version specified in the Gir file is >= X.XX.
+    Only include the command if the version specified in the Gir file is >= X.XX.
     An OS identifier can also be used as the version.
     Currently supported are: Windows, OSX, Linux and Posix.
     The OS versions can de negated.
 
 version X.XX: (block)
-	The same as above but applies to all commands between the start and end tag.
-	For the end tag the version number is optional.
+    The same as above but applies to all commands between the start and end tag.
+    For the end tag the version number is optional.
 
