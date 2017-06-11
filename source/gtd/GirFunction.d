@@ -1309,10 +1309,6 @@ final class GirFunction
 
 			return elmType ~"["~ size ~"]";
 		}
-		else if ( !type.elementType && type.zeroTerminated )
-		{
-			return getType(type, GirParamDirection.Out) ~"[]";
-		}
 		else
 		{
 			if ( type is null || type.name == "none" )
