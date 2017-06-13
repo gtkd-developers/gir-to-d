@@ -60,62 +60,120 @@ class GirWrapper
 		this.useRuntimeLinker = useRuntimeLinker;
 	}
 
-	public void proccess(string apiLookupDefinition)
+	void proccess(string lookupFileName)
 	{
-		if ( !exists(buildPath(apiRoot, apiLookupDefinition)) )
+		if ( !exists(buildPath(apiRoot, lookupFileName)) )
 			error("APILookup.txt not found, check '--help' for more information.");
 
-		DefReader defReader = new DefReader( buildPath(apiRoot, apiLookupDefinition) );
+		DefReader defReader = new DefReader( buildPath(apiRoot, lookupFileName) );
 
+		proccess(defReader);
+	}
+
+	void proccess(DefReader defReader, GirPackage currentPackage = null, bool isDependency = false, GirStruct currentStruct = null)
+	{
 		while ( !defReader.empty )
 		{
+			if ( !currentPackage && defReader.key.among(
+					"addAliases", "addConstants", "addEnums", "addFuncts", "addStructs", "file",
+					"move", "struct", "class", "interface", "namespace", "noAlias", "noEnum", "noCallback") )
+				error("Found: '", defReader.key, "' before wrap.", defReader);
+
+			if ( !currentStruct && defReader.key.among(
+					"code", "cType", "extend", "implements", "import", "interfaceCode", "merge",
+					"noCode", "noExternal", "noSignal", "noStruct",	"override", "structWrap",
+					"array", "in", "out", "inout", "ref") )
+				error("Found: '", defReader.key, "' without an active struct.", defReader);
+
 			switch ( defReader.key )
 			{
-				case "license":
-					licence = defReader.readBlock().join();
+				//Toplevel keys.
+				case "alias":
+					if ( currentStruct )
+						loadAA(currentStruct.aliases, defReader);
+					else
+						loadAA(aliasses, defReader);
+					break;
+				case "bindDir":
+					warning("Don't use bindDir, it is no longer used since the c definitions have moved.", defReader);
 					break;
 				case "includeComments":
 					includeComments = defReader.valueBool;
 					break;
-				case "alias":
-					loadAA(aliasses, defReader);
-					break;
 				case "inputRoot":
 					warning("Don't use inputRoot, it has been removed as it was never implemented.", defReader);
+					break;
+				case "license":
+					licence = defReader.readBlock().join();
 					break;
 				case "outputRoot":
 					if ( outputRoot == buildPath(apiRoot, "out") )
 						outputRoot = defReader.value;
 					break;
-				case "srcDir":
-					srcDir = defReader.value;
-					break;
-				case "bindDir":
-					warning("Don't use bindDir, it is no longer used since the c definitions have moved.", defReader);
-					break;
+
+				//Global keys.
 				case "copy":
 					if ( srcDir.empty )
 						error("Can't copy the file when srcDir is not set", defReader);
 
-					string outDir = buildPath(outputRoot, srcDir);
-
-					if ( !exists(outDir) )
-					{
-						try
-							mkdirRecurse(outDir);
-						catch (FileException)
-							error("Failed to create directory: ", outDir, defReader);
-					}
-
-					copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
+					try
+						copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
+					catch(FileException ex)
+						error(ex, defReader);
 					break;
 				case "dependency":
 					loadDependency(defReader);
 					break;
 				case "lookup":
-					proccess(defReader.value);
+					DefReader reader = new DefReader( buildPath(apiRoot, defReader.value) );
+
+					proccess(reader, currentPackage, isDependency, currentStruct);
+					break;
+				case "srcDir":
+					srcDir = defReader.value;
+					break;
+				case "version":
+					if ( defReader.value == "end" )
+						break;
+
+					if ( defReader.subKey.empty )
+						error("No version specified.", defReader);
+
+					bool parseVersion = checkOsVersion(defReader.subKey);
+
+					if ( !parseVersion && defReader.subKey[0].isNumber() )
+					{
+						if ( !currentPackage )
+							error("Only use OS versions before wrap.", defReader);
+						parseVersion = defReader.subKey <= currentPackage._version;
+					}
+
+					if ( defReader.value == "start" )
+					{
+						if ( parseVersion )
+							break;
+						else
+							defReader.readBlock();
+					}
+
+					if ( !parseVersion )
+						break;
+
+					size_t index = defReader.value.indexOf(':');
+					defReader.key = defReader.value[0 .. max(index, 0)].strip();
+					defReader.value = defReader.value[index +1 .. $].strip();
+
+					if ( !defReader.key.empty )
+						continue;
+
 					break;
 				case "wrap":
+					if ( isDependency )
+					{
+						currentPackage.name = defReader.value;
+						break;
+					}
+
 					if ( outputRoot.empty )
 						error("Found wrap while outputRoot isn't set", defReader);
 					if ( srcDir.empty )
@@ -123,61 +181,77 @@ class GirWrapper
 					if (defReader.value in packages)
 						error("Package '", defReader.value, "' is already defined.", defReader);
 
-					GirPackage pack = new GirPackage(defReader.value, this, srcDir);
-					packages[defReader.value] = pack;
-					defReader.popFront();
-
-					wrapPackage(pack, defReader);
+					currentStruct = null;
+					currentPackage = new GirPackage(defReader.value, this, srcDir);
+					packages[defReader.value] = currentPackage;
 					break;
-				default:
-					error("Unknown key: ", defReader.key, defReader);
-			}
 
-			defReader.popFront();
-		}
-	}
-
-	public void wrapPackage(GirPackage pack, DefReader defReader)
-	{
-		GirStruct currentStruct;
-
-		while ( !defReader.empty )
-		{
-			switch ( defReader.key )
-			{
+				//Package keys
 				case "addAliases":
-					pack.lookupAliases ~= defReader.readBlock();
-					break;
-				case "addEnums":
-					pack.lookupEnums ~= defReader.readBlock();
-					break;
-				case "addStructs":
-					pack.lookupStructs ~= defReader.readBlock();
-					break;
-				case "addFuncts":
-					pack.lookupFuncts ~= defReader.readBlock();
+					currentPackage.lookupAliases ~= defReader.readBlock();
 					break;
 				case "addConstants":
-					pack.lookupConstants ~= defReader.readBlock();
+					currentPackage.lookupConstants ~= defReader.readBlock();
 					break;
-				case "wrap":
-					//Only for dependencies?
-					pack.name = defReader.value;
+				case "addEnums":
+					currentPackage.lookupEnums ~= defReader.readBlock();
+					break;
+				case "addFuncts":
+					currentPackage.lookupFuncts ~= defReader.readBlock();
+					break;
+				case "addStructs":
+					currentPackage.lookupStructs ~= defReader.readBlock();
 					break;
 				case "file":
 					if ( !isAbsolute(defReader.value) )
 					{
-						pack.parseGIR(getAbsoluteGirPath(defReader.value));
+						currentPackage.parseGIR(getAbsoluteGirPath(defReader.value));
 					}
 					else
 					{
 						warning("Don't use absolute paths for specifying gir files.", defReader);
 
-						pack.parseGIR(defReader.value);
+						currentPackage.parseGIR(defReader.value);
 					}
 					break;
-				case "dependency":
-					loadDependency(defReader);
+				case "move":
+					string[] vals = defReader.value.split();
+					if ( vals.length <= 1 )
+						error("No destination for move: ", defReader.value, defReader);
+					string newFuncName = ( vals.length == 3 ) ? vals[2] : vals[0];
+					GirStruct dest = currentPackage.getStruct(vals[1]);
+					if ( dest is null )
+						dest = createClass(currentPackage, vals[1]);
+
+					if ( currentStruct && vals[0] in currentStruct.functions )
+					{
+						currentStruct.functions[vals[0]].strct = dest;
+						dest.functions[newFuncName] = currentStruct.functions[vals[0]];
+						dest.functions[newFuncName].name = newFuncName;
+						if ( newFuncName.startsWith("new") )
+							dest.functions[newFuncName].type = GirFunctionType.Constructor;
+						if ( currentStruct.virtualFunctions.canFind(vals[0]) )
+							dest.virtualFunctions ~= newFuncName;
+						currentStruct.functions.remove(vals[0]);
+					}
+					else if ( vals[0] in currentPackage.collectedFunctions )
+					{
+						currentPackage.collectedFunctions[vals[0]].strct = dest;
+						dest.functions[newFuncName] = currentPackage.collectedFunctions[vals[0]];
+						dest.functions[newFuncName].name = newFuncName;
+						currentPackage.collectedFunctions.remove(vals[0]);
+					}
+					else
+						error("Unknown function ", vals[0], defReader);
+					break;
+				case "noAlias":
+					currentPackage.collectedAliases.remove(defReader.value);
+					break;
+				case "noEnum":
+					currentPackage.collectedEnums.remove(defReader.value);
+					break;
+				case "noCallback":
+					currentPackage.collectedCallbacks.remove(defReader.value);
 					break;
 				case "struct":
 					if ( defReader.value.empty )
@@ -186,27 +260,56 @@ class GirWrapper
 					}
 					else
 					{
-						currentStruct = pack.getStruct(defReader.value);
+						currentStruct = currentPackage.getStruct(defReader.value);
 						if ( currentStruct is null )
-							currentStruct = createClass(pack, defReader.value);
+							currentStruct = createClass(currentPackage, defReader.value);
 					}
 					break;
+
+				//Struct keys.
 				case "class":
 					if ( currentStruct is null )
-						currentStruct = createClass(pack, defReader.value);
+						currentStruct = createClass(currentPackage, defReader.value);
 
 					currentStruct.lookupClass = true;
 					currentStruct.name = defReader.value;
 					break;
+				case "code":
+					currentStruct.lookupCode ~= defReader.readBlock;
+					break;
+				case "cType":
+					currentStruct.cType = defReader.value;
+					break;
+				case "extend":
+					currentStruct.lookupParent = true;
+					currentStruct.parent = defReader.value;
+					break;
+				case "implements":
+					if ( defReader.value.empty )
+						currentStruct.implements = null;
+					else
+						currentStruct.implements ~= defReader.value;
+					break;
+				case "import":
+					currentStruct.imports ~= defReader.value;
+					break;
 				case "interface":
 					if ( currentStruct is null )
-						currentStruct = createClass(pack, defReader.value);
+						currentStruct = createClass(currentPackage, defReader.value);
 
 					currentStruct.lookupInterface = true;
 					currentStruct.name = defReader.value;
 					break;
-				case "cType":
-					currentStruct.cType = defReader.value;
+				case "interfaceCode":
+					currentStruct.lookupInterfaceCode ~= defReader.readBlock;
+					break;
+				case "merge":
+					GirStruct mergeStruct = currentPackage.getStruct(defReader.value);
+					currentStruct.merge(mergeStruct);
+					GirStruct copy = currentStruct.dup();
+					copy.noCode = true;
+					copy.noExternal = true;
+					mergeStruct.pack.collectedStructs[defReader.value] = copy;
 					break;
 				case "namespace":
 					currentStruct.type = GirStructType.Record;
@@ -222,75 +325,6 @@ class GirWrapper
 						currentStruct.noNamespace = false;
 						currentStruct.name = defReader.value;
 					}
-					break;
-				case "extend":
-					currentStruct.lookupParent = true;
-					currentStruct.parent = defReader.value;
-					break;
-				case "implements":
-					if ( defReader.value.empty )
-						currentStruct.implements = null;
-					else
-						currentStruct.implements ~= defReader.value;
-					break;
-				case "merge":
-					GirStruct mergeStruct = pack.getStruct(defReader.value);
-					currentStruct.merge(mergeStruct);
-					GirStruct copy = currentStruct.dup();
-					copy.noCode = true;
-					copy.noExternal = true;
-					mergeStruct.pack.collectedStructs[defReader.value] = copy;
-					break;
-				case "move":
-					string[] vals = defReader.value.split();
-					if ( vals.length <= 1 )
-						error("No destination for move: ", defReader.value, defReader);
-					string newFuncName = ( vals.length == 3 ) ? vals[2] : vals[0];
-					GirStruct dest = pack.getStruct(vals[1]);
-					if ( dest is null )
-						dest = createClass(pack, vals[1]);
-
-					if ( currentStruct && vals[0] in currentStruct.functions )
-					{
-						currentStruct.functions[vals[0]].strct = dest;
-						dest.functions[newFuncName] = currentStruct.functions[vals[0]];
-						dest.functions[newFuncName].name = newFuncName;
-						if ( newFuncName.startsWith("new") )
-							dest.functions[newFuncName].type = GirFunctionType.Constructor;
-						if ( currentStruct.virtualFunctions.canFind(vals[0]) )
-							dest.virtualFunctions ~= newFuncName;
-						currentStruct.functions.remove(vals[0]);
-					}
-					else if ( vals[0] in pack.collectedFunctions )
-					{
-						pack.collectedFunctions[vals[0]].strct = dest;
-						dest.functions[newFuncName] = pack.collectedFunctions[vals[0]];
-						dest.functions[newFuncName].name = newFuncName;
-						pack.collectedFunctions.remove(vals[0]);
-					}
-					else
-						error("Unknown function ", vals[0], defReader);
-					break;
-				case "import":
-					currentStruct.imports ~= defReader.value;
-					break;
-				case "structWrap":
-					loadAA(currentStruct.structWrap, defReader);
-					break;
-				case "alias":
-					loadAA(currentStruct.aliases, defReader);
-					break;
-				case "override":
-					currentStruct.functions[defReader.value].lookupOverride = true;
-					break;
-				case "noAlias":
-					pack.collectedAliases.remove(defReader.value);
-					break;
-				case "noEnum":
-					pack.collectedEnums.remove(defReader.value);
-					break;
-				case "noCallback":
-					pack.collectedCallbacks.remove(defReader.value);
 					break;
 				case "noCode":
 					if ( defReader.valueBool )
@@ -312,31 +346,14 @@ class GirWrapper
 				case "noStruct":
 					currentStruct.noDecleration = true;
 					break;
-				case "code":
-					currentStruct.lookupCode ~= defReader.readBlock;
+				case "override":
+					currentStruct.functions[defReader.value].lookupOverride = true;
 					break;
-				case "interfaceCode":
-					currentStruct.lookupInterfaceCode ~= defReader.readBlock;
+				case "structWrap":
+					loadAA(currentStruct.structWrap, defReader);
 					break;
-				case "in":
-					string[] vals = defReader.value.split();
-					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
-					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Default;
-					break;
-				case "out":
-					string[] vals = defReader.value.split();
-					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
-					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Out;
-					break;
-				case "inout":
-				case "ref":
-					string[] vals = defReader.value.split();
-					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
-					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.InOut;
-					break;
+
+				//Function keys
 				case "array":
 					string[] vals = defReader.value.split();
 
@@ -393,43 +410,26 @@ class GirWrapper
 						}
 					}
 					break;
-				case "copy":
-					if ( srcDir.empty )
-						error("Can't copy the file when srcDir is not set", defReader);
-
-					copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
+				case "in":
+					string[] vals = defReader.value.split();
+					if ( vals[0] !in currentStruct.functions )
+						error("Unknown function ", vals[0], defReader);
+					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Default;
 					break;
-				case "version":
-					if ( defReader.value == "end" )
-						break;
-
-					if ( defReader.subKey.empty )
-						error("No version number specified.", defReader);
-
-					bool parseVersion = checkOsVersion(defReader.subKey);
-
-					if ( !parseVersion && defReader.subKey[0].isNumber() )
-						parseVersion = defReader.subKey <= pack._version;
-
-					if ( defReader.value == "start" )
-					{
-						if ( parseVersion )
-							break;
-						else
-							defReader.readBlock();
-					}
-
-					if ( !parseVersion )
-						break;
-
-					size_t index = defReader.value.indexOf(':');
-					defReader.key = defReader.value[0 .. max(index, 0)].strip();
-					defReader.value = defReader.value[index +1 .. $].strip();
-
-					if ( !defReader.key.empty )
-						continue;
-
+				case "out":
+					string[] vals = defReader.value.split();
+					if ( vals[0] !in currentStruct.functions )
+						error("Unknown function ", vals[0], defReader);
+					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Out;
 					break;
+				case "inout":
+				case "ref":
+					string[] vals = defReader.value.split();
+					if ( vals[0] !in currentStruct.functions )
+						error("Unknown function ", vals[0], defReader);
+					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.InOut;
+					break;
+
 				default:
 					error("Unknown key: ", defReader.key, defReader);
 			}
