@@ -298,7 +298,7 @@ final class GirPackage
 		}
 		catch (FileException ex)
 		{
-			error("Failed to create directory: ", ex);
+			error("Failed to create directory: ", ex.msg);
 		}
 
 		foreach ( strct; collectedStructs )
@@ -362,7 +362,7 @@ final class GirPackage
 		}
 		catch (FileException ex)
 		{
-			error("Failed to create directory: ", ex);
+			error("Failed to create directory: ", ex.msg);
 		}
 
 		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c/types.d"), buff);
@@ -481,7 +481,7 @@ final class GirPackage
 		}
 		catch (FileException ex)
 		{
-			error("Failed to create directory: ", ex);
+			error("Failed to create directory: ", ex.msg);
 		}
 
 		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c", "functions.d"), buff);
@@ -530,7 +530,7 @@ final class GirPackage
 		}
 		catch (FileException ex)
 		{
-			error("Failed to create directory: ", ex);
+			error("Failed to create directory: ", ex.msg);
 		}
 
 		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c", "functions.d"), buff);

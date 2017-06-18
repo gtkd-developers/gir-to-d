@@ -119,7 +119,7 @@ class GirWrapper
 					try
 						copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
 					catch(FileException ex)
-						error(ex, defReader);
+						error(ex.msg, defReader);
 					break;
 				case "dependency":
 					loadDependency(defReader);
