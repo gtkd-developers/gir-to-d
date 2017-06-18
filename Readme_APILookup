@@ -139,7 +139,7 @@ noSignal: name
     name should be the name specified in the GIR file.
 
 noStruct: true
-    Don't generate any D code for struct set by struct:
+    Don't generate the struct declaration for the struct set by struct:
 
 code: (block)
     Add the contained code/text the the generated struct/class.
