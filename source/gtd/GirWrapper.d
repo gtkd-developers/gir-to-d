@@ -580,7 +580,7 @@ class GirWrapper
 		void copyDir(string from, string to)
 		{
 			if ( !exists(to) )
-				mkdir(to);
+				mkdirRecurse(to);
 
 			foreach ( entry; dirEntries(from, SpanMode.shallow) )
 			{

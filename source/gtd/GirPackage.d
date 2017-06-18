@@ -110,9 +110,9 @@ final class GirPackage
 		{
 			libraries ~= reader.front.attributes["shared-library"].split(',');
 			version(OSX)
-				libraries = sort(libraries).uniq.map!(a => baseName(a)).array;
+				libraries = libraries.map!(a => baseName(a)).array.sort().uniq.array;
 			else
-				libraries = sort(libraries).uniq.array;
+				libraries = libraries.sort().uniq.array;
 		}
 		reader.popFront();
 
