@@ -88,12 +88,6 @@ class GirWrapper
 			switch ( defReader.key )
 			{
 				//Toplevel keys.
-				case "alias":
-					if ( currentStruct )
-						loadAA(currentStruct.aliases, defReader);
-					else
-						loadAA(aliasses, defReader);
-					break;
 				case "bindDir":
 					warning("Don't use bindDir, it is no longer used since the c definitions have moved.", defReader);
 					break;
@@ -112,6 +106,12 @@ class GirWrapper
 					break;
 
 				//Global keys.
+				case "alias":
+					if ( currentStruct )
+						loadAA(currentStruct.aliases, defReader);
+					else
+						loadAA(aliasses, defReader);
+					break;
 				case "copy":
 					if ( srcDir.empty )
 						error("Can't copy the file when srcDir is not set", defReader);
@@ -346,9 +346,6 @@ class GirWrapper
 				case "noStruct":
 					currentStruct.noDecleration = true;
 					break;
-				case "override":
-					currentStruct.functions[defReader.value].lookupOverride = true;
-					break;
 				case "structWrap":
 					loadAA(currentStruct.structWrap, defReader);
 					break;
@@ -421,6 +418,9 @@ class GirWrapper
 					if ( vals[0] !in currentStruct.functions )
 						error("Unknown function ", vals[0], defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Out;
+					break;
+				case "override":
+					currentStruct.functions[defReader.value].lookupOverride = true;
 					break;
 				case "inout":
 				case "ref":
