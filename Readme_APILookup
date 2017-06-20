@@ -42,7 +42,7 @@ lookup: filename
     Continue parsing in filename.
 
 srcDir: directory
-    The source for the following component is placed in this directory.
+    The source for the following packages is placed in this directory.
 
 version X.XX: command: value
     Only include the command if the version specified in the Gir file is >= X.XX.
@@ -51,42 +51,44 @@ version X.XX: command: value
     The OS versions can de negated.
 
 version X.XX: (block)
-    The same as above but applies to all commands between the start and end tag.
-    For the end tag the version number is optional.
+    The same as above but applies to all commands in the block.
+    The version can optionaly be used at the end of the block.
 
 wrap: packageName
     Starts wrapping a package, and uses packageName as it's name.
-    After this command and until the end of the file, all commands
-    only affect the package.
+    After this command and until wrap is used again, all commands
+    only affect the current package.
+
+    When inside a dependency wrap only sets the package name.
 
 Package commands:
 -----------------
 These commands apply to the package set with wrap.
 
 addAliases: (block)
-    Add the contained text the alias section of the c definitions.
+    Add the contained text to the alias section of the c definitions.
 
 addConstants: (block)
-    Add the contained text the alias constant of the c definitions.
+    Add the contained text to the constant section of the c definitions.
 
 addEnums: (block)
-    Add the contained text the enum section of the c definitions.
+    Add the contained text to the enum section of the c definitions.
 
 addFuncts: (block)
-    Add the contained text the function/callback section of the c definitions.
+    Add the contained text to the function/callback section of the c definitions.
 
 addStructs: (block)
-    Add the contained text the struct section of the c definitions.
+    Add the contained text to the struct section of the c definitions.
 
-file: path/filename
-    Parse the a GIR file, the command can be used multiple times
-    to combine different GIR files.
+file: girFilename.
+    Parse the a GIR file, this command can be used multiple times
+    to combine different GIR files. girtod will detect the gir directory.
 
 move: src dest [new_name]
     Move function src to struct dest. Optionaly set a new name for the function.
     dest will be created if it doesn't exist.
-    Currently only works for global functions, you can list the global functions
-    that haven't been moved by running girtod with the --print-free argument.
+    You can list the global functions that haven't been moved by running
+    girtod with the --print-free argument.
 
 noAlias: name
     Don't generate any code for alias name.
