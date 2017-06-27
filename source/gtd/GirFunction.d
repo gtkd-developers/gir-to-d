@@ -22,7 +22,7 @@ module gtd.GirFunction;
 import std.algorithm: among, startsWith, endsWith;
 import std.conv;
 import std.range;
-import std.string : chomp, splitLines, strip, removechars;
+import std.string : chomp, splitLines, strip;
 import std.uni: toUpper, toLower;
 
 import gtd.GirEnum;
@@ -393,14 +393,14 @@ final class GirFunction
 			{
 				dType = strct.pack.getStruct(instanceParam.type.name);
 
-				if ( dType.cType != instanceParam.type.cType.removechars("*") && !instanceParam.type.cType.among("gpointer", "gconstpointer") )
+				if ( dType.cType != instanceParam.type.cType.removePtr() && !instanceParam.type.cType.among("gpointer", "gconstpointer") )
 					gtkCall ~= "cast("~ stringToGtkD(instanceParam.type.cType, wrapper.aliasses, localAliases()) ~")";
 			}
 			else
 			{
 				dType = strct.pack.getStruct(params[0].type.name);
 
-				if ( dType.cType != params[0].type.cType.removechars("*") && !params[0].type.cType.among("gpointer", "gconstpointer") )
+				if ( dType.cType != params[0].type.cType.removePtr() && !params[0].type.cType.among("gpointer", "gconstpointer") )
 					gtkCall ~= "cast("~ stringToGtkD(params[0].type.cType, wrapper.aliasses, localAliases()) ~")";
 			}
 
@@ -535,13 +535,13 @@ final class GirFunction
 						{
 							if ( !buff.empty )
 								buff ~= "";
-							buff ~= elementType.cType.removechars("*") ~ "**[] inout"~ id ~" = new "~ elementType.cType.removechars("*") ~"*["~ id ~".length];";
+							buff ~= elementType.cType.removePtr() ~ "**[] inout"~ id ~" = new "~ elementType.cType.removePtr() ~"*["~ id ~".length];";
 							buff ~= "for ( int i = 0; i < "~ id ~".length; i++ )";
 							buff ~= "{";
 							buff ~= "inout"~ id ~"[i] = "~ id~ "[i]."~ dElementType.getHandleFunc() ~"();";
 							buff ~= "}";
 							buff ~= "";
-							buff ~= elementType.cType.removechars("*") ~ "** out"~ id ~" = inout"~ id ~".ptr;";
+							buff ~= elementType.cType.removePtr() ~ "** out"~ id ~" = inout"~ id ~".ptr;";
 						}
 
 						gtkCall ~= "&out"~ id;
@@ -581,7 +581,7 @@ final class GirFunction
 					// out gtkdType, ref gtkdType
 					if ( param.direction != GirParamDirection.Default && param.type.cType.endsWith("**") )
 					{
-						buff ~= param.type.cType.removechars("*") ~"* out"~ id ~" = ";
+						buff ~= param.type.cType.removePtr() ~"* out"~ id ~" = ";
 
 						if ( param.direction == GirParamDirection.Out )
 							buff[$-1] ~= "null;";
@@ -594,7 +594,7 @@ final class GirFunction
 					}
 					else if ( param.direction == GirParamDirection.Out )
 					{
-						buff ~= param.type.cType.removechars("*") ~"* out"~ id ~" = gMalloc!"~ param.type.cType.removechars("*") ~"();";
+						buff ~= param.type.cType.removePtr() ~"* out"~ id ~" = gMalloc!"~ param.type.cType.removePtr() ~"();";
 
 						gtkCall ~= "out"~ id;
 
@@ -604,7 +604,7 @@ final class GirFunction
 					else
 					{
 						gtkCall ~= "("~ id ~" is null) ? null : ";
-						if ( dType.cType != param.type.cType.removechars("*") && !param.type.cType.among("gpointer", "gconstpointer") )
+						if ( dType.cType != param.type.cType.removePtr() && !param.type.cType.among("gpointer", "gconstpointer") )
 							gtkCall ~= "cast("~ stringToGtkD(param.type.cType, wrapper.aliasses, localAliases()) ~")";
 
 						if ( param.ownership == GirTransferOwnership.Full && dType.shouldFree() )
@@ -617,7 +617,7 @@ final class GirFunction
 			else if ( param.lengthFor || returnType.length == i )
 			{
 				string arrId;
-				string lenType = tokenToGtkD(param.type.cType.removechars("*"), wrapper.aliasses, localAliases());
+				string lenType = tokenToGtkD(param.type.cType.removePtr(), wrapper.aliasses, localAliases());
 
 				if ( param.lengthFor )
 					arrId = tokenToGtkD(param.lengthFor.name, wrapper.aliasses, localAliases());
@@ -1625,4 +1625,12 @@ final class GirParam
 			reader.popFront();
 		}
 	}
+}
+
+private string removePtr(string cType)
+{
+	while ( cType.back == '*' )
+		cType.popBack();
+
+	return cType;
 }
