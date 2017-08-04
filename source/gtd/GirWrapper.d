@@ -45,7 +45,7 @@ class GirWrapper
 
 	string apiRoot;
 	string outputRoot;
-	string srcDir;
+	string srcDir = "./";
 	string commandlineGirPath;
 
 	static string licence;
@@ -113,9 +113,6 @@ class GirWrapper
 						loadAA(aliasses, defReader);
 					break;
 				case "copy":
-					if ( srcDir.empty )
-						error("Can't copy the file when srcDir is not set", defReader);
-
 					try
 						copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
 					catch(FileException ex)
@@ -176,8 +173,6 @@ class GirWrapper
 
 					if ( outputRoot.empty )
 						error("Found wrap while outputRoot isn't set", defReader);
-					if ( srcDir.empty )
-						error("Found wrap while srcDir isn't set", defReader);
 					if (defReader.value in packages)
 						error("Package '", defReader.value, "' is already defined.", defReader);
 
