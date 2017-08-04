@@ -1018,6 +1018,10 @@ final class GirFunction
 	{
 		return "On" ~ getSignalName() ~ "DelegateWrapper";
 	}
+
+	string getDelegateWrapperArrayName() {
+		return "on" ~ getSignalName() ~ "Listeners";
+	}
 	
 	string[] getDelegateWrapperDeclaration()
 	{
@@ -1026,29 +1030,29 @@ final class GirFunction
 		string[] buff;
 		buff ~= "protected class "~ getDelegateWrapperName();
 		buff ~= "{";
-		buff ~= "static "~ getDelegateWrapperName() ~"[] listeners;";
 		buff ~= getDelegateDecleration() ~" dlg;";
 		buff ~= "gulong handlerId;";
 		buff ~= "";
 		buff ~= "this("~ getDelegateDecleration() ~" dlg)";
 		buff ~= "{";
 		buff ~= "this.dlg = dlg;";
-		buff ~= "this.listeners ~= this;";
+		buff ~=  getDelegateWrapperArrayName() ~" ~= this;";
 		buff ~= "}";
 		buff ~= "";
 		buff ~= "void remove("~ getDelegateWrapperName ~" source)";
 		buff ~= "{";
-		buff ~= "foreach(index, wrapper; listeners)";
+		buff ~= "foreach(index, wrapper; "~ getDelegateWrapperArrayName() ~")";
 		buff ~= "{";
 		buff ~= "if (wrapper.handlerId == source.handlerId)";
 		buff ~= "{";
-		buff ~= "listeners[index] = null;";
-		buff ~= "listeners = std.algorithm.remove(listeners, index);";
+		buff ~= getDelegateWrapperArrayName() ~"[index] = null;";
+		buff ~= getDelegateWrapperArrayName() ~" = std.algorithm.remove("~ getDelegateWrapperArrayName() ~", index);";
 		buff ~= "break;";
 		buff ~= "}";
 		buff ~= "}";
 		buff ~= "}";
 		buff ~= "}";
+		buff ~= getDelegateWrapperName() ~"[] "~ getDelegateWrapperArrayName() ~";";
 		return buff;
 	}
 
