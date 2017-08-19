@@ -19,7 +19,7 @@
 
 module gtd.GirType;
 
-import std.algorithm: among, canFind;
+import std.algorithm: among, canFind, startsWith;
 import std.array: replace;
 import std.conv: to;
 
@@ -111,6 +111,18 @@ final class GirType
 
 		if ( isArray() && cType == "void" )
 			cType = elementType.cType ~"*";
+	}
+
+	bool isString()
+	{
+		if ( cType.startsWith("gchar*", "char*", "const(char)*") )
+			return true;
+		if ( name.among("utf8", "filename") )
+			return true;
+		if ( isArray() && elementType.cType.startsWith("gchar", "char", "const(char)") )
+			return true;
+
+		return false;
 	}
 
 	bool isArray()

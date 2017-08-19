@@ -449,7 +449,7 @@ final class GirFunction
 			if ( instanceParam || i > 0 )
 				gtkCall ~= ", ";
 
-			if ( isStringType(param.type) )
+			if ( param.type.isString() )
 			{
 				if ( isStringArray(param.type, param.direction) )
 				{
@@ -835,7 +835,7 @@ final class GirFunction
 
 			return buff;
 		}
-		else if ( isStringType(returnType) )
+		else if ( returnType.isString() )
 		{
 			if ( outToD.empty && !throws && !(returnOwnership == GirTransferOwnership.Full) )
 			{
@@ -1279,7 +1279,7 @@ final class GirFunction
 	 */
 	private string getType(GirType type, GirParamDirection direction = GirParamDirection.Default)
 	{
-		if ( isStringType(type) )
+		if ( type.isString() )
 		{
 			if ( direction != GirParamDirection.Default && !type.cType.endsWith("**") )
 				return "char[]";
@@ -1361,18 +1361,6 @@ final class GirFunction
 		return false;
 	}
 
-	private bool isStringType(GirType type)
-	{
-		if ( type.cType.startsWith("gchar*", "char*", "const(char)*") )
-			return true;
-		if ( type.name.among("utf8", "filename") )
-			return true;
-		if ( type.isArray() && type.elementType.cType.startsWith("gchar", "char", "const(char)") )
-			return true;
-
-		return false;
-	}
-
 	private bool isStringArray(GirType type, GirParamDirection direction = GirParamDirection.Default)
 	{
 		if ( direction == GirParamDirection.Default && type.cType.endsWith("**") )
@@ -1417,7 +1405,7 @@ final class GirFunction
 		else if ( type.size > -1 )
 			return to!string(type.size);
 
-		if ( isStringType(type) )
+		if ( type.isString() )
 			return null;
 
 		return "getArrayLength("~ paramName ~")";
@@ -1538,7 +1526,7 @@ final class GirFunction
 			{
 				buff ~= construct(param.type.name) ~"("~ tokenToGtkD(param.name, wrapper.aliasses, localAliases()) ~")";
 			}
-			else if ( isStringType(param.type) )
+			else if ( param.type.isString() )
 			{
 				if ( isStringArray(param.type) )
 					buff ~= "Str.toStringArray("~ tokenToGtkD(param.name, wrapper.aliasses, localAliases()) ~")";

@@ -32,6 +32,7 @@ import std.uni;
 
 import gtd.DefReader;
 import gtd.GirAlias;
+import gtd.GirConstant;
 import gtd.GirEnum;
 import gtd.GirFunction;
 import gtd.GirStruct;
@@ -52,22 +53,23 @@ final class GirPackage
 	GirWrapper wrapper;
 
 	string[] lookupAliases;     /// Aliases defined in the lookupfile.
-	string[] lookupEnums;       /// Enums defined in the lookupfile.
-	string[] lookupStructs;     /// Structs defined in the lookupfile.
-	string[] lookupFuncts;      /// Functions defined in the lookupfile.
 	string[] lookupConstants;   /// Constants defined in the lookupfile.
+	string[] lookupEnums;       /// Enums defined in the lookupfile.
+	string[] lookupFuncts;      /// Functions defined in the lookupfile.
+	string[] lookupStructs;     /// Structs defined in the lookupfile.
 
 	static GirPackage[string] namespaces;
 	static GirInclude[string] includes;
 
 	string[] libraries;
-	Map!(string, GirAlias)    collectedAliases; /// Aliases defined in the gir file.
-	Map!(string, GirEnum)     collectedEnums;   /// Enums defined in the gir file.
-	Map!(string, GirStruct)   collectedStructs;
+	Map!(string, GirAlias)    collectedAliases;   /// Aliases defined in the gir file.
 	Map!(string, GirFunction) collectedCallbacks;
+	Map!(string, GirConstant) collectedConstants;
+	Map!(string, GirEnum)     collectedEnums;     /// Enums defined in the gir file.
 	Map!(string, GirFunction) collectedFunctions;
+	Map!(string, GirStruct)   collectedStructs;
 	GirEnum stockIDs;           /// The StockID enum (Deprecated).
-	GirEnum GdkKeys;            /// The GdkKey enum.
+	GirEnum gdkKeys;            /// The GdkKey enum.
 
 	public this(string pack, GirWrapper wrapper, string srcDir)
 	{
@@ -75,7 +77,7 @@ final class GirPackage
 		this.wrapper = wrapper;
 		this.srcDir = srcDir;
 		this.stockIDs = new GirEnum(wrapper, this);
-		this.GdkKeys  = new GirEnum(wrapper, this);
+		this.gdkKeys  = new GirEnum(wrapper, this);
 	}
 
 	void parseGIR(string girFile)
@@ -198,7 +200,7 @@ final class GirPackage
 			member.parse(reader);
 			member.name = "GDK_"~ member.name[4..$];
 
-			GdkKeys.members ~= member;
+			gdkKeys.members ~= member;
 			return;
 		}
 		// The version attribute of the namspace tag is usualy set to MAJOR.0.
@@ -215,8 +217,9 @@ final class GirPackage
 			_version.micro = to!uint(reader.front.attributes["value"]);
 		}
 
-		//TODO: other constants.
-		reader.skipTag();
+		GirConstant constant = new GirConstant(wrapper, this);
+		constant.parse(reader);
+		collectedConstants[constant.name] = constant;
 	}
 
 	void parseFunction(T)(XMLReader!T reader)
@@ -344,6 +347,12 @@ final class GirPackage
 		}
 
 		buff ~= indenter.format(lookupConstants);
+		foreach ( c; collectedConstants )
+		{
+			buff ~= "\n";
+			buff ~= indenter.format(c.getConstantDeclaration());
+		}
+
 		if ( stockIDs.members !is null )
 		{
 			stockIDs.cName = "StockID";
@@ -352,7 +361,7 @@ final class GirPackage
 			buff ~= indenter.format(stockIDs.getEnumDeclaration());
 		}
 
-		if ( GdkKeys.members !is null )
+		if ( gdkKeys.members !is null )
 			writeGdkKeys();
 
 		try
@@ -380,7 +389,7 @@ final class GirPackage
 		buff ~= "public enum GdkKeysyms\n";
 		buff ~= "{\n";
 
-		foreach ( member; GdkKeys.members )
+		foreach ( member; gdkKeys.members )
 		{
 			buff ~= "\t"~ tokenToGtkD(member.name, wrapper.aliasses, false) ~" = "~ member.value ~",\n";
 		}

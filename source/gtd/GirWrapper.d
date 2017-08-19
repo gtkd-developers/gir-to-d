@@ -75,8 +75,8 @@ class GirWrapper
 		while ( !defReader.empty )
 		{
 			if ( !currentPackage && defReader.key.among(
-					"addAliases", "addConstants", "addEnums", "addFuncts", "addStructs", "file",
-					"move", "struct", "class", "interface", "namespace", "noAlias", "noEnum", "noCallback") )
+					"addAliases", "addConstants", "addEnums", "addFuncts", "addStructs", "file", "move",
+					"struct", "class", "interface", "namespace", "noAlias", "noConstant", "noEnum", "noCallback") )
 				error("Found: '", defReader.key, "' before wrap.", defReader);
 
 			if ( !currentStruct && defReader.key.among(
@@ -241,6 +241,9 @@ class GirWrapper
 					break;
 				case "noAlias":
 					currentPackage.collectedAliases.remove(defReader.value);
+					break;
+				case "noConstant":
+					currentPackage.collectedConstants.remove(defReader.value);
 					break;
 				case "noEnum":
 					currentPackage.collectedEnums.remove(defReader.value);

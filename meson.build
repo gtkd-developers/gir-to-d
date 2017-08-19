@@ -5,6 +5,7 @@ source = [
 	'source/gtd/DefReader.d',
 	'source/gtd/GlibTypes.d',
 	'source/gtd/GirAlias.d',
+	'source/gtd/GirConstant.d',
 	'source/gtd/GirEnum.d',
 	'source/gtd/GirFunction.d',
 	'source/gtd/GirPackage.d',

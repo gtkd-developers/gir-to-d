@@ -94,6 +94,10 @@ noAlias: name
     Don't generate any code for alias name.
     name should be the name specified in the GIR file.
 
+noConstant: name
+    Don't generate any code for constant name.
+    name should be the name specified in the GIR file.
+
 noEnum: name
     Don't generate any code for enum name.
     name should be the name specified in the GIR file.
