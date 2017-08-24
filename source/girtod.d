@@ -20,6 +20,7 @@
 module girtod;
 
 import std.array;
+import std.file : isFile;
 import std.getopt;
 import std.path;
 import std.stdio;
@@ -35,16 +36,17 @@ void main(string[] args)
 	bool printFree;
 	bool useRuntimeLinker;
 	bool useBindDir;
-	string inputDir;
+	string input;
 	string outputDir;
+	string lookupFile = "APILookup.txt";
 	string girDir;
 
 	try
 	{
 		auto helpInformation = getopt(
 			args,
-			"input|i",            "Directory containing the API description. (Default: ./)", &inputDir,
-			"output|o",           "Output directory for the generated binding. (Default: {input dir}/out)", &outputDir,
+			"input|i",            "Directory containing the API description. Or a lookup file (Default: ./)", &input,
+			"output|o",           "Output directory for the generated binding. (Default: ./out)", &outputDir,
 			"use-runtime-linker", "Link the gtk functions with the runtime linker.", &useRuntimeLinker,
 			"gir-directory|g",    "Directory to search for gir files before the system directory.", &girDir,
 			"print-free",         "Print functions that don't have a parrent module.", &printFree,
@@ -63,20 +65,28 @@ void main(string[] args)
 		exit (1);
 	}
 
-	if ( inputDir.empty )
-		inputDir = "./";
+	if ( input.empty )
+	{
+		input = "./";
+	}
+	else if ( input.isFile() )
+	{
+		lookupFile = input.baseName();
+		input = input.dirName();
+	}
+
 	if ( outputDir.empty )
-		outputDir = buildPath(inputDir, "out");
+		outputDir = "./out";
 
 	try
 	{
 		//Read in the GIR and API files.
-		GirWrapper wrapper = new GirWrapper(inputDir, outputDir, useRuntimeLinker);
+		GirWrapper wrapper = new GirWrapper(input, outputDir, useRuntimeLinker);
 
 		wrapper.commandlineGirPath = girDir;
 		wrapper.useBindDir = useBindDir;
 
-		wrapper.proccess("APILookup.txt");
+		wrapper.proccess(lookupFile);
 
 		if ( printFree )
 			wrapper.printFreeFunctions();

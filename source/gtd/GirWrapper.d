@@ -101,7 +101,7 @@ class GirWrapper
 					licence = defReader.readBlock().join();
 					break;
 				case "outputRoot":
-					if ( outputRoot == buildPath(apiRoot, "out") )
+					if ( outputRoot == "./out" )
 						outputRoot = defReader.value;
 					break;
 
