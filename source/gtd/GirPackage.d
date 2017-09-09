@@ -24,7 +24,7 @@ import std.array : join;
 import std.conv;
 import std.file;
 import std.path;
-import std.range : array, back, empty;
+import std.range : array, back, chain, empty;
 import std.regex : ctRegex, matchFirst;
 import std.stdio;
 import std.string : split, splitLines, strip;
@@ -314,6 +314,8 @@ final class GirPackage
 		auto indenter = new IndentedStringBuilder();
 
 		buff ~= "module "~ name ~".c.types;\n\n";
+
+		buff ~= getTypeImports();
 
 		buff ~= indenter.format(lookupAliases);
 		foreach ( a; collectedAliases )
@@ -713,6 +715,41 @@ final class GirPackage
 		{
 			return "\""~ libraries.join("\", \"") ~"\"";
 		}
+	}
+
+	private string getTypeImports()
+	{
+		string imports;
+		string[] usedNamespaces;
+		string[] packages;
+
+		foreach ( strct; collectedStructs )
+		{
+			if ( strct.noExternal )
+				continue;
+
+			usedNamespaces = chain(usedNamespaces, strct.usedNamespaces()).sort.uniq.array;
+		}
+
+		foreach ( ns; usedNamespaces )
+		{
+			GirPackage pack = getNamespace(ns);
+
+			if ( pack && pack != this && !packages.canFind(pack.name) )
+				packages ~= pack.name;
+		}
+
+		packages = packages.sort().array;
+
+		foreach ( pack; packages )
+		{
+			imports ~= "public import "~ pack ~".c.types;\n";
+		}
+
+		if ( !imports.empty )
+			imports ~= "\n";
+
+		return imports;
 	}
 }
 

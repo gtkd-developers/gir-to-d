@@ -712,6 +712,36 @@ final class GirStruct
 		return false;
 	}
 
+	string[] usedNamespaces()
+	{
+		string[] namespaces;
+
+		string getNamespace(GirType type)
+		{
+			if ( type.isArray() )
+				type = type.elementType;
+
+			if ( type.cType in wrapper.aliasses || type.cType in aliases )
+				return null;
+
+			if ( type.name.canFind(".") )
+				return type.name.split(".")[0];
+
+			return null;
+		}
+
+		foreach ( func; functions )
+		{
+			namespaces ~= getNamespace(func.returnType);
+			if ( func.instanceParam )
+				namespaces ~= getNamespace(func.instanceParam.type);
+			foreach ( param; func.params )
+				namespaces ~= getNamespace(param.type);
+		}
+
+		return namespaces.sort().uniq.array;
+	}
+
 	private void resolveImports()
 	{
 		if ( parentStruct && parentStruct.name != name)
