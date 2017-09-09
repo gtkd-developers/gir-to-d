@@ -63,7 +63,7 @@ class GirWrapper
 	void proccess(string lookupFileName)
 	{
 		if ( !exists(buildPath(apiRoot, lookupFileName)) )
-			error("APILookup.txt not found, check '--help' for more information.");
+			error(lookupFileName, " not found, check '--help' for more information.");
 
 		DefReader defReader = new DefReader( buildPath(apiRoot, lookupFileName) );
 
@@ -434,6 +434,19 @@ class GirWrapper
 
 			defReader.popFront();
 		}
+	}
+
+	void proccessGIR(string girFile)
+	{
+		GirPackage pack = new GirPackage("", this, srcDir);
+
+		if ( !isAbsolute(girFile) )
+		{
+			girFile = getAbsoluteGirPath(girFile);
+		}
+
+		pack.parseGIR(girFile);
+		packages[pack.name] = pack;
 	}
 
 	void printFreeFunctions()

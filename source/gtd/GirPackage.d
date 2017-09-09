@@ -104,6 +104,9 @@ final class GirPackage
 		while ( !reader.empty && reader.front.value != "namespace" )
 			reader.popFront();
 
+		if ( name.empty )
+			name = reader.front.attributes["name"].toLower();
+
 		namespaces[reader.front.attributes["name"]] = this;
 		checkVersion(reader.front.attributes["version"]);
 		cTypePrefix = reader.front.attributes["c:identifier-prefixes"];

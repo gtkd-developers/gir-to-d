@@ -86,7 +86,10 @@ void main(string[] args)
 		wrapper.commandlineGirPath = girDir;
 		wrapper.useBindDir = useBindDir;
 
-		wrapper.proccess(lookupFile);
+		if ( lookupFile.extension == ".gir" )
+			wrapper.proccessGIR(lookupFile);
+		else
+			wrapper.proccess(lookupFile);
 
 		if ( printFree )
 			wrapper.printFreeFunctions();
