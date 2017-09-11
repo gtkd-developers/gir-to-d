@@ -155,6 +155,9 @@ enum string[][string] defaultLookupText = [
 	"Pango": [
 		"struct: AttrList",
 		"class: PgAttributeList"
+	],
+	"Gst": [
+		"wrap: gstreamer"
 	]
 ];
 
