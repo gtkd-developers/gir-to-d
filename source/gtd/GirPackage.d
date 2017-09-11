@@ -777,9 +777,9 @@ struct GirInclude
 		inc.parseGIR(wrapper.getAbsoluteGirPath(girFileName()));
 
 		if ( auto text = name in defaultLookupText )
-			wrapper.proccess(new DefReader(*text, "Default rules"), inc);
+			wrapper.proccess(new DefReader(*text, "Default rules"), inc, true);
 
-		wrapper.proccess(new DefReader(lookupText, lookupFile, lookupLine), inc);
+		wrapper.proccess(new DefReader(lookupText, lookupFile, lookupLine), inc, true);
 
 		return inc;
 	}
