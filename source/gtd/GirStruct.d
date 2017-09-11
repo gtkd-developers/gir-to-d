@@ -730,6 +730,9 @@ final class GirStruct
 			return null;
 		}
 
+		if ( parent.canFind(".") )
+				namespaces ~= parent.split(".")[0];
+
 		foreach ( func; functions )
 		{
 			namespaces ~= getNamespace(func.returnType);
