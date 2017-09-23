@@ -28,6 +28,7 @@ import std.uni: toUpper, toLower;
 import std.range;
 import std.string: capitalize, splitLines, strip, chomp;
 
+import gtd.GirField;
 import gtd.GirFunction;
 import gtd.GirPackage;
 import gtd.GirType;
@@ -57,11 +58,11 @@ final class GirStruct
 
 	bool lookupClass = false;
 	bool lookupInterface = false;
-	bool lookupParent = false;  // is the parent set with the lookup file.
-	bool noCode = false;
-	bool noDecleration = false;
-	bool noExternal = false;
-	bool noNamespace = false;
+	bool lookupParent = false;  /// is the parent set with the lookup file.
+	bool noCode = false;        /// Only generate the C declarations.
+	bool noDecleration = false; /// Don't generate a Declaration of the C struct.
+	bool noExternal = false;    /// Don't generate a Declaration of the C struct. And don't generate the C function declarations.
+	bool noNamespace = false;   /// Generate the functions as global functions.
 	string[string] structWrap;
 	string[string] aliases;
 	string[] lookupCode;
@@ -72,6 +73,7 @@ final class GirStruct
 	GirField[] fields;
 	string[] virtualFunctions;
 	Map!(string, GirFunction) functions;
+	bool disguised = false;
 
 	GirWrapper wrapper;
 	GirPackage pack;
@@ -119,6 +121,8 @@ final class GirStruct
 
 		if ( pack && pack.name != "glib" && "glib:get-type" in reader.front.attributes && reader.front.attributes["glib:get-type"].endsWith("_get_type") )
 			functions["get_type"] = getTypeFunction(reader.front.attributes["glib:get-type"]);
+		if ( auto disg = "disguised" in reader.front.attributes )
+			disguised = *disg == "1";
 
 		if ( reader.front.type == XMLNodeType.EmptyTag )
 			return;
@@ -279,7 +283,7 @@ final class GirStruct
 		parentStruct = pack.getStruct(parent);
 		resolveImports();
 
-		if ( type == GirStructType.Record && !(lookupClass || lookupInterface) )
+		if ( type == GirStructType.Record && !(lookupClass || lookupInterface) && !("get_type" in functions && isSimpleStruct()) )
 		{
 			writeDStruct();
 			return;
@@ -301,6 +305,8 @@ final class GirStruct
 
 		if ( isInterface() )
 			buff ~= "public template "~ name ~"T(TStruct)";
+		else if ( isSimpleStruct() )
+			buff ~= "public final class "~ name;
 		else
 			buff ~= "public class "~ name;
 
@@ -456,6 +462,18 @@ final class GirStruct
 			buff ~= "\n";
 
 			buff ~= indenter.format(["/**", "*/"]);
+		}
+
+		if ( isSimpleStruct() )
+		{
+			foreach( field; fields )
+			{
+				if ( field.name.startsWith("dummy") )
+					continue;
+
+				buff ~= "\n";
+				buff ~= indenter.format(field.getProperty(this));
+			}
 		}
 
 		bool firstSignal = true;
@@ -712,6 +730,49 @@ final class GirStruct
 		return false;
 	}
 
+	bool isSimpleStruct()
+	{
+		//TODO: don't use this workaround.
+		//TODO: For TestLogMsg, GArray and GByteArray implement array properties that are not zero terminated. 
+		if ( cType == "PangoAttribute" || cType == "GTestLogMsg" || cType == "GArray" || cType == "GByteArray" || cType == "GtkTreeIter" )
+			return false;
+
+		if ( lookupClass || lookupInterface || noDecleration || noNamespace )
+			return false;
+
+		if ( disguised || fields.length == 0 )
+			return false;
+
+		if ( !fields.empty && fields[0].type )
+		{
+			// If the first field is wraped as a D class and isn't declared
+			// as a pointer we assume its the parent instance.
+			GirStruct dStruct = pack.getStruct(fields[0].type.name);
+			if ( dStruct && dStruct.isDClass() && !fields[0].type.cType.endsWith("*") )
+				return false;
+		}
+
+		foreach ( field; fields )
+		{
+			if ( !field.writable )
+				return false;
+		}
+
+		return true;
+	}
+
+	bool isDClass()
+	{
+		if ( type.among(GirStructType.Class, GirStructType.Interface) )
+			return true;
+		if ( type == GirStructType.Record && (lookupClass || lookupInterface) )
+			return true;
+		if ( "get_type" in functions && isSimpleStruct() )
+			return true;
+
+		return false;
+	}
+
 	string[] usedNamespaces()
 	{
 		string[] namespaces;
@@ -777,6 +838,38 @@ final class GirStruct
 			imports ~= "gtkd.Loader";
 		}
 
+		if ( isSimpleStruct() )
+		{
+			foreach ( field; fields ) 
+			{
+				if ( field.type.name in structWrap || field.type.name in aliases )
+					continue;
+
+				GirStruct dType;
+				
+				if ( field.type.isArray() )
+					dType = pack.getStruct(field.type.elementType.name);
+				else
+					dType = pack.getStruct(field.type.name);
+
+				if ( dType is this )
+					continue;
+			
+				if ( dType && dType.isDClass() )
+				{
+					if ( !dType.pack.name.among("cairo", "glib", "gthread") )
+						imports ~= "gobject.ObjectG";
+
+					if ( dType.type == GirStructType.Interface || dType.lookupInterface )
+						imports ~= dType.pack.name ~"."~ dType.name ~"IF";
+					else
+						imports ~= dType.pack.name ~"."~ dType.name;
+				}
+				else if ( field.type.name.among("utf8", "filename") || field.type.cType.among("guchar**") )
+					imports ~= "glib.Str";
+			}
+		}
+
 		foreach( func; functions )
 		{
 			if ( func.noCode )
@@ -795,7 +888,7 @@ final class GirStruct
 
 				GirStruct dType = pack.getStruct(type.name);
 
-				if ( dType && (dType.type != GirStructType.Record || dType.lookupClass || dType.lookupInterface) )
+				if ( dType && dType.isDClass() )
 				{
 					if ( !dType.pack.name.among("cairo", "glib", "gthread") )
 						imports ~= "gobject.ObjectG";
@@ -836,7 +929,7 @@ final class GirStruct
 				if ( func.type == GirFunctionType.Signal && type.name.startsWith("Gdk.Event") )
 					imports ~= "gdk.Event";
 
-				if ( dType && (dType.type != GirStructType.Record || dType.lookupClass || dType.lookupInterface) )
+				if ( dType && dType.isDClass() )
 				{
 					if ( dType.type == GirStructType.Interface || dType.lookupInterface )
 					{
@@ -987,188 +1080,6 @@ final class GirStruct
 		buff ~= signal.getSignalCallback();
 		buff ~= signal.getSignalDestroyCallback();
 		
-		return buff;
-	}
-}
-
-final class GirField
-{
-	string name;
-	string doc;
-	GirType type;
-	int bits = -1;
-
-	GirFunction callback;
-	GirUnion gtkUnion;
-	GirStruct gtkStruct;
-
-	GirWrapper wrapper;
-
-	this(GirWrapper wrapper)
-	{
-		this.wrapper = wrapper;
-	}
-
-	void parse(T)(XMLReader!T reader)
-	{
-		name = reader.front.attributes["name"];
-
-		if ( "bits" in reader.front.attributes )
-			bits = to!int(reader.front.attributes["bits"]);
-
-		//TODO: readable private?
-
-		reader.popFront();
-
-		while( !reader.empty && !reader.endTag("field") )
-		{
-			if ( reader.front.type == XMLNodeType.EndTag )
-			{
-				reader.popFront();
-				continue;
-			}
-
-			switch(reader.front.value)
-			{
-				case "doc":
-					reader.popFront();
-					doc ~= reader.front.value;
-					reader.popFront();
-					break;
-				case "doc-deprecated":
-					reader.popFront();
-					doc ~= "\n\nDeprecated: "~ reader.front.value;
-					reader.popFront();
-					break;
-				case "array":
-				case "type":
-					type = new GirType(wrapper);
-					type.parse(reader);
-					break;
-				case "callback":
-					callback = new GirFunction(wrapper, null);
-					callback.parse(reader);
-					break;
-				default:
-					error("Unexpected tag: ", reader.front.value, " in GirField: ", name, reader);
-			}
-			reader.popFront();
-		}
-	}
-
-	/**
-	 * A special case for fields, we need to know about all of then
-	 * to properly construct the bitfields.
-	 */
-	static string[] getFieldDeclarations(GirField[] fields, GirWrapper wrapper)
-	{
-		string[] buff;
-		int bitcount;
-
-		void endBitfield()
-		{
-			//AFAIK: C bitfields are padded to a multiple of sizeof uint.
-			int padding = 32 - (bitcount % 32);
-
-			if ( padding > 0 && padding < 32)
-			{
-				buff[buff.length-1] ~= ",";
-				buff ~= "uint, \"\", "~ to!string(padding);
-				buff ~= "));";
-			}
-			else
-			{
-				buff ~= "));";
-			}
-
-			bitcount = 0;
-		}
-
-		foreach ( field; fields )
-		{
-			if ( field.callback )
-			{
-				if ( bitcount > 0 )
-					endBitfield();
-				buff ~= field.callback.getFunctionPointerDecleration();
-				continue;
-			}
-
-			if ( field.gtkUnion )
-			{
-				if ( bitcount > 0 )
-					endBitfield();
-				buff ~= field.gtkUnion.getUnionDeclaration();
-				continue;
-			}
-
-			if ( field.gtkStruct )
-			{
-				if ( bitcount > 0 )
-					endBitfield();
-				buff ~= field.gtkStruct.getStructDeclaration();
-				buff ~= stringToGtkD(field.gtkStruct.cType ~" "~ field.gtkStruct.name ~";", wrapper.aliasses);
-				continue;
-			}
-
-			if ( field.bits > 0 )
-			{
-				if ( bitcount == 0 )
-				{
-					buff ~= "import std.bitmanip: bitfields;";
-					buff ~= "mixin(bitfields!(";
-				}
-				else
-				{
-					buff[buff.length-1] ~= ",";
-				}
-
-				bitcount += field.bits;
-				buff ~=stringToGtkD(field.type.cType ~", \""~ field.name ~"\", "~ to!string(field.bits), wrapper.aliasses);
-				continue;
-			}
-			else if ( bitcount > 0)
-			{
-				endBitfield();
-			}
-
-			if ( field.doc !is null && wrapper.includeComments && field.bits < 0 )
-			{
-				buff ~= "/**";
-				foreach ( line; field.doc.splitLines() )
-					buff ~= " * "~ line.strip();
-				buff ~= " */";
-			}
-
-			string dType;
-
-			if ( field.type.size == -1 )
-			{
-				if ( field.type.cType.empty )
-					dType = stringToGtkD(field.type.name, wrapper.aliasses);
-				else
-					dType = stringToGtkD(field.type.cType, wrapper.aliasses);
-			}
-			else if ( field.type.elementType.cType.empty )
-			{
-				//Special case for GObject.Value.
-				dType = stringToGtkD(field.type.elementType.name, wrapper.aliasses);
-				dType ~= "["~ to!string(field.type.size) ~"]";
-			}
-			else
-			{
-				dType = stringToGtkD(field.type.elementType.cType, wrapper.aliasses);
-				dType ~= "["~ to!string(field.type.size) ~"]";
-			}
-
-			buff ~= dType ~" "~ tokenToGtkD(field.name, wrapper.aliasses) ~";";
-		}
-
-		if ( bitcount > 0)
-		{
-			endBitfield();
-		}
-
 		return buff;
 	}
 }

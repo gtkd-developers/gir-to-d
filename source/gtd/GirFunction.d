@@ -514,7 +514,7 @@ final class GirFunction
 					}
 				}
 			}
-			else if ( isDType(dType) )
+			else if ( dType && dType.isDClass() )
 			{
 				if ( param.type.isArray() )
 				{
@@ -881,7 +881,7 @@ final class GirFunction
 
 			return buff;
 		}
-		else if ( isDType(returnDType) )
+		else if ( returnDType && returnDType.isDClass() )
 		{
 			buff ~= "auto p = "~ gtkCall ~";";
 
@@ -1324,7 +1324,7 @@ final class GirFunction
 
 			GirStruct dType = strct.pack.getStruct(type.name);
 
-			if ( isDType(dType) )
+			if ( dType && dType.isDClass() )
 			{
 			    if ( dType.type == GirStructType.Interface )
 					return dType.name ~"IF";
@@ -1347,18 +1347,6 @@ final class GirFunction
 			return stringToGtkD(type.cType[0..$-1], wrapper.aliasses, localAliases());
 
 		return stringToGtkD(type.cType, wrapper.aliasses, localAliases());
-	}
-
-	private bool isDType(GirStruct dType)
-	{
-		if ( dType is null )
-			return false;
-		if ( dType.type.among(GirStructType.Class, GirStructType.Interface) )
-			return true;
-		if ( dType.type == GirStructType.Record && (dType.lookupClass || dType.lookupInterface) )
-			return true;
-
-		return false;
 	}
 
 	private bool isStringArray(GirType type, GirParamDirection direction = GirParamDirection.Default)
@@ -1522,7 +1510,7 @@ final class GirFunction
 
 			GirStruct par = strct.pack.getStruct(param.type.name);
 
-			if ( isDType(par) )
+			if ( par && par.isDClass() )
 			{
 				buff ~= construct(param.type.name) ~"("~ tokenToGtkD(param.name, wrapper.aliasses, localAliases()) ~")";
 			}

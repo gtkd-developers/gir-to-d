@@ -7,6 +7,7 @@ source = [
 	'source/gtd/GirAlias.d',
 	'source/gtd/GirConstant.d',
 	'source/gtd/GirEnum.d',
+	'source/gtd/GirField.d',
 	'source/gtd/GirFunction.d',
 	'source/gtd/GirPackage.d',
 	'source/gtd/GirStruct.d',
