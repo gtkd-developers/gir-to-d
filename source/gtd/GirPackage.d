@@ -82,6 +82,9 @@ final class GirPackage
 
 	void parseGIR(string girFile)
 	{
+		if ( !exists(girFile) )
+			error("GIR file: '", girFile, "' not found.");
+
 		auto reader = new XMLReader!string(readText(girFile), girFile);
 
 		while ( !reader.empty && reader.front.value != "repository" )
