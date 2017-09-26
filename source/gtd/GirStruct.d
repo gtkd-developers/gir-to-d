@@ -422,15 +422,29 @@ final class GirStruct
 					buff ~= indenter.format("{");
 
 					if ( wrapper.useRuntimeLinker )
-						buff ~= indenter.format("if (  Linker.isLoaded(LIBRARY_"~ pack.name.toUpper() ~") && ownedRef )");
+						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.toUpper() ~") && ownedRef )");
 					else
-						buff ~= indenter.format("if (  ownedRef )");
+						buff ~= indenter.format("if ( ownedRef )");
 
 					if ( "unref" in functions )
 						buff ~= indenter.format(functions["unref"].cType ~"("~ getHandleVar ~");");
 					else
 						buff ~= indenter.format(functions["free"].cType ~"("~ getHandleVar ~");");
 
+					buff ~= indenter.format("}");
+					buff ~= "\n";
+				}
+				else if ( isSimpleStruct() )
+				{
+					buff ~= indenter.format("~this ()");
+					buff ~= indenter.format("{");
+
+					if ( wrapper.useRuntimeLinker )
+						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.toUpper() ~") && ownedRef )");
+					else
+						buff ~= indenter.format("if ( ownedRef )");
+
+					buff ~= indenter.format("g_free("~ getHandleVar ~");");
 					buff ~= indenter.format("}");
 					buff ~= "\n";
 				}
@@ -833,9 +847,12 @@ final class GirStruct
 				imports ~= *dir ~"."~ pack.name ~"types";
 		}
 
-		if ( wrapper.useRuntimeLinker && shouldFree() )
+		if ( wrapper.useRuntimeLinker && (shouldFree() || isSimpleStruct()) )
 		{
 			imports ~= "gtkd.Loader";
+
+			if ( isSimpleStruct() )
+				imports ~= "glib.c.functions";
 		}
 
 		if ( isSimpleStruct() )
