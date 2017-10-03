@@ -82,7 +82,7 @@ class GirWrapper
 
 			if ( !currentStruct && defReader.key.among(
 					"code", "cType", "extend", "implements", "import", "interfaceCode", "merge",
-					"noCode", "noExternal", "noSignal", "noStruct",	"override", "structWrap",
+					"noCode", "noExternal", "noProperty", "noSignal", "noStruct", "override", "structWrap",
 					"array", "in", "out", "inout", "ref") )
 				error("Found: '", defReader.key, "' without an active struct.", defReader);
 
