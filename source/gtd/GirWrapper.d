@@ -40,7 +40,7 @@ import gtd.Log;
 
 class GirWrapper
 {
-	bool includeComments;
+	bool includeComments = true;
 	bool useRuntimeLinker;
 	bool useBindDir;
 
