@@ -28,6 +28,7 @@ import std.stdio;
 import std.string;
 
 import gtd.DefReader;
+import gtd.GirField;
 import gtd.GirFunction;
 import gtd.GirPackage;
 import gtd.GirStruct;
@@ -265,6 +266,85 @@ class GirWrapper
 					break;
 
 				//Struct keys.
+				case "array":
+					string[] vals = defReader.value.split();
+
+					if ( vals[0] in currentStruct.functions )
+					{
+						GirFunction func = currentStruct.functions[vals[0]];
+
+						if ( vals[1] == "Return" )
+						{
+							if ( vals.length < 3 )
+							{
+								func.returnType.zeroTerminated = true;
+								break;
+							}
+
+							GirType elementType = new GirType(this);
+
+							elementType.name = func.returnType.name;
+							elementType.cType = func.returnType.cType[0..$-1];
+							func.returnType.elementType = elementType;
+
+							foreach( i, p; func.params )
+							{
+								if ( p.name == vals[2] )
+									func.returnType.length = cast(int)i;
+							}
+						}
+						else
+						{
+							GirParam param = findParam(currentStruct, vals[0], vals[1]);
+							GirType elementType = new GirType(this);
+
+							elementType.name = param.type.name;
+							elementType.cType = param.type.cType[0..$-1];
+							param.type.elementType = elementType;
+
+							if ( vals.length < 3 )
+							{
+								param.type.zeroTerminated = true;
+								break;
+							}
+
+							if ( vals[2] == "Return" )
+							{
+								param.type.length = -2;
+								break;
+							}
+
+							foreach( i, p; func.params )
+							{
+								if ( p.name == vals[2] )
+									param.type.length = cast(int)i;
+							}
+						}
+					}
+					else if ( currentStruct.fields.map!(a => a.name).canFind(vals[0]) )
+					{
+						GirField arrayField;
+						int lengthID = -1;
+
+						foreach ( int i, field; currentStruct.fields )
+						{
+							if ( field.name == vals[0] )
+								arrayField = field;
+							else if ( field.name == vals[1] )
+								lengthID = i;
+
+							if ( arrayField && lengthID > -1 )
+								break;
+						}
+
+						arrayField.type.length = lengthID;
+						currentStruct.fields[lengthID].isLength = true;
+					}
+					else
+					{
+						error("Field or function: `", vals[0], "' is unknown.", defReader);
+					}
+					break;
 				case "class":
 					if ( currentStruct is null )
 						currentStruct = createClass(currentPackage, defReader.value);
@@ -338,6 +418,17 @@ class GirWrapper
 				case "noExternal":
 					currentStruct.noExternal = true;
 					break;
+				case "noProperty":
+					foreach ( field; currentStruct.fields )
+					{
+						if ( field.name == defReader.value )
+						{
+							field.noProperty = true;
+							break;
+						}
+					}
+					error("Unknown field ", defReader.value, defReader);
+					break;
 				case "noSignal":
 					currentStruct.functions[defReader.value~"-signal"].noCode = true;
 					break;
@@ -349,62 +440,6 @@ class GirWrapper
 					break;
 
 				//Function keys
-				case "array":
-					string[] vals = defReader.value.split();
-
-					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
-
-					GirFunction func = currentStruct.functions[vals[0]];
-
-					if ( vals[1] == "Return" )
-					{
-						if ( vals.length < 3 )
-						{
-							func.returnType.zeroTerminated = true;
-							break;
-						}
-
-						GirType elementType = new GirType(this);
-
-						elementType.name = func.returnType.name;
-						elementType.cType = func.returnType.cType[0..$-1];
-						func.returnType.elementType = elementType;
-
-						foreach( i, p; func.params )
-						{
-							if ( p.name == vals[2] )
-								func.returnType.length = cast(int)i;
-						}
-					}
-					else
-					{
-						GirParam param = findParam(currentStruct, vals[0], vals[1]);
-						GirType elementType = new GirType(this);
-
-						elementType.name = param.type.name;
-						elementType.cType = param.type.cType[0..$-1];
-						param.type.elementType = elementType;
-
-						if ( vals.length < 3 )
-						{
-							param.type.zeroTerminated = true;
-							break;
-						}
-
-						if ( vals[2] == "Return" )
-						{
-							param.type.length = -2;
-							break;
-						}
-
-						foreach( i, p; func.params )
-						{
-							if ( p.name == vals[2] )
-								param.type.length = cast(int)i;
-						}
-					}
-					break;
 				case "in":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )

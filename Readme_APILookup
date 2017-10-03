@@ -120,6 +120,10 @@ class and interface will create a struct if it is not set.
 alias: ctype dtype
     Replace ctype with dtype in the generated code for the current struct.
 
+array: field length_field
+    Set length_field as the length for the field property.
+    And handle field as an array and keep the length_field in sync with the actual length.
+
 class: name
     Overwrite the settings in the gir file and generate this struct as a class
     using the specified name.
@@ -166,6 +170,10 @@ noCode: true
 
 noExternal: true
     Don't generate the c declaration for the struct set by struct:
+
+noProperty: name
+    Don't generate a property for field name.
+    name should be the name specified in the GIR file.
 
 noSignal: name
     Don't generate any code for signal name.
