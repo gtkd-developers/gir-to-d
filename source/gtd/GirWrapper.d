@@ -339,6 +339,11 @@ class GirWrapper
 
 						arrayField.type.length = lengthID;
 						currentStruct.fields[lengthID].isLength = true;
+
+						GirType elementType = new GirType(this);
+						elementType.name = arrayField.type.name;
+						elementType.cType = arrayField.type.cType[0..$-1];
+						arrayField.type.elementType = elementType;
 					}
 					else
 					{
@@ -426,8 +431,9 @@ class GirWrapper
 							field.noProperty = true;
 							break;
 						}
+						else if ( field == currentStruct.fields.back )
+							error("Unknown field ", defReader.value, defReader);
 					}
-					error("Unknown field ", defReader.value, defReader);
 					break;
 				case "noSignal":
 					currentStruct.functions[defReader.value~"-signal"].noCode = true;

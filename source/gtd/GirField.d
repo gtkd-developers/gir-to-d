@@ -251,7 +251,7 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public string[] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property string[] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
 				buff ~= "{";
 
 				if ( type.length > -1 )
@@ -263,7 +263,7 @@ final class GirField
 			}
 			else
 			{
-				buff ~= "public string "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property string "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
 				buff ~= "{";
 				buff ~= "return Str.toString("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~");";
 				buff ~= "}";
@@ -282,7 +282,7 @@ final class GirField
 
 			if ( type.isArray() )
 			{
-				buff ~= "public "~ dTypeName ~"[] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property "~ dTypeName ~"[] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
 				buff ~= "{";
 
 				if ( type.length > -1 )
@@ -307,7 +307,7 @@ final class GirField
 			}
 			else
 			{
-				buff ~= "public "~ dTypeName ~" "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property "~ dTypeName ~" "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
 				buff ~= "{";
 				
 				if ( dType.pack.name.among("cairo", "glib", "gthread") )
@@ -324,19 +324,19 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public bool[] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property bool[] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
 				buff ~= "{";
 
 				if ( type.length > -1 )
 					buff ~= "return "~ parent.getHandleVar ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[0.."~ getLengthID(parent) ~"];";
 				else
-					buff ~= "return "~ parent.getHandleVar ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[0..getArrayLength("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~")];";
+					error("Is boolean[] field: ", parent.name, ".", name, " really zero terminated?");
 
 				buff ~= "}";
 			}
 			else
 			{
-				buff ~= "public bool "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property bool "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
 				buff ~= "{";
 				buff ~= "return "~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" != 0;";
 				buff ~= "}";
@@ -346,7 +346,7 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public "~ stringToGtkD(type.cType[0..$-1], wrapper.aliasses, parent.aliases) ~"[] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property "~ stringToGtkD(type.cType[0..$-1], wrapper.aliasses, parent.aliases) ~"[] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
 				buff ~= "{";
 
 				if ( type.length > -1 )
@@ -358,7 +358,7 @@ final class GirField
 			}
 			else
 			{
-				buff ~= "public "~ stringToGtkD(type.cType, wrapper.aliasses, parent.aliases) ~" "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property "~ stringToGtkD(type.cType, wrapper.aliasses, parent.aliases) ~" "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
 				buff ~= "{";
 				buff ~= "return "~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~";";
 				buff ~= "}";
@@ -381,7 +381,7 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(string[] value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(string[] value)";
 				buff ~= "{";
 				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = Str.toStringzArray(value);";
 
@@ -392,7 +392,7 @@ final class GirField
 			}
 			else
 			{
-				buff ~= "public void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(string value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(string value)";
 				buff ~= "{";
 				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = Str.toStringz(value);";
 				buff ~= "}";
@@ -411,7 +411,7 @@ final class GirField
 
 			if ( type.isArray() )
 			{
-				buff ~= "public void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ dTypeName ~"[] value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ dTypeName ~"[] value)";
 				buff ~= "{";
 				buff ~= dType.cType ~"*[] arr = new "~ dType.cType ~"*[value.length+1];";
 				buff ~= "for ( int i = 0; i < value.length; i++ )";
@@ -429,7 +429,7 @@ final class GirField
 			}
 			else
 			{
-				buff ~= "public void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ dTypeName ~" value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ dTypeName ~" value)";
 				buff ~= "{";
 				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value."~ dType.getHandleFunc() ~"();";
 				buff ~= "}";
@@ -439,7 +439,7 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(bool[] value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(bool[] value)";
 				buff ~= "{";
 				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value.ptr;";
 
@@ -450,7 +450,7 @@ final class GirField
 			}
 			else
 			{
-				buff ~= "public void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(bool value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(bool value)";
 				buff ~= "{";
 				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";				
 				buff ~= "}";
@@ -460,7 +460,7 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ stringToGtkD(type.cType[0..$-1], wrapper.aliasses, parent.aliases) ~"[] value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ stringToGtkD(type.cType[0..$-1], wrapper.aliasses, parent.aliases) ~"[] value)";
 				buff ~= "{";
 				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value.ptr;";
 
@@ -471,7 +471,7 @@ final class GirField
 			}
 			else
 			{
-				buff ~= "public void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ stringToGtkD(type.cType, wrapper.aliasses, parent.aliases) ~" value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ stringToGtkD(type.cType, wrapper.aliasses, parent.aliases) ~" value)";
 				buff ~= "{";
 				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";
 				buff ~= "}";
@@ -486,11 +486,6 @@ final class GirField
 			buff ~= "/**";
 			foreach ( line; doc.splitLines() )
 				buff ~= " * "~ line.strip();
-
-			//if ( libVersion )
-			//{
-			//	buff ~= " *\n * Since: "~ libVersion;
-			//}
 
 			buff ~= " */";
 		}
