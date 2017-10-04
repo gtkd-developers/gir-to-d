@@ -116,7 +116,13 @@ final class GirFunction
 		{
 			switch ( reader.front.value )
 			{
+				case "attribute":
+					//TODO: Do we need these attibutes?
+					//dbus.name ccode.ordering deprecated replacement.
+					reader.skipTag();
+					break;
 				case "doc":
+				case "doc-stability":
 					reader.popFront();
 					doc ~= reader.front.value;
 					reader.popFront();

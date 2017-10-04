@@ -112,7 +112,9 @@ final class GirPackage
 
 		namespaces[reader.front.attributes["name"]] = this;
 		checkVersion(reader.front.attributes["version"]);
-		cTypePrefix = reader.front.attributes["c:identifier-prefixes"];
+		
+		if ( "c:identifier-prefixes" in reader.front.attributes )
+			cTypePrefix = reader.front.attributes["c:identifier-prefixes"];
 
 		if ( "shared-library" in reader.front.attributes )
 		{
@@ -142,6 +144,11 @@ final class GirPackage
 						break;
 
 					collectedAliases[gtkAlias.name] = gtkAlias;
+					break;
+				case "attribute":
+					//TODO: Do we need these attibutes?
+					//dbus.name ccode.ordering deprecated replacement.
+					reader.skipTag();
 					break;
 				case "glib:boxed":
 					reader.skipTag();
