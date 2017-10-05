@@ -78,6 +78,11 @@ final class GirPackage
 		this.srcDir = srcDir;
 		this.stockIDs = new GirEnum(wrapper, this);
 		this.gdkKeys  = new GirEnum(wrapper, this);
+
+		GirInclude gobject;
+		gobject.name = "GObject";
+		gobject._version = "2.0";
+		includes["GObject"] = gobject;
 	}
 
 	void parseGIR(string girFile)
