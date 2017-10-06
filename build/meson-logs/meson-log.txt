@@ -1,0 +1,13 @@
+Build started at 2017-10-06T17:03:10.810804
+Python binary: /usr/bin/python
+Python system: Linux
+The Meson build system
+Version: 0.42.1
+Source dir: /home/mike/D/gtkD/gir-to-d
+Build dir: /home/mike/D/gtkD/gir-to-d/build
+Build type: native build
+Project name: GIR-D-Generator
+Native D compiler: ldc2 (llvm 1.4.0)
+Build machine cpu family: x86_64
+Build machine cpu: x86_64
+Build targets in project: 1

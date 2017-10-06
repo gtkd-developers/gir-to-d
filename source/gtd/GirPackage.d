@@ -448,7 +448,7 @@ final class GirPackage
 				if ( funct.type == GirFunctionType.Callback || funct.type == GirFunctionType.Signal || funct.name.empty )
 					continue;
 
-				buff ~= "\tLinker.link("~ funct.cType ~", \""~ funct.cType ~"\", LIBRARY_"~ name.toUpper() ~");\n";
+				buff ~= "\tLinker.link("~ funct.cType ~", \""~ funct.cType ~"\", LIBRARY_"~ name.replace(".","").toUpper() ~");\n";
 			}
 		}
 
@@ -568,11 +568,11 @@ final class GirPackage
 	private string getLibraries()
 	{
 		string lib = "version (Windows)\n\t";
-		lib ~= "static immutable LIBRARY_"~ name.toUpper() ~" = ["~ getDllNames() ~"];";
+		lib ~= "static immutable LIBRARY_"~ name.replace(".","").toUpper() ~" = ["~ getDllNames() ~"];";
 		lib ~= "\nelse version (OSX)\n\t";
-		lib ~= "static immutable LIBRARY_"~ name.toUpper() ~" = ["~ getDylibNames() ~"];";
+		lib ~= "static immutable LIBRARY_"~ name.replace(".","").toUpper() ~" = ["~ getDylibNames() ~"];";
 		lib ~= "\nelse\n\t";
-		lib ~= "static immutable LIBRARY_"~ name.toUpper() ~" = ["~ getSoNames() ~"];";
+		lib ~= "static immutable LIBRARY_"~ name.replace(".","").toUpper() ~" = ["~ getSoNames() ~"];";
 
 		return lib;
 	}
