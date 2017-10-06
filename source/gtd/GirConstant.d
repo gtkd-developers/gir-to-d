@@ -50,7 +50,10 @@ final class GirConstant
 	{
 		name = reader.front.attributes["name"];
 		value = reader.front.attributes["value"];
-		cType = reader.front.attributes["c:type"];
+		if ( "c:type" in reader.front.attributes )
+			cType = reader.front.attributes["c:type"];
+		else
+			cType = reader.front.attributes["c:identifier"];
 
 		reader.popFront();
 

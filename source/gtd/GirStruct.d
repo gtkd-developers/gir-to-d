@@ -28,6 +28,7 @@ import std.uni: toUpper, toLower;
 import std.range;
 import std.string: capitalize, splitLines, strip, chomp;
 
+import gtd.GirConstant;
 import gtd.GirField;
 import gtd.GirFunction;
 import gtd.GirPackage;
@@ -138,6 +139,12 @@ final class GirStruct
 					//dbus.name ccode.ordering deprecated replacement.
 					reader.skipTag();
 					break;
+				case "constant":
+					GirConstant constant = new GirConstant(wrapper, pack);
+					constant.parse(reader);
+					pack.collectedConstants[constant.name] = constant;
+					constant.name = name.toUpper() ~"_"~ constant.name;
+					break;
 				case "doc":
 					reader.popFront();
 					doc ~= reader.front.value;
@@ -167,6 +174,12 @@ final class GirStruct
 					uni.parse(reader);
 					field.gtkUnion = uni;
 					fields ~= field;
+					break;
+				case "callback":
+					GirFunction callback = new GirFunction(wrapper, null);
+					callback.parse(reader);
+					pack.collectedCallbacks[callback.name] = callback;
+					callback.name = name.toUpper() ~ constant.name;
 					break;
 				case "constructor":
 				case "method":
