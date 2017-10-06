@@ -20,7 +20,7 @@
 module gtd.GirPackage;
 
 import std.algorithm;
-import std.array : join;
+import std.array : join, replace;
 import std.conv;
 import std.file;
 import std.path;
@@ -314,8 +314,8 @@ final class GirPackage
 	{
 		try
 		{
-			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name)) )
-				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name));
+			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"))) )
+				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/")));
 		}
 		catch (FileException ex)
 		{
@@ -386,15 +386,15 @@ final class GirPackage
 
 		try
 		{
-			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name, "c")) )
-				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name, "c"));
+			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c")) )
+				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c"));
 		}
 		catch (FileException ex)
 		{
 			error("Failed to create directory: ", ex.msg);
 		}
 
-		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c/types.d"), buff);
+		std.file.write(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c/types.d"), buff);
 	}
 
 	void writeGdkKeys()
@@ -416,7 +416,7 @@ final class GirPackage
 
 		buff ~= "}\n";
 
-		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "Keysyms.d"), buff);
+		std.file.write(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "Keysyms.d"), buff);
 	}
 
 	void writeLoaderTable()
@@ -505,15 +505,15 @@ final class GirPackage
 
 		try
 		{
-			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name, "c")) )
-				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name, "c"));
+			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c")) )
+				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c"));
 		}
 		catch (FileException ex)
 		{
 			error("Failed to create directory: ", ex.msg);
 		}
 
-		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c", "functions.d"), buff);
+		std.file.write(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c", "functions.d"), buff);
 	}
 
 	void writeExternalFunctions()
@@ -554,15 +554,15 @@ final class GirPackage
 
 		try
 		{
-			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name, "c")) )
-				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name, "c"));
+			if ( !exists(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c")) )
+				mkdirRecurse(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c"));
 		}
 		catch (FileException ex)
 		{
 			error("Failed to create directory: ", ex.msg);
 		}
 
-		std.file.write(buildPath(wrapper.outputRoot, srcDir, name, "c", "functions.d"), buff);
+		std.file.write(buildPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c", "functions.d"), buff);
 	}
 
 	private string getLibraries()

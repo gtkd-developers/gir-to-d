@@ -179,7 +179,7 @@ final class GirStruct
 					GirFunction callback = new GirFunction(wrapper, null);
 					callback.parse(reader);
 					pack.collectedCallbacks[callback.name] = callback;
-					callback.name = name.toUpper() ~ constant.name;
+					callback.name = name.toUpper() ~ callback.name;
 					break;
 				case "constructor":
 				case "method":
@@ -554,9 +554,9 @@ final class GirStruct
 		buff ~= indenter.format("}");
 
 		if ( isInterface() )
-			write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name, name ~"T.d"), buff);
+			write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~"T.d"), buff);
 		else
-			write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name, name ~".d"), buff);
+			write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
 	}
 
 	void writeInterface()
@@ -617,7 +617,7 @@ final class GirStruct
 			buff ~= indenter.format("}");
 		}
 
-		write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name, name ~"IF.d"), buff);
+		write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~"IF.d"), buff);
 	}
 
 	void writeDStruct()
@@ -659,7 +659,7 @@ final class GirStruct
 		if ( !noNamespace )
 			buff ~= indenter.format("}");
 
-		write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name, name ~".d"), buff);
+		write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
 	}
 
 	/**
