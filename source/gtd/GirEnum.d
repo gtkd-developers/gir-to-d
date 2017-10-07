@@ -21,6 +21,7 @@ module gtd.GirEnum;
 
 import std.algorithm;
 import std.string : splitLines, strip, toUpper;
+import std.uni : isNumber;
 
 import gtd.GirPackage;
 import gtd.GirWrapper;
@@ -188,7 +189,10 @@ struct GirEnumMember
 			buff ~= " */";
 		}
 
-		buff ~= tokenToGtkD(name.toUpper(), wrapper.aliasses, false) ~" = "~ value ~",";
+		if ( name[0].isNumber && name !in wrapper.aliasses )
+			buff ~= "_"~ name.toUpper() ~" = "~ value ~",";
+		else
+			buff ~= tokenToGtkD(name.toUpper(), wrapper.aliasses, false) ~" = "~ value ~",";
 
 		return buff;
 	}
