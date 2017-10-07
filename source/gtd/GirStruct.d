@@ -440,7 +440,7 @@ final class GirStruct
 					buff ~= indenter.format("{");
 
 					if ( wrapper.useRuntimeLinker )
-						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.toUpper() ~") && ownedRef )");
+						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.replace(".","").toUpper() ~") && ownedRef )");
 					else
 						buff ~= indenter.format("if ( ownedRef )");
 
@@ -458,7 +458,7 @@ final class GirStruct
 					buff ~= indenter.format("{");
 
 					if ( wrapper.useRuntimeLinker )
-						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.toUpper() ~") && ownedRef )");
+						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.replace(".","").toUpper() ~") && ownedRef )");
 					else
 						buff ~= indenter.format("if ( ownedRef )");
 
@@ -900,7 +900,7 @@ final class GirStruct
 					else
 						imports ~= dType.pack.name ~"."~ dType.name;
 				}
-				else if ( field.type.name.among("utf8", "filename") || field.type.cType.among("guchar**") )
+				else if ( field.type.isString() || (field.type.isArray() && field.type.elementType.isString())  )
 					imports ~= "glib.Str";
 			}
 		}
@@ -978,7 +978,7 @@ final class GirStruct
 						imports ~= dType.pack.name ~"."~ dType.name;
 					}
 				}
-				else if ( type.name.among("utf8", "filename") || type.cType.among("guchar**") )
+				else if ( type.isString() || (type.isArray() && type.elementType.isString()) )
 					imports ~= "glib.Str";
 			}
 

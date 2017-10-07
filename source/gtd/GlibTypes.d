@@ -80,6 +80,7 @@ enum string[string] glibTypes = [
 	"switch": "switc",
 	"union": "unio",
 	"version": "versio",
+	"byte": "_byte",
 
 	"GLIB_SYSDEF_POLLIN": "=1",
 	"GLIB_SYSDEF_POLLOUT": "=4",
