@@ -191,10 +191,34 @@ final class GirFunction
 		if ( type == GirFunctionType.Function && name.startsWith("new") && returnType.cType != "void" )
 			type = GirFunctionType.Constructor;
 
-		if ( cType.among("gst_init", "gst_init_check") )
+		// For the case where a param is `const gchar* name[]` whitch ends up in the gir files
+		// as an array with elementType name=utf8 c:type=gchar, missing the [].
+		switch ( cType )
 		{
-			params[1].type.cType = "char***";
-			params[1].type.elementType.cType = "char**";
+			case "gtk_icon_theme_choose_icon":
+			case "gtk_icon_theme_choose_icon_for_scale":
+				params[0].type.cType = "char**";
+				params[0].type.elementType.cType = "char*";
+				break;
+			case "g_object_getv":
+			case "g_object_setv":
+				params[1].type.cType = "char**";
+				params[1].type.elementType.cType = "char*";
+				break;
+			case "gst_init":
+			case "gst_init_check":
+				params[1].type.cType = "char***";
+				params[1].type.elementType.cType = "char**";
+				break:
+			case "g_object_new_with_properties":
+				params[2].type.cType = "char**";
+				params[2].type.elementType.cType = "char*";
+				break;
+			case "g_key_file_set_locale_string_list":
+				params[3].type.cType = "char**";
+				params[3].type.elementType.cType = "char*";
+				break;
+			default: break;
 		}
 	}
 
