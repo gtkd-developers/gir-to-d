@@ -368,7 +368,7 @@ final class GirFunction
 			if ( param.lengthFor )
 				continue;
 
-			if ( returnType.length > -1 && param == params[returnType.length] )
+			if ( returnType.length > -1 && param == params[returnType.length] && params[returnType.length].direction != GirParamDirection.Default )
 				continue;
 
 			if ( paramCount == 0 && strct.type == GirStructType.Record && isInstanceParam(param) )
@@ -644,7 +644,7 @@ final class GirFunction
 					}
 				}
 			}
-			else if ( param.lengthFor || returnType.length == i )
+			else if ( param.lengthFor || (returnType.length == i && param.direction != GirParamDirection.Default ) )
 			{
 				string arrId;
 				string lenType = tokenToGtkD(param.type.cType.removePtr(), wrapper.aliasses, localAliases());
@@ -1415,7 +1415,9 @@ final class GirFunction
 
 	private string lenId(GirType type, string paramName = "p")
 	{
-		if ( type.length > -1 )
+		if ( type.length > -1 && params[type.length].direction == GirParamDirection.Default && paramName != "p" )
+			return "cast("~ tokenToGtkD(params[type.length].type.cType.removePtr(), wrapper.aliasses, localAliases()) ~")"~ paramName.replaceFirst("out", "") ~".length";
+		else if ( type.length > -1 )
 			return tokenToGtkD(params[type.length].name, wrapper.aliasses, localAliases());
 		//The c function returns the length.
 		else if ( type.length == -2 )
@@ -1634,6 +1636,9 @@ final class GirParam
 
 			reader.popFront();
 		}
+
+		if ( direction != GirParamDirection.Default && !type.cType.endsWith("*") )
+			direction = GirParamDirection.Default;
 	}
 }
 
