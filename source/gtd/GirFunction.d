@@ -1237,7 +1237,10 @@ final class GirFunction
 					if ( param.doc.empty )
 						continue;
 
-					if ( returnType.length > -1 && param == params[returnType.length] )
+					if ( param.lengthFor )
+						continue;
+
+					if ( returnType.length > -1 && param == params[returnType.length] && params[returnType.length].direction != GirParamDirection.Default )
 						continue;
 
 					if ( isInstanceParam(param) )
