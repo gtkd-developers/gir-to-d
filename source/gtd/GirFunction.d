@@ -209,7 +209,7 @@ final class GirFunction
 			case "gst_init_check":
 				params[1].type.cType = "char***";
 				params[1].type.elementType.cType = "char**";
-				break:
+				break;
 			case "g_object_new_with_properties":
 				params[2].type.cType = "char**";
 				params[2].type.elementType.cType = "char*";
