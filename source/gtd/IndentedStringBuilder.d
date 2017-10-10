@@ -79,6 +79,10 @@ public class IndentedStringBuilder
 		{
 			return "\n";
 		}
+		else if ( startsWith(line, "&&", "||") )
+		{
+			text = tabs ~"\t"~ line ~"\n";
+		}
 		else if ( statement )
 		{
 			text = tabs ~"\t"~ line ~"\n";
