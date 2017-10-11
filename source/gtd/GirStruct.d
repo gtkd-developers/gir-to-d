@@ -518,6 +518,9 @@ final class GirStruct
 			if ( isInterface() && func.type == GirFunctionType.Constructor )
 				continue;
 
+			if ( isInterface() && func.name == "get_type" )
+				continue;
+
 			if ( func.type == GirFunctionType.Signal )
 			{
 				buff ~= "\n";
@@ -603,7 +606,7 @@ final class GirStruct
 					buff ~= "\n";
 					buff ~= indenter.format(dec);
 				}
-				else
+				else if ( func.name != "get_type" )
 				{
 					string[] dec = func.getDeclaration();
 					dec[$-1] = dec[$-1].replace("override ", "");
@@ -611,6 +614,14 @@ final class GirStruct
 
 					buff ~= "\n";
 					buff ~= indenter.format(dec);
+				}
+				else
+				{
+					buff ~= "\n";
+					buff ~= indenter.format(func.getDeclaration());
+					buff ~= indenter.format("{");
+					buff ~= indenter.format(func.getBody());
+					buff ~= indenter.format("}");
 				}
 			}
 
@@ -1068,9 +1079,6 @@ final class GirStruct
 		func.name = "get_type";
 		func.cType = cIdentifier;
 		func.returnType = returnType;
-
-		if ( type == GirStructType.Interface )
-			func.noCode = true;
 
 		return func;
 	}
