@@ -1508,7 +1508,7 @@ final class GirFunction
 		if ( dType.pack.name.among("cairo", "glib", "gthread") )
 			return "new "~name;
 		else if( dType.type == GirStructType.Interface )
-			return "ObjectG.getDObject!("~ name ~", "~ name ~"IF)";
+			return "ObjectG.getDObject!("~ name ~"IF)";
 		else
 			return "ObjectG.getDObject!("~ name ~")";
 	}

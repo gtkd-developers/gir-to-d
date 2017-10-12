@@ -317,7 +317,7 @@ final class GirField
 				if ( dType.pack.name.among("cairo", "glib", "gthread") )
 					buff ~= "arr[i] = new "~ dTypeName ~"("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
 				else if( dType.type == GirStructType.Interface )
-					buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~", "~ dTypeName ~"IF)("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
+					buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~"IF)("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
 				else
 					buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~")("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
 
@@ -334,7 +334,7 @@ final class GirField
 				if ( dType.pack.name.among("cairo", "glib", "gthread") )
 					buff ~= "return new "~ dTypeName ~"("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
 				else if( dType.type == GirStructType.Interface )
-					buff ~= "return ObjectG.getDObject!("~ dTypeName ~", "~ dTypeName ~"IF)("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
+					buff ~= "return ObjectG.getDObject!("~ dTypeName ~"IF)("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
 				else
 					buff ~= "return ObjectG.getDObject!("~ dTypeName ~")("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
 
