@@ -935,10 +935,10 @@ final class GirStruct
 					if ( dType is this && dType.type != GirStructType.Interface )
 						return;
 
-					imports ~= dType.pack.name ~"."~ dType.name;
-
 					if ( dType.type == GirStructType.Interface || dType.lookupInterface )
 						imports ~= dType.pack.name ~"."~ dType.name ~"IF";
+					else
+						imports ~= dType.pack.name ~"."~ dType.name;
 				}
 				else if ( type.name.among("utf8", "filename") || type.cType.among("guchar**") )
 					imports ~= "glib.Str";
@@ -968,16 +968,9 @@ final class GirStruct
 				if ( dType && dType.isDClass() )
 				{
 					if ( dType.type == GirStructType.Interface || dType.lookupInterface )
-					{
 						imports ~= dType.pack.name ~"."~ dType.name ~"IF";
-
-						if ( func.type == GirFunctionType.Signal )
-							imports ~= dType.pack.name ~"."~ dType.name;
-					}
 					else
-					{
 						imports ~= dType.pack.name ~"."~ dType.name;
-					}
 				}
 				else if ( type.isString() || (type.isArray() && type.elementType.isString()) )
 					imports ~= "glib.Str";
