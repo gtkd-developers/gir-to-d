@@ -20,7 +20,7 @@
 module girtod;
 
 import std.array;
-import std.file : isFile;
+import std.file : isFile, exists;
 import std.getopt;
 import std.path;
 import std.stdio;
@@ -69,7 +69,7 @@ void main(string[] args)
 	{
 		input = "./";
 	}
-	else if ( input.isFile() )
+	else if ( input.exists && input.isFile() )
 	{
 		lookupFile = input.baseName();
 		input = input.dirName();
