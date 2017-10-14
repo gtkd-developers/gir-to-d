@@ -150,8 +150,8 @@ class GirWrapper
 					{
 						if ( parseVersion )
 							break;
-						else
-							defReader.readBlock();
+
+						defReader.skipBlock();
 					}
 
 					if ( !parseVersion )

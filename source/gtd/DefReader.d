@@ -80,10 +80,11 @@ public final class DefReader
 
 		if ( !line.empty && !line.startsWith("#") )
 		{
-			size_t index = line.indexOf(':');
+			ptrdiff_t index = line.indexOf(':');
 
-			key   = line[0 .. max(index, 0)].strip();
-			value = line[index +1 .. $].strip();
+			key    = line[0 .. max(index, 0)].strip();
+			value  = line[index +1 .. $].strip();
+			subKey = "";
 
 			index = key.indexOf(' ');
 			if ( index != -1 )
@@ -96,11 +97,12 @@ public final class DefReader
 		{
 			key.length = 0;
 			value.length = 0;
+			subKey.length = 0;
 		}
 	}
 
 	/**
-	 * Gets the contends of a block value
+	 * Gets the content of a block value
 	 */
 	public string[] readBlock(string key = "")
 	{
@@ -124,6 +126,27 @@ public final class DefReader
 		}
 
 		throw new LookupException(this, "Found EOF while expecting: \""~key~": end\"");
+	}
+
+	/**
+	 * Skip the content of a block. Supports nested blocks.
+	 */
+	public void skipBlock(string key = "")
+	{
+		if ( key.empty )
+			key = this.key;
+
+		size_t nestedBlocks = 1;
+		do
+		{
+			do lines.popFront; while ( !lines.front.strip().startsWith(key) );
+
+			if ( lines.front.strip().endsWith("start") )
+				nestedBlocks++;
+			else
+				nestedBlocks--;
+		}
+		while ( nestedBlocks > 0 );
 	}
 
 	/**
