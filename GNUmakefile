@@ -2,6 +2,8 @@ SHELL=/bin/sh
 OS=$(shell uname || uname -s)
 ARCH=$(shell arch || uname -m)
 
+GIR_TO_D_VERSION=v0.13.0
+
 ifndef DC
     ifneq ($(strip $(shell which dmd 2>/dev/null)),)
         DC=dmd
@@ -41,7 +43,7 @@ $(BINNAME): VERSION $(SOURCES)
 	rm -f *.o
 
 VERSION: VERSION.in
-	sed 's/@VCS_TAG@/$(shell git describe --dirty=+ --tags)/g' $< > $@
+	sed 's/@VCS_TAG@/$(shell git describe --dirty=+ --tags || echo $(GIR_TO_D_VERSION))/g' $< > $@
 
 clean:
 	-rm -f $(BINNAME)
