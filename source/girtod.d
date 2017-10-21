@@ -49,7 +49,7 @@ void main(string[] args)
 			"output|o",           "Output directory for the generated binding. (Default: ./out)", &outputDir,
 			"use-runtime-linker", "Link the gtk functions with the runtime linker.", &useRuntimeLinker,
 			"gir-directory|g",    "Directory to search for gir files before the system directory.", &girDir,
-			"print-free",         "Print functions that don't have a parrent module.", &printFree,
+			"print-free",         "Print functions that don't have a parent module.", &printFree,
 			"use-bind-dir",       "Include public imports for the old gtkc package.", &useBindDir
 		);
 
