@@ -1,4 +1,4 @@
-project('GIR-D-Generator', 'd')
+project('GIR-to-D', 'd', version: '0.13.0')
 
 source = [
 	'source/girtod.d',
@@ -23,9 +23,15 @@ source = [
 
 sources_dir = include_directories('source/')
 
+git = find_program('git')
+version = vcs_tag(command: [git.path(), 'describe', '--dirty=+', '--tags'], input: 'VERSION.in', output: 'VERSION')
+# d_import_dirs was added in meson 0.43 for now add -J manually.
+add_project_arguments('-J'+meson.build_root(), language: 'd')
+
 executable(
 	'girtod',
-	[source],
+	[source, version],
 	include_directories : [sources_dir],
+#	d_import_dirs : meson.build_root(),
 	install : true
 )

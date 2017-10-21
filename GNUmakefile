@@ -16,12 +16,14 @@ endif
 
 ifeq ("$(DC)","gdc")
     DCFLAGS=-O2
+    INCLUDEFLAG=-J
     LINKERFLAG=-Xlinker 
     DDOCFLAGS=-fsyntax-only -c -fdoc -fdoc-file=$@
     DDOCINC=-fdoc-inc=
     output=-o $@
 else
     DCFLAGS=-O
+    INCLUDEFLAG=-J
     LINKERFLAG=-L
     DDOCFLAGS=-o- -Df$@
 	output=-of$@
@@ -34,10 +36,14 @@ endif
 SOURCES = $(wildcard source/*.d) $(wildcard source/gtd/*.d)
 BINNAME = girtod
 
-$(BINNAME): $(SOURCES)
-	$(DC) $^ $(output) $(DCFLAGS) $(LDFLAGS)
+$(BINNAME): VERSION $(SOURCES)
+	$(DC) $(filter-out $<,$^) $(output) $(INCLUDEFLAG)./ $(DCFLAGS) $(LDFLAGS)
 	rm -f *.o
+
+VERSION: VERSION.in
+	sed 's/@VCS_TAG@/$(shell git describe --dirty=+ --tags)/g' $< > $@
 
 clean:
 	-rm -f $(BINNAME)
+	-rm -f VERSION
 

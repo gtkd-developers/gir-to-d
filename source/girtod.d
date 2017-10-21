@@ -48,7 +48,8 @@ void main(string[] args)
 			"use-runtime-linker", "Link the gtk functions with the runtime linker.", &useRuntimeLinker,
 			"gir-directory|g",    "Directory to search for gir files before the system directory.", &girDir,
 			"print-free",         "Print functions that don't have a parent module.", &printFree,
-			"use-bind-dir",       "Include public imports for the old gtkc package.", &useBindDir
+			"use-bind-dir",       "Include public imports for the old gtkc package.", &useBindDir,
+			"version",            "Print the version and exit", (){ writeln("GIR to D ", import("VERSION")); exit(0); }
 		);
 
 		if (helpInformation.helpWanted)
