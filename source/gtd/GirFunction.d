@@ -230,6 +230,23 @@ final class GirFunction
 		return false;
 	}
 
+	/**
+	 * Is this function a static function.
+	 */
+	bool isStatic()
+	{
+		if ( strct.noNamespace )
+			return false;
+
+		if ( type == GirFunctionType.Function && !(!params.empty && isInstanceParam(params[0])) )
+			return true;
+
+		if ( type == GirFunctionType.Method && strct.isNamespace() )
+			return true;
+
+		return false;
+	}
+
 	string[] getCallbackDeclaration()
 	{
 		string[] buff;
@@ -1430,23 +1447,6 @@ final class GirFunction
 			return null;
 
 		return "getArrayLength("~ paramName ~")";
-	}
-
-	/**
-	 * Is this function a static function.
-	 */
-	private bool isStatic()
-	{
-		if ( strct.noNamespace )
-			return false;
-
-		if ( type == GirFunctionType.Function && !(!params.empty && isInstanceParam(params[0])) )
-			return true;
-
-		if ( type == GirFunctionType.Method && strct.isNamespace() )
-			return true;
-
-		return false;
 	}
 
 	/**

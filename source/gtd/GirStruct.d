@@ -506,7 +506,7 @@ final class GirStruct
 			if ( isInterface() && func.type == GirFunctionType.Constructor )
 				continue;
 
-			if ( isInterface() && func.name == "get_type" )
+			if ( isInterface() && func.isStatic() )
 				continue;
 
 			if ( func.type == GirFunctionType.Signal )
@@ -594,7 +594,7 @@ final class GirStruct
 					buff ~= "\n";
 					buff ~= indenter.format(dec);
 				}
-				else if ( func.name != "get_type" )
+				else if ( !func.isStatic() )
 				{
 					string[] dec = func.getDeclaration();
 					dec[$-1] = dec[$-1].replace("override ", "");
