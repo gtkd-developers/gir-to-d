@@ -406,6 +406,16 @@ final class GirStruct
 
 			if ( !isInterface() && cType != "GObject" && cType != "cairo_t" )
 			{
+				if ( parentStruct && pack.name != "cairo" )
+				{
+					buff ~= indenter.format("protected override void setStruct(GObject* obj)");
+					buff ~= indenter.format("{");
+					buff ~= indenter.format(getHandleVar ~" = cast("~ cType ~"*)obj;");
+					buff ~= indenter.format("super.setStruct(obj);");
+					buff ~= indenter.format("}");
+					buff ~= "\n";
+				}
+
 				buff ~= indenter.format("/**");
 				buff ~= indenter.format(" * Sets our main struct and passes it to the parent class.");
 				buff ~= indenter.format(" */");
