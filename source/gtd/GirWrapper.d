@@ -41,6 +41,7 @@ class GirWrapper
 	bool includeComments = true;
 	bool useRuntimeLinker;
 	bool useBindDir;
+	bool printFiles;
 
 	string apiRoot;
 	string outputRoot;
@@ -500,6 +501,27 @@ class GirWrapper
 		}
 	}
 
+	void writeFile(string fileName, string contents, bool createDirectory = false)
+	{
+		if ( createDirectory )
+		{
+			try
+			{
+				if ( !exists(fileName.dirName()) )
+					mkdirRecurse(fileName.dirName());
+			}
+			catch (FileException ex)
+			{
+				error("Failed to create directory: ", ex.msg);
+			}
+		}
+
+		std.file.write(fileName, contents);
+
+		if ( printFiles )
+			writeln(fileName);
+	}
+
 	string getAbsoluteGirPath(string girFile)
 	{
 		if ( commandlineGirPath )
@@ -619,10 +641,14 @@ class GirWrapper
 		string from = buildNormalizedPath(srcDir, file);
 		string to = buildNormalizedPath(destDir, file);
 
-		writefln("copying file [%s] to [%s]", from, to);
+		if ( !printFiles )
+			writefln("copying file [%s] to [%s]", from, to);
 
 		if ( isFile(from) )
 		{
+			if ( printFiles )
+				writeln(to);
+
 			copy(from, to);
 			return;
 		}
@@ -637,9 +663,16 @@ class GirWrapper
 				string dst = buildPath(to, entry.name.baseName);
 
 				if ( isDir(entry.name) )
+				{
 					copyDir(entry.name, dst);
+				}
 				else
+				{
+					if ( printFiles && !dst.endsWith("functions-runtime.d") && !dst.endsWith("functions-compiletime.d") )
+						writeln(dst);
+						
 					copy(entry.name, dst);
+				}
 			}
 		}
 
@@ -647,6 +680,9 @@ class GirWrapper
 
 		if ( file == "cairo" )
 		{
+			if ( printFiles )
+				writeln(buildNormalizedPath(to, "c", "functions.d"));
+
 			if ( useRuntimeLinker )
 				copy(buildNormalizedPath(to, "c", "functions-runtime.d"), buildNormalizedPath(to, "c", "functions.d"));
 			else

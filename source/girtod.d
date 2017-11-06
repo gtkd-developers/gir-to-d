@@ -34,6 +34,7 @@ void main(string[] args)
 	bool printFree;
 	bool useRuntimeLinker;
 	bool useBindDir;
+	bool printFiles;
 	string input;
 	string outputDir;
 	string lookupFile = "APILookup.txt";
@@ -47,6 +48,7 @@ void main(string[] args)
 			"output|o",           "Output directory for the generated binding. (Default: ./out)", &outputDir,
 			"use-runtime-linker", "Link the gtk functions with the runtime linker.", &useRuntimeLinker,
 			"gir-directory|g",    "Directory to search for gir files before the system directory.", &girDir,
+			"print-files",        "Write a newline separated list of generated files to stdout", &printFiles,
 			"print-free",         "Print functions that don't have a parent module.", &printFree,
 			"use-bind-dir",       "Include public imports for the old gtkc package.", &useBindDir,
 			"version",            "Print the version and exit", (){ writeln("GIR to D ", import("VERSION")); exit(0); }
@@ -84,6 +86,7 @@ void main(string[] args)
 
 		wrapper.commandlineGirPath = girDir;
 		wrapper.useBindDir = useBindDir;
+		wrapper.printFiles = printFiles;
 
 		if ( lookupFile.extension == ".gir" )
 			wrapper.proccessGIR(lookupFile);

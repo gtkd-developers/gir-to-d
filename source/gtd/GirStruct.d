@@ -21,7 +21,7 @@ import std.algorithm: among, sort, uniq, startsWith, endsWith, canFind;
 import std.array : replace;
 import std.conv;
 import std.file : write;
-import std.path: buildPath;
+import std.path: buildNormalizedPath;
 import std.uni: toUpper, toLower;
 import std.range;
 import std.string: capitalize, splitLines, strip, chomp;
@@ -545,9 +545,9 @@ final class GirStruct
 		buff ~= indenter.format("}");
 
 		if ( isInterface() )
-			write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~"T.d"), buff);
+			wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~"T.d"), buff);
 		else
-			write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
+			wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
 	}
 
 	void writeInterface()
@@ -616,7 +616,7 @@ final class GirStruct
 			buff ~= indenter.format("}");
 		}
 
-		write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~"IF.d"), buff);
+		wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~"IF.d"), buff);
 	}
 
 	void writeDStruct()
@@ -658,7 +658,7 @@ final class GirStruct
 		if ( !noNamespace )
 			buff ~= indenter.format("}");
 
-		write(buildPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
+		wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
 	}
 
 	/**
