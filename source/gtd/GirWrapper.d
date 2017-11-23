@@ -36,15 +36,25 @@ import gtd.GlibTypes;
 import gtd.IndentedStringBuilder;
 import gtd.Log;
 
+enum PrintFileMethod
+{
+	Absolute,
+	Relative,
+	Default
+}
+
 class GirWrapper
 {
 	bool includeComments = true;
 	bool useRuntimeLinker;
 	bool useBindDir;
-	bool printFiles;
 
-	string apiRoot;
-	string outputRoot;
+	bool printFiles;
+	PrintFileMethod printFileMethod = PrintFileMethod.Default;
+	string cwdOrBaseDirectory;
+
+	string inputDir;
+	string outputDir;
 	string srcDir = "./";
 	string commandlineGirPath;
 
@@ -53,19 +63,18 @@ class GirWrapper
 
 	static GirPackage[string] packages;
 
-	public this(string apiRoot, string outputRoot, bool useRuntimeLinker)
+	public this(string inputDir, string outputDir)
 	{
-		this.apiRoot          = apiRoot;
-		this.outputRoot       = outputRoot;
-		this.useRuntimeLinker = useRuntimeLinker;
+		this.inputDir         = inputDir;
+		this.outputDir       = outputDir;
 	}
 
 	void proccess(string lookupFileName)
 	{
-		if ( !exists(buildPath(apiRoot, lookupFileName)) )
+		if ( !exists(buildPath(inputDir, lookupFileName)) )
 			error(lookupFileName, " not found, check '--help' for more information.");
 
-		DefReader defReader = new DefReader( buildPath(apiRoot, lookupFileName) );
+		DefReader defReader = new DefReader( buildPath(inputDir, lookupFileName) );
 
 		proccess(defReader);
 	}
@@ -101,8 +110,8 @@ class GirWrapper
 					licence = defReader.readBlock().join();
 					break;
 				case "outputRoot":
-					if ( outputRoot == "./out" )
-						outputRoot = defReader.value;
+					if ( outputDir == "./out" )
+						outputDir = defReader.value;
 					break;
 
 				//Global keys.
@@ -114,7 +123,7 @@ class GirWrapper
 					break;
 				case "copy":
 					try
-						copyFiles(apiRoot, buildPath(outputRoot, srcDir), defReader.value);
+						copyFiles(inputDir, buildPath(outputDir, srcDir), defReader.value);
 					catch(FileException ex)
 						error(ex.msg, defReader);
 					break;
@@ -122,7 +131,7 @@ class GirWrapper
 					loadDependency(defReader);
 					break;
 				case "lookup":
-					DefReader reader = new DefReader( buildPath(apiRoot, defReader.value) );
+					DefReader reader = new DefReader( buildPath(inputDir, defReader.value) );
 
 					proccess(reader, currentPackage, isDependency, currentStruct);
 					break;
@@ -171,7 +180,7 @@ class GirWrapper
 						break;
 					}
 
-					if ( outputRoot.empty )
+					if ( outputDir.empty )
 						error("Found wrap while outputRoot isn't set", defReader);
 					if (defReader.value in packages)
 						error("Package '", defReader.value, "' is already defined.", defReader);
@@ -519,7 +528,7 @@ class GirWrapper
 		std.file.write(fileName, contents);
 
 		if ( printFiles )
-			writeln(fileName);
+			printFilePath(fileName);
 	}
 
 	string getAbsoluteGirPath(string girFile)
@@ -533,6 +542,22 @@ class GirWrapper
 		}
 
 		return buildNormalizedPath(getGirDirectory(), girFile);
+	}
+
+	private void printFilePath(string fileName)
+	{
+		with (PrintFileMethod) switch(printFileMethod)
+		{
+			case Absolute:
+				writeln(asAbsolutePath(fileName));
+				break;
+			case Relative:
+				writeln(asRelativePath(asAbsolutePath(fileName), cwdOrBaseDirectory));
+				break;
+			default:
+				writeln(fileName);
+				break;
+		}
 	}
 
 	private string getGirDirectory()
@@ -669,7 +694,7 @@ class GirWrapper
 				else
 				{
 					if ( printFiles && !dst.endsWith("functions-runtime.d") && !dst.endsWith("functions-compiletime.d") )
-						writeln(dst);
+						printFilePath(dst);
 						
 					copy(entry.name, dst);
 				}
@@ -681,7 +706,7 @@ class GirWrapper
 		if ( file == "cairo" )
 		{
 			if ( printFiles )
-				writeln(buildNormalizedPath(to, "c", "functions.d"));
+				printFilePath(buildNormalizedPath(to, "c", "functions.d"));
 
 			if ( useRuntimeLinker )
 				copy(buildNormalizedPath(to, "c", "functions-runtime.d"), buildNormalizedPath(to, "c", "functions.d"));

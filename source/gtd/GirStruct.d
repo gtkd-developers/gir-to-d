@@ -545,9 +545,9 @@ final class GirStruct
 		buff ~= indenter.format("}");
 
 		if ( isInterface() )
-			wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~"T.d"), buff);
+			wrapper.writeFile(buildNormalizedPath(wrapper.outputDir, pack.srcDir, pack.name.replace(".","/"), name ~"T.d"), buff);
 		else
-			wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
+			wrapper.writeFile(buildNormalizedPath(wrapper.outputDir, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
 	}
 
 	void writeInterface()
@@ -616,7 +616,7 @@ final class GirStruct
 			buff ~= indenter.format("}");
 		}
 
-		wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~"IF.d"), buff);
+		wrapper.writeFile(buildNormalizedPath(wrapper.outputDir, pack.srcDir, pack.name.replace(".","/"), name ~"IF.d"), buff);
 	}
 
 	void writeDStruct()
@@ -658,7 +658,7 @@ final class GirStruct
 		if ( !noNamespace )
 			buff ~= indenter.format("}");
 
-		wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
+		wrapper.writeFile(buildNormalizedPath(wrapper.outputDir, pack.srcDir, pack.name.replace(".","/"), name ~".d"), buff);
 	}
 
 	/**

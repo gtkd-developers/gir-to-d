@@ -312,8 +312,8 @@ final class GirPackage
 	{
 		try
 		{
-			if ( !exists(buildNormalizedPath(wrapper.outputRoot, srcDir, name.replace(".","/"))) )
-				mkdirRecurse(buildNormalizedPath(wrapper.outputRoot, srcDir, name.replace(".","/")));
+			if ( !exists(buildNormalizedPath(wrapper.outputDir, srcDir, name.replace(".","/"))) )
+				mkdirRecurse(buildNormalizedPath(wrapper.outputDir, srcDir, name.replace(".","/")));
 		}
 		catch (FileException ex)
 		{
@@ -382,7 +382,7 @@ final class GirPackage
 		if ( gdkKeys.members !is null )
 			writeGdkKeys();
 
-		wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c/types.d"), buff, true);
+		wrapper.writeFile(buildNormalizedPath(wrapper.outputDir, srcDir, name.replace(".","/"), "c/types.d"), buff, true);
 	}
 
 	void writeGdkKeys()
@@ -404,7 +404,7 @@ final class GirPackage
 
 		buff ~= "}\n";
 
-		wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "Keysyms.d"), buff, true);
+		wrapper.writeFile(buildNormalizedPath(wrapper.outputDir, srcDir, name.replace(".","/"), "Keysyms.d"), buff, true);
 	}
 
 	void writeLoaderTable()
@@ -491,7 +491,7 @@ final class GirPackage
 			}
 		}
 
-		wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c", "functions.d"), buff, true);
+		wrapper.writeFile(buildNormalizedPath(wrapper.outputDir, srcDir, name.replace(".","/"), "c", "functions.d"), buff, true);
 	}
 
 	void writeExternalFunctions()
@@ -530,7 +530,7 @@ final class GirPackage
 
 		buff ~= "}";
 
-		wrapper.writeFile(buildNormalizedPath(wrapper.outputRoot, srcDir, name.replace(".","/"), "c", "functions.d"), buff, true);
+		wrapper.writeFile(buildNormalizedPath(wrapper.outputDir, srcDir, name.replace(".","/"), "c", "functions.d"), buff, true);
 	}
 
 	private string getLibraries()
