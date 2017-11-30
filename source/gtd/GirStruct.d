@@ -996,6 +996,12 @@ final class GirStruct
 
 				if ( param.direction != GirParamDirection.Default )
 					getReturnImport(param.type);
+
+				if ( param.direction == GirParamDirection.Out
+						&& !param.type.cType.endsWith("**")
+						&& pack.getStruct(param.type.name) !is null
+						&& pack.getStruct(param.type.name).isDClass() )
+					imports ~= "glib.MemorySlice"; 
 			}
 
 			if ( func.type == GirFunctionType.Signal )
