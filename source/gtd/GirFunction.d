@@ -639,7 +639,7 @@ final class GirFunction
 					}
 					else if ( param.direction == GirParamDirection.Out )
 					{
-						buff ~= param.type.cType.removePtr() ~"* out"~ id ~" = sliceAlloc!"~ param.type.cType.removePtr() ~"();";
+						buff ~= param.type.cType.removePtr() ~"* out"~ id ~" = sliceNew!"~ param.type.cType.removePtr() ~"();";
 
 						gtkCall ~= "out"~ id;
 
