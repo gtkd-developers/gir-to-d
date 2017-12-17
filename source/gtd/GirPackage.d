@@ -121,11 +121,14 @@ final class GirPackage
 
 		if ( "shared-library" in reader.front.attributes )
 		{
-			libraries ~= reader.front.attributes["shared-library"].split(',');
-			version(OSX)
-				libraries = libraries.map!(a => baseName(a)).array.sort().uniq.array;
+			version(Windows)
+				libraries ~= reader.front.attributes["shared-library"].split(',').map!(a => a.startsWith("lib")?a:"lib"~a~".dll").array;
+			else version(OSX)
+				libraries ~= reader.front.attributes["shared-library"].split(',').map!(a => a.baseName.startsWith("lib")?a.baseName:"lib"~a.baseName~".dylib").array;
 			else
-				libraries = libraries.sort().uniq.array;
+				libraries ~= reader.front.attributes["shared-library"].split(',').map!(a => a.startsWith("lib")?a:"lib"~a~".so").array;
+
+			libraries = libraries.sort().uniq.array;
 		}
 		reader.popFront();
 
