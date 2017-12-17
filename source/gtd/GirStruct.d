@@ -102,6 +102,9 @@ final class GirStruct
 
 		if ( "c:type" in reader.front.attributes )
 			cType = reader.front.attributes["c:type"];
+		else if ( "glib:type-name" in reader.front.attributes )
+			cType = reader.front.attributes["glib:type-name"];
+
 		if ( "parent" in reader.front.attributes )
 			parent = reader.front.attributes["parent"];
 		if ( "version" in reader.front.attributes )
