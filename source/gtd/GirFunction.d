@@ -1060,48 +1060,6 @@ final class GirFunction
 		return signalName;
 	}
 
-	string getDelegateWrapperName()
-	{
-		return "On" ~ getSignalName() ~ "DelegateWrapper";
-	}
-
-	string getDelegateWrapperArrayName() {
-		return "on" ~ getSignalName() ~ "Listeners";
-	}
-	
-	string[] getDelegateWrapperDeclaration()
-	{
-		assert(type == GirFunctionType.Signal);
-
-		string[] buff;
-		buff ~= "protected class "~ getDelegateWrapperName();
-		buff ~= "{";
-		buff ~= getDelegateDecleration() ~" dlg;";
-		buff ~= "gulong handlerId;";
-		buff ~= "";
-		buff ~= "this("~ getDelegateDecleration() ~" dlg)";
-		buff ~= "{";
-		buff ~= "this.dlg = dlg;";
-		buff ~=  getDelegateWrapperArrayName() ~" ~= this;";
-		buff ~= "}";
-		buff ~= "";
-		buff ~= "void remove("~ getDelegateWrapperName ~" source)";
-		buff ~= "{";
-		buff ~= "foreach(index, wrapper; "~ getDelegateWrapperArrayName() ~")";
-		buff ~= "{";
-		buff ~= "if (wrapper.handlerId == source.handlerId)";
-		buff ~= "{";
-		buff ~= getDelegateWrapperArrayName() ~"[index] = null;";
-		buff ~= getDelegateWrapperArrayName() ~" = std.algorithm.remove("~ getDelegateWrapperArrayName() ~", index);";
-		buff ~= "break;";
-		buff ~= "}";
-		buff ~= "}";
-		buff ~= "}";
-		buff ~= "}";
-		buff ~= getDelegateWrapperName() ~"[] "~ getDelegateWrapperArrayName() ~";";
-		return buff;
-	}
-
 	string getDelegateDecleration()
 	{
 		assert(type == GirFunctionType.Signal);
@@ -1168,63 +1126,12 @@ final class GirFunction
 			}
 		}
 
-		buff ~= "auto wrapper = new "~ getDelegateWrapperName() ~"(dlg);";
-		buff ~= "wrapper.handlerId = Signals.connectData(";
-		buff ~= "this,";
-		buff ~= "\""~ realName ~"\",";
-		buff ~= "cast(GCallback)&callBack"~ getSignalName() ~",";
-		buff ~= "cast(void*)wrapper,";
-		buff ~= "cast(GClosureNotify)&callBack" ~ getSignalName() ~ "Destroy,";
-		buff ~= "connectFlags);";
-		buff ~= "return wrapper.handlerId;";
+		buff ~= "return Signals.connect(this, \""~ realName ~"\", dlg, connectFlags ^ ConnectFlags.SWAPPED);";
 		buff ~= "}";
-		buff ~= "\n";
 
 		return buff;
 	}
 
-	string[] getSignalCallback()
-	{
-		string[] buff;
-		string type = getType(returnType);
-		GirStruct dType = strct.pack.getStruct(returnType.name);
-
-		if ( dType )
-			type = dType.cType ~"*";
-
-		buff ~= "extern(C) static "~ (type == "bool" ? "int" : type)
-			~" callBack"~ getSignalName() ~"("~ getCallbackParams() ~")";
-
-		buff ~= "{";
-		
-		if (type == "void") 
-		{
-			buff ~= "wrapper.dlg("~ getCallbackVars() ~");";
-		} 
-		else if (dType) 
-		{
-			buff ~= "auto r = wrapper.dlg("~ getCallbackVars() ~");";
-			buff ~= "return r."~ dType.getHandleFunc() ~"();";
-		} 
-		else 
-		{
-			buff ~= "return wrapper.dlg("~ getCallbackVars() ~");";
-		}
-
-		buff ~= "}";
-		buff ~= "\n";
-		return buff;
-	}
-
-	string[] getSignalDestroyCallback()
-	{
-		string[] buff;
-		buff ~= "extern(C) static void callBack"~ getSignalName() ~"Destroy(" ~ getDelegateWrapperName() ~ " wrapper, GClosure* closure)";
-		buff ~= "{";
-		buff ~= "wrapper.remove(wrapper);";
-		buff ~= "}";
-		return buff;
-	}
 	
 	void writeDocs(ref string[] buff)
 	{
@@ -1509,61 +1416,6 @@ final class GirFunction
 			return "ObjectG.getDObject!("~ name ~"IF)";
 		else
 			return "ObjectG.getDObject!("~ name ~")";
-	}
-
-	private string getCallbackParams()
-	{
-		string buff;
-
-		buff = strct.cType ~"* "~ strct.name.toLower() ~"Struct";
-		foreach( param; params )
-		{
-			if ( auto par = strct.pack.getStruct(param.type.name) )
-				buff ~= stringToGtkD(", "~ par.cType ~"* "~ param.name, wrapper.aliasses, localAliases());
-			else if ( auto enum_ = strct.pack.getEnum(param.type.name) )
-				buff ~= stringToGtkD(", "~ enum_.cName ~" "~ param.name, wrapper.aliasses, localAliases());
-			else if ( !param.type.cType.empty )
-				buff ~= stringToGtkD(", "~ param.type.cType ~" "~ param.name, wrapper.aliasses, localAliases());
-			else
-				buff ~= stringToGtkD(", "~ param.type.name ~" "~ param.name, wrapper.aliasses, localAliases());
-		}
-
-		buff ~= ", " ~ getDelegateWrapperName() ~ " wrapper";
-		return buff;
-	}
-
-	private string getCallbackVars()
-	{
-		string buff;
-
-		foreach( i, param; params )
-		{
-			if ( i > 0 )
-				buff ~= ", ";
-
-			GirStruct par = strct.pack.getStruct(param.type.name);
-
-			if ( par && par.isDClass() )
-			{
-				buff ~= construct(param.type.name) ~"("~ tokenToGtkD(param.name, wrapper.aliasses, localAliases()) ~")";
-			}
-			else if ( param.type.isString() )
-			{
-				if ( isStringArray(param.type) )
-					buff ~= "Str.toStringArray("~ tokenToGtkD(param.name, wrapper.aliasses, localAliases()) ~")";
-				else
-					buff ~= "Str.toString("~ tokenToGtkD(param.name, wrapper.aliasses, localAliases()) ~")";
-			}
-			else
-			{
-				buff ~= tokenToGtkD(param.name, wrapper.aliasses, localAliases());
-			}
-		}
-
-		if ( !buff.empty )
-			buff ~= ", ";
-		buff ~= "wrapper.outer";
-		return buff;
 	}
 }
 
