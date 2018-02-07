@@ -515,14 +515,8 @@ final class GirStruct
 			if ( func.type == GirFunctionType.Signal )
 			{
 				buff ~= "\n";
-				//buff ~= indenter.format(func.getDelegateWrapperDeclaration());
-
-				//buff ~= "\n";
 				buff ~= indenter.format(func.getAddListenerDeclaration());
 				buff ~= indenter.format(func.getAddListenerBody());
-				//buff ~= indenter.format(func.getSignalCallback());
-				//buff ~= indenter.format(func.getSignalDestroyCallback());
-
 
 				foreach ( param; func.params )
 				{
@@ -1102,10 +1096,7 @@ final class GirStruct
 			}
 		}
 
-		string[] declaration = signal.getAddListenerDeclaration();
-		signal.name = signal.name ~ "-generic-event";
-
-		buff ~= declaration;
+		buff ~= signal.getAddListenerDeclaration();
 		buff ~= signal.getAddListenerBody();
 		
 		return buff;

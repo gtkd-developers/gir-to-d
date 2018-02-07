@@ -1096,16 +1096,12 @@ final class GirFunction
 	string[] getAddListenerBody()
 	{
 		string[] buff;
-		string realName = name;
-		
-		if ( name.endsWith("-generic-event") )
-			realName = name[0..$-14];
 
 		buff ~= "{";
 
 		if ( strct.hasFunction("add_events") )
 		{
-			switch ( realName )
+			switch ( name )
 			{
 				case  "button-press-event":      buff ~= "addEvents(EventMask.BUTTON_PRESS_MASK);";      break;
 				case  "button-release-event":    buff ~= "addEvents(EventMask.BUTTON_RELEASE_MASK);";    break;
@@ -1126,7 +1122,7 @@ final class GirFunction
 			}
 		}
 
-		buff ~= "return Signals.connect(this, \""~ realName ~"\", dlg, connectFlags ^ ConnectFlags.SWAPPED);";
+		buff ~= "return Signals.connect(this, \""~ name ~"\", dlg, connectFlags ^ ConnectFlags.SWAPPED);";
 		buff ~= "}";
 
 		return buff;
