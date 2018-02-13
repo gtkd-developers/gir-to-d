@@ -861,13 +861,11 @@ final class GirStruct
 				imports ~= *dir ~"."~ pack.name ~"types";
 		}
 
-		if ( wrapper.useRuntimeLinker && (shouldFree() || isSimpleStruct()) )
-		{
-			imports ~= "gtkd.Loader";
+		if ( isSimpleStruct() )
+			imports ~= "glib.c.functions";
 
-			if ( isSimpleStruct() )
-				imports ~= "glib.c.functions";
-		}
+		if ( wrapper.useRuntimeLinker && (shouldFree() || isSimpleStruct()) )
+			imports ~= "gtkd.Loader";
 
 		if ( isSimpleStruct() )
 		{
