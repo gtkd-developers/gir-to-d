@@ -25,7 +25,7 @@ sources_dir = include_directories('source/')
 
 version = vcs_tag(command: ['git', 'describe', '--dirty=+', '--tags'], input: 'VERSION.in', output: 'VERSION')
 # d_import_dirs was added in meson 0.43 for now add -J manually.
-add_project_arguments('-J'+meson.build_root(), language: 'd')
+add_project_arguments('-J'+meson.current_build_dir(), language: 'd')
 
 executable(
 	'girtod',
