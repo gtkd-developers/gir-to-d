@@ -1051,7 +1051,7 @@ final class GirFunction
 			pc = c;
 		}
 
-		if ( !signalName.among("MapEvent", "UnmapEvent", "DestroyEvent") &&
+		if ( !signalName.among("Event", "MapEvent", "UnmapEvent", "DestroyEvent") &&
 		    endsWith(signalName, "Event") )
 		{
 			signalName = signalName[0..signalName.length-5];
