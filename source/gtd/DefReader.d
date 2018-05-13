@@ -19,6 +19,7 @@ module gtd.DefReader;
 
 import std.algorithm;
 import std.array;
+import std.conv : hexString;
 import std.file;
 import std.string : splitLines, strip, indexOf;
 
@@ -41,7 +42,7 @@ public final class DefReader
 
 		lines = readText(fileName).splitLines();
 		//Skip utf8 BOM.
-		lines[0].skipOver(x"efbbbf");
+		lines[0].skipOver(hexString!"efbbbf");
 
 		this.popFront();
 	}
