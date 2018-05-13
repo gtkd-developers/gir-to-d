@@ -17,7 +17,9 @@
 
 module gtd.GirEnum;
 
+import std.array : split;
 import std.algorithm;
+import std.range : back;
 import std.string : splitLines, strip, toUpper;
 import std.uni : isNumber;
 
@@ -146,6 +148,9 @@ struct GirEnumMember
 		name = reader.front.attributes["name"];
 		value = reader.front.attributes["value"];
 
+		if ( name.empty )
+			name = reader.front.attributes["c:identifier"].split("_").back;
+		
 		if ( reader.front.type == XMLNodeType.EmptyTag )
 			return;
 
