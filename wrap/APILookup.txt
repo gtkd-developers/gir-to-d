@@ -1,0 +1,57 @@
+#
+# This file is part of GirToD.
+#
+# GirToD is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version, with
+# some exceptions, please read the COPYING file.
+#
+# GirToD is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with GirToD.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+# define the license to use
+license: start
+/*
+ * Licensed under the GNU Lesser General Public License Version 3
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the license, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// generated automatically - do not change
+// find conversion definition on APILookup.txt
+// implement new conversion functionalities on the wrap.utils pakage
+
+
+license: end
+
+includeComments: y
+outputRoot: generated
+
+###########################################################
+### predifined: lib
+###########################################################
+
+srcDir: .
+lookup: APILookupGLib.txt
+lookup: APILookupGThread.txt
+lookup: APILookupGObject.txt
+lookup: APILookupGio.txt

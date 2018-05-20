@@ -1,0 +1,5 @@
+option('build-glibd',
+       type: 'boolean',
+       value: true,
+       description: 'Whether we should build the glibd library.'
+)
