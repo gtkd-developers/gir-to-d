@@ -19,7 +19,7 @@ module gtd.GirEnum;
 
 import std.array : split;
 import std.algorithm;
-import std.range : back;
+import std.range : back, empty;
 import std.string : splitLines, strip, toUpper;
 import std.uni : isNumber;
 
