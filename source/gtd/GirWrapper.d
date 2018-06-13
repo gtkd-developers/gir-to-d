@@ -294,6 +294,7 @@ class GirWrapper
 							elementType.name = func.returnType.name;
 							elementType.cType = func.returnType.cType[0..$-1];
 							func.returnType.elementType = elementType;
+							func.returnType.girArray = true;
 
 							foreach( i, p; func.params )
 							{
@@ -309,6 +310,7 @@ class GirWrapper
 							elementType.name = param.type.name;
 							elementType.cType = param.type.cType[0..$-1];
 							param.type.elementType = elementType;
+							param.type.girArray = true;
 
 							if ( vals.length < 3 )
 							{
@@ -352,6 +354,7 @@ class GirWrapper
 						elementType.name = arrayField.type.name;
 						elementType.cType = arrayField.type.cType[0..$-1];
 						arrayField.type.elementType = elementType;
+						arrayField.type.girArray = true;
 					}
 					else
 					{

@@ -1493,7 +1493,7 @@ final class GirParam
 
 private string removePtr(string cType)
 {
-	while ( cType.back == '*' )
+	while ( !cType.empty && cType.back == '*' )
 		cType.popBack();
 
 	return cType;

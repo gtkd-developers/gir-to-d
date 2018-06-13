@@ -37,9 +37,10 @@ final class GirType
 
 	int size = -1;   /// The size of a fixed size array.
 	int length = -1; /// The index of the param representing the length, not counting the instance param.
-	bool zeroTerminated; /// Is this array zero-terminated.
-	GirType elementType; /// The type of the array elements, also set for Glib.List, Glib.SList Glib.Array and GLib.HashTable.
-	GirType keyType;     /// The key type of a HashTable;
+	bool zeroTerminated;   /// Is this array zero-terminated.
+	bool girArray = false; /// The gir file specifies this as an array. Use isArray to check if this is actually an array.
+	GirType elementType;   /// The type of the array elements, also set for Glib.List, Glib.SList Glib.Array and GLib.HashTable.
+	GirType keyType;       /// The key type of a HashTable;
 
 	GirWrapper wrapper;
 
@@ -50,6 +51,9 @@ final class GirType
 
 	void parse(T)(XMLReader!T reader)
 	{
+		if ( reader.front.value == "array" )
+			girArray = true;
+
 		if ( "c:type" in reader.front.attributes )
 			cType = reader.front.attributes["c:type"];
 		if ( "length" in reader.front.attributes )
@@ -128,13 +132,11 @@ final class GirType
 		if ( elementType is null )
 			return false;
 
-		if ( name.among("GLib.List", "GLib.SList", "GLib.Array", "GLib.ByteArray", "GLib.HashTable", "GLib.PtrArray") )
+		// The GLib Arrays are in the GIR files as arrays but they shouldn't be wrapped as such.
+		if ( name.among("GLib.Array", "Array", "GLib.ByteArray", "ByteArray", "GLib.PtrArray", "PtrArray") )
 			return false;
 
-		if ( name.among("List", "SList", "Array", "ByteArray", "HashTable", "PtrArray") )
-			return false;
-
-		if ( elementType )
+		if ( girArray )
 			return true;
 
 		return false;
