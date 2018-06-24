@@ -79,6 +79,7 @@ enum string[string] glibTypes = [
 	"union": "unio",
 	"version": "versio",
 	"byte": "_byte",
+	"shared": "_shared",
 
 	"GLIB_SYSDEF_POLLIN": "=1",
 	"GLIB_SYSDEF_POLLOUT": "=4",

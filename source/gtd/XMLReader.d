@@ -425,6 +425,9 @@ class XMLReader(T)
 			case "gt":
 				buff.put('>');
 				break;
+			case "#x4":
+				buff.put('\004');
+				break;
 			default:
 				throw new XMLException(this, "Unregonized escape secuence");
 		}
