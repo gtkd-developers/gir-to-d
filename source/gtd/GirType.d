@@ -20,6 +20,7 @@ module gtd.GirType;
 import std.algorithm: among, canFind, startsWith;
 import std.array: replace;
 import std.conv: to;
+import std.range: empty;
 
 import gtd.GirWrapper;
 import gtd.XMLReader;
@@ -111,7 +112,7 @@ final class GirType
 		if ( cType == elementType.cType && !cType.among("void*", "gpointer", "gconstpointer") )
 			cType ~= "*";
 
-		if ( isArray() && cType == "void" )
+		if ( isArray() && (cType == "void" || cType.empty) )
 			cType = elementType.cType ~"*";
 	}
 
