@@ -276,14 +276,14 @@ final class GirStruct
 
 		if ( !fields.empty )
 		{
-			buff ~= "struct "~ tokenToGtkD(cType, wrapper.aliasses);
+			buff ~= "struct "~ tokenToGtkD(cType, wrapper.aliasses, false);
 			buff ~= "{";
 			buff ~= GirField.getFieldDeclarations(fields, wrapper);
 			buff ~= "}";
 		}
 		else
 		{
-			buff ~= "struct "~ tokenToGtkD(cType, wrapper.aliasses) ~";";
+			buff ~= "struct "~ tokenToGtkD(cType, wrapper.aliasses, false) ~";";
 		}
 
 		return buff;

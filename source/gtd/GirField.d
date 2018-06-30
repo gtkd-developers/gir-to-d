@@ -167,7 +167,7 @@ final class GirField
 				}
 
 				bitcount += field.bits;
-				buff ~=stringToGtkD(field.type.cType ~", \""~ field.name ~"\", "~ to!string(field.bits), wrapper.aliasses);
+				buff ~= stringToGtkD(field.type.cType ~", \""~ field.name ~"\", "~ to!string(field.bits), wrapper.aliasses);
 				continue;
 			}
 			else if ( bitcount > 0)
@@ -188,19 +188,19 @@ final class GirField
 			if ( field.type.size == -1 )
 			{
 				if ( field.type.cType.empty )
-					dType = stringToGtkD(field.type.name, wrapper.aliasses);
+					dType = stringToGtkD(field.type.name, wrapper.aliasses, false);
 				else
-					dType = stringToGtkD(field.type.cType, wrapper.aliasses);
+					dType = stringToGtkD(field.type.cType, wrapper.aliasses, false);
 			}
 			else if ( field.type.elementType.cType.empty )
 			{
 				//Special case for GObject.Value.
-				dType = stringToGtkD(field.type.elementType.name, wrapper.aliasses);
+				dType = stringToGtkD(field.type.elementType.name, wrapper.aliasses, false);
 				dType ~= "["~ to!string(field.type.size) ~"]";
 			}
 			else
 			{
-				dType = stringToGtkD(field.type.elementType.cType, wrapper.aliasses);
+				dType = stringToGtkD(field.type.elementType.cType, wrapper.aliasses, false);
 				dType ~= "["~ to!string(field.type.size) ~"]";
 			}
 

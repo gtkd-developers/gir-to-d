@@ -766,7 +766,12 @@ class GirWrapper
  * Apply aliasses to the tokens in the string, and
  * camelCase underscore separated tokens.
  */
-string stringToGtkD(string str, string[string] aliases, string[string] localAliases = null)
+string stringToGtkD(string str, string[string] aliases, bool caseConvert = true)
+{
+	return stringToGtkD(str, aliases, null, caseConvert);
+}
+
+string stringToGtkD(string str, string[string] aliases, string[string] localAliases, bool caseConvert = true)
 {
 	size_t pos, start;
 	string seps = " \n\r\t\f\v()[]*,;";
@@ -785,7 +790,7 @@ string stringToGtkD(string str, string[string] aliases, string[string] localAlia
 			if ( pos < str.length && str[pos] == '*' && str[start..pos] == "tm" )
 				converted.put("void");
 			else
-				converted.put(tokenToGtkD(str[start..pos], aliases, localAliases));
+				converted.put(tokenToGtkD(str[start..pos], aliases, localAliases, caseConvert));
 
 			if ( pos == str.length )
 				break;
