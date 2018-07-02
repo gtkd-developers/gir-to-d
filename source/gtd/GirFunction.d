@@ -1034,7 +1034,7 @@ final class GirFunction
 
 		foreach ( size_t count, char c; name )
 		{
-			if ( count == 0 )
+			if ( count == 0 && c != '-')
 			{
 				signalName ~= toUpper(c);
 			}
