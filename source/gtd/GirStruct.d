@@ -680,6 +680,9 @@ final class GirStruct
 	 */
 	string getHandleFunc()
 	{
+		if ( parent && !parentStruct )
+			parentStruct = getParent();
+
 		if ( parentStruct && parentStruct.name == name )
 			return "get"~ cast(char)pack.name[0].toUpper ~ pack.name[1..$] ~ name ~"Struct";
 		else
