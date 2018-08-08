@@ -737,6 +737,9 @@ final class GirStruct
 		if ( !parentStruct )
 			parentStruct = pack.getStruct(parent);
 
+		if ( !parentStruct )
+			return false;
+
 		return parentStruct.hasFunction(funct);
 	}
 
