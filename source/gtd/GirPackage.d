@@ -193,13 +193,16 @@ final class GirPackage
 		{
 			string incName = reader.front.attributes["name"];
 
-			GirInclude inc = includes.get(incName, GirInclude.init);
-			inc.name = incName;
-			inc._version = reader.front.attributes["version"];
-			includes[incName] = inc;
+			if ( incName !in includes )
+			{
+				GirInclude inc = includes.get(incName, GirInclude.init);
+				inc.name = incName;
+				inc._version = reader.front.attributes["version"];
+				includes[incName] = inc;
 
-			parseIncludes(this.wrapper.getAbsoluteGirPath(inc.name ~"-"~ inc._version ~".gir"));
-
+				parseIncludes(this.wrapper.getAbsoluteGirPath(inc.name ~"-"~ inc._version ~".gir"));
+			}
+			
 			reader.popFront();
 		}
 	}
