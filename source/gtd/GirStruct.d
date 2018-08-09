@@ -739,7 +739,7 @@ final class GirStruct
 
 		if ( !parentStruct )
 		{
-			warning("Parent struct for " ~ parent ~ " not found. Skipping.");
+			warning("Parent struct for "~ parent ~" not found. Skipping.");
 			return false;
 		}
 
