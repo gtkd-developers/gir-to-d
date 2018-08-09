@@ -738,7 +738,10 @@ final class GirStruct
 			parentStruct = pack.getStruct(parent);
 
 		if ( !parentStruct )
+		{
+			warning("Parent struct for "~ parent ~" not found. Skipping.");
 			return false;
+		}
 
 		return parentStruct.hasFunction(funct);
 	}
