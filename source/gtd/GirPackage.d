@@ -260,6 +260,16 @@ final class GirPackage
 
 				namespaces[name] = inc.parse(wrapper, srcDir);
 			}
+			else
+			{
+				foreach ( inc; includes.byValue.filter!(inc => inc.name !in namespaces) )
+					namespaces[inc.name] = inc.parse(wrapper, srcDir);
+
+				if ( !includes.byValue.filter!(inc => inc.name !in namespaces).empty )
+					return getNamespace(name);
+				else
+					return null;
+			}
 		}
 
 		return namespaces.get(name, null);
