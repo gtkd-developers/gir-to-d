@@ -76,11 +76,6 @@ final class GirPackage
 		this.srcDir = srcDir;
 		this.stockIDs = new GirEnum(wrapper, this);
 		this.gdkKeys  = new GirEnum(wrapper, this);
-
-		GirInclude gobject;
-		gobject.name = "GObject";
-		gobject._version = "2.0";
-		includes["GObject"] = gobject;
 	}
 
 	void parseGIR(string girFile)
@@ -90,22 +85,7 @@ final class GirPackage
 
 		auto reader = new XMLReader!string(readText(girFile), girFile);
 
-		while ( !reader.empty && reader.front.value != "repository" )
-			reader.popFront();
-
-		reader.popFront();
-
-		while ( !reader.empty && reader.front.value == "include" )
-		{
-			string incName = reader.front.attributes["name"];
-
-			GirInclude inc = includes.get(incName, GirInclude.init);
-			inc.name = incName;
-			inc._version = reader.front.attributes["version"];
-			includes[incName] = inc;
-
-			reader.popFront();
-		}
+		parseIncludes(reader);
 
 		while ( !reader.empty && reader.front.value != "namespace" )
 			reader.popFront();
@@ -200,6 +180,37 @@ final class GirPackage
 			}
 			reader.popFront();
 		}
+	}
+
+	void parseIncludes(XMLReader!string reader)
+	{
+		while ( !reader.empty && reader.front.value != "repository" )
+			reader.popFront();
+
+		reader.popFront();
+
+		while ( !reader.empty && reader.front.value == "include" )
+		{
+			string incName = reader.front.attributes["name"];
+
+			GirInclude inc = includes.get(incName, GirInclude.init);
+			inc.name = incName;
+			inc._version = reader.front.attributes["version"];
+			includes[incName] = inc;
+
+			parseIncludes(this.wrapper.getAbsoluteGirPath(inc.name ~"-"~ inc._version ~".gir"));
+
+			reader.popFront();
+		}
+	}
+
+	void parseIncludes(string girFile)
+	{
+		if ( !exists(girFile) )
+			error("GIR file: '", girFile, "' not found.");
+
+		auto reader = new XMLReader!string(readText(girFile), girFile);
+		parseIncludes(reader);
 	}
 
 	void parseConstant(T)(XMLReader!T reader)
