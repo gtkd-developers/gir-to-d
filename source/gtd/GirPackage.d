@@ -182,7 +182,7 @@ final class GirPackage
 		}
 	}
 
-	void parseIncludes(XMLReader!string reader)
+	void parseIncludes(T)(XMLReader!T reader)
 	{
 		while ( !reader.empty && reader.front.value != "repository" )
 			reader.popFront();
