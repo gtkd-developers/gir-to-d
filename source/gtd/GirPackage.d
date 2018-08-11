@@ -252,6 +252,9 @@ final class GirPackage
 
 	GirPackage getNamespace(string name)
 	{
+		if ( name.empty )
+			return null;
+			
 		if ( name !in namespaces )
 		{
 			if ( auto inc = name in includes )
