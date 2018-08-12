@@ -291,8 +291,6 @@ final class GirStruct
 
 	void writeClass()
 	{
-		bool[string] ctors;
-
 		if ( noCode )
 			return;
 
@@ -499,8 +497,6 @@ final class GirStruct
 			}
 		}
 
-		bool firstSignal = true;
-
 		foreach ( func; functions )
 		{
 			if ( func.noCode || func.isVariadic() || func.type == GirFunctionType.Callback )
@@ -532,6 +528,12 @@ final class GirStruct
 			else
 			{
 				buff ~= "\n";
+
+				if ( func.name.among("delete", "export", "foreach", "union") )
+					buff ~= indenter.format("alias "~ func.name[0..$-1] ~" = "~ tokenToGtkD(func.name, wrapper.aliasses) ~";");
+				else if ( func.name == "ref" )
+					buff ~= indenter.format("alias doref = "~ tokenToGtkD(func.name, wrapper.aliasses) ~";");
+
 				buff ~= indenter.format(func.getDeclaration());
 				buff ~= indenter.format("{");
 				buff ~= indenter.format(func.getBody());
@@ -598,6 +600,10 @@ final class GirStruct
 					dec[$-1] ~= ";";
 
 					buff ~= "\n";
+
+					if ( func.name.among("delete", "export", "foreach", "union") )
+						buff ~= indenter.format("alias "~ func.name[0..$-1] ~" = "~ tokenToGtkD(func.name, wrapper.aliasses) ~";");
+
 					buff ~= indenter.format(dec);
 				}
 				else
@@ -646,6 +652,10 @@ final class GirStruct
 				continue;
 
 			buff ~= "\n";
+
+			if ( func.name.among("delete", "export", "foreach", "union") )
+					buff ~= indenter.format("alias "~ func.name[0..$-1] ~" = "~ tokenToGtkD(func.name, wrapper.aliasses) ~";");
+
 			buff ~= indenter.format(func.getDeclaration());
 			buff ~= indenter.format("{");
 			buff ~= indenter.format(func.getBody());
@@ -857,9 +867,9 @@ final class GirStruct
 		imports ~= pack.name ~".c.types";
 
 		//Temporarily import the old bindDir.*types modules for backwards compatibility.
-		string[string] bindDirs = ["atk": "gtkc", "cairo": "gtkc", "gdk": "gtkc", "gdkpixbuf": "gtkc", "gio": "gtkc",
-			"glib": "gtkc", "gobject": "gtkc", "gtk": "gtkc", "pango": "gtkc", "gsv": "gsvc", "vte": "vtec",
-			"gstinterfaces": "gstreamerc", "gstreamer": "gstreamerc"];
+		const string[string] bindDirs = ["atk": "gtkc", "cairo": "gtkc", "gdk": "gtkc", "gdkpixbuf": "gtkc",
+			"gio": "gtkc", "glib": "gtkc", "gobject": "gtkc", "gtk": "gtkc", "pango": "gtkc", "gsv": "gsvc",
+			"vte": "vtec", "gstinterfaces": "gstreamerc", "gstreamer": "gstreamerc"];
 
 		if ( pack.wrapper.useBindDir )
 		{
