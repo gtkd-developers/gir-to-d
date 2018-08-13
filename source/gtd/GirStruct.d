@@ -451,7 +451,7 @@ final class GirStruct
 					else
 						buff ~= indenter.format("if ( ownedRef )");
 
-					buff ~= indenter.format("g_free("~ getHandleVar ~");");
+					buff ~= indenter.format("sliceFree("~ getHandleVar ~");");
 					buff ~= indenter.format("}");
 					buff ~= "\n";
 				}
@@ -878,7 +878,7 @@ final class GirStruct
 		}
 
 		if ( isSimpleStruct() )
-			imports ~= "glib.c.functions";
+			imports ~= "glib.MemorySlice";
 
 		if ( wrapper.useRuntimeLinker && (shouldFree() || isSimpleStruct()) )
 			imports ~= "gtkd.Loader";
