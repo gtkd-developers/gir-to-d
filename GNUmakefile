@@ -2,7 +2,7 @@ SHELL=/bin/sh
 OS=$(shell uname || uname -s)
 ARCH=$(shell arch || uname -m)
 
-GIR_TO_D_VERSION=v0.15.0
+GIR_TO_D_VERSION=v0.16.0
 
 ifndef DC
     ifneq ($(strip $(shell which dmd 2>/dev/null)),)
