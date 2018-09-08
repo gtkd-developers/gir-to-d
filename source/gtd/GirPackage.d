@@ -21,7 +21,7 @@ import std.algorithm;
 import std.array : join, replace;
 import std.conv;
 import std.file;
-import std.path : buildNormalizedPath;
+import std.path : baseName, buildNormalizedPath;
 import std.range : array, back, chain, empty;
 import std.regex : ctRegex, matchFirst;
 import std.stdio;
