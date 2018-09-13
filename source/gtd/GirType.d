@@ -72,7 +72,7 @@ final class GirType
 			cType = "void";
 		}
 
-		if ( cType.canFind("const ") )
+		if ( cType.canFind(" const") || cType.canFind("const ") )
 		{
 			constType = true;
 			fixType();
