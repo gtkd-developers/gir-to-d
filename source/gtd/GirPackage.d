@@ -419,6 +419,7 @@ final class GirPackage
 		}
 
 		buff ~= "}\n";
+		buff ~= "alias Keysyms = GdkKeysyms;\n";
 
 		wrapper.writeFile(buildNormalizedPath(wrapper.outputDir, srcDir, name.replace(".","/"), "Keysyms.d"), buff, true);
 	}
