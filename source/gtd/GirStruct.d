@@ -405,7 +405,7 @@ final class GirStruct
 				buff ~= "\n";
 			}
 
-			if ( !isInterface() && cType != "GObject" && cType != "cairo_t" )
+			if ( !isInterface() && !hasDefaultConstructor() )
 			{
 				buff ~= indenter.format("/**");
 				buff ~= indenter.format(" * Sets our main struct and passes it to the parent class.");
@@ -751,6 +751,18 @@ final class GirStruct
 			return false;
 
 		return parentStruct.hasFunction(funct);
+	}
+
+	private bool hasDefaultConstructor()
+	{
+		foreach ( line; lookupCode )
+		{
+			//TODO: Whitespace differences?
+			if ( line.strip == "public this ("~ cType ~"* "~ getHandleVar() ~", bool ownedRef = false)" )
+				return true;
+		}
+
+		return false;
 	}
 
 	bool shouldFree()
