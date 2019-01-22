@@ -64,19 +64,22 @@ void main(string[] args)
 	if ( args.length > 1 )
 		handlePrintFiles(args, wrapper);
 
-	if ( wrapper.inputDir.exists && wrapper.inputDir.isFile() )
-	{
-		lookupFile = wrapper.inputDir.baseName();
-		wrapper.inputDir = wrapper.inputDir.dirName();
-	}
-
 	try
 	{
 		//Read in the GIR and API files.
-		if ( lookupFile.extension == ".gir" )
-			wrapper.proccessGIR(lookupFile);
+		if ( wrapper.inputDir.extension == ".gir" )
+		{
+			wrapper.proccessGIR(wrapper.inputDir);
+		}
 		else
+		{
+			if ( wrapper.inputDir.exists && wrapper.inputDir.isFile() )
+			{
+				lookupFile = wrapper.inputDir.baseName();
+				wrapper.inputDir = wrapper.inputDir.dirName();
+			}
 			wrapper.proccess(lookupFile);
+		}
 
 		if ( printFree )
 			wrapper.printFreeFunctions();
