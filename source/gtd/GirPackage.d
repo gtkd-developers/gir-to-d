@@ -117,7 +117,11 @@ final class GirPackage
 		checkVersion(reader.front.attributes["version"]);
 		
 		if ( "c:identifier-prefixes" in reader.front.attributes )
-			cTypePrefix = reader.front.attributes["c:identifier-prefixes"].split(',')[0];
+		{
+			auto p = reader.front.attributes["c:identifier-prefixes"];
+			if ( p.length )
+				cTypePrefix = p.split(',')[0];
+		}
 
 		if ( "shared-library" in reader.front.attributes )
 		{
