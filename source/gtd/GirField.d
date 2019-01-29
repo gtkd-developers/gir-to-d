@@ -92,6 +92,9 @@ final class GirField
 					callback = new GirFunction(wrapper, null);
 					callback.parse(reader);
 					break;
+				case "source-position":
+					reader.skipTag();
+					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirField: ", name, reader);
 			}

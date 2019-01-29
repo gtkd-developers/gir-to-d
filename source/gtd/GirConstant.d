@@ -73,6 +73,9 @@ final class GirConstant
 					doc ~= "\n\nDeprecated: "~ reader.front.value;
 					reader.popFront();
 					break;
+				case "source-position":
+					reader.skipTag();
+					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirConstant: ", name, reader);
 			}

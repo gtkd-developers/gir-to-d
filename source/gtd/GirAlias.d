@@ -63,6 +63,9 @@ final class GirAlias
 					doc ~= "\n\nDeprecated: "~ reader.front.value;
 					reader.popFront();
 					break;
+				case "source-position":
+					reader.skipTag();
+					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirAlias: ", name, reader);
 			}

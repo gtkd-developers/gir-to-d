@@ -207,6 +207,7 @@ final class GirStruct
 					break;
 				case "prerequisite": // Determines whitch base class the implementor of an interface must implement.
 				case "property":
+				case "source-position":
 					reader.skipTag();
 					break;
 				default:
@@ -1175,6 +1176,9 @@ final class GirUnion
 					strct.cType = strct.cType.toUpper()[0..1] ~ strct.cType[1 .. $];
 					field.gtkStruct = strct;
 					fields ~= field;
+					break;
+				case "source-position":
+					reader.skipTag();
 					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirUnion: ", name, reader);

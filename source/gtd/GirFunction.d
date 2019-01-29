@@ -180,6 +180,9 @@ final class GirFunction
 						reader.popFront();
 					}
 					break;
+				case "source-position":
+					reader.skipTag();
+					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
 			}
@@ -1478,6 +1481,9 @@ final class GirParam
 					type = new GirType(wrapper);
 					type.name = "...";
 					type.cType = "...";
+					break;
+				case "source-position":
+					reader.skipTag();
 					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirParam: ", name, reader);

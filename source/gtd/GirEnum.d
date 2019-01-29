@@ -85,6 +85,9 @@ final class GirEnum
 					//pack.parseFunction(reader);
 					reader.skipTag();
 					break;
+				case "source-position":
+					reader.skipTag();
+					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirEnum: ", name, reader);
 			}
@@ -169,6 +172,9 @@ struct GirEnumMember
 					reader.popFront();
 					doc ~= "\n\nDeprecated: "~ reader.front.value;
 					reader.popFront();
+					break;
+				case "source-position":
+					reader.skipTag();
 					break;
 				case "type":
 					if ( reader.front.attributes["name"] == "utf8" )
