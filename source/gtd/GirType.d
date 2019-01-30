@@ -83,6 +83,12 @@ final class GirType
 			cType = cType.replace("unsigned ", "u");
 		}
 
+		if ( name == "long double" )
+		{
+			name = "real";
+			cType = "real";
+		}
+
 		cType = cType.replace("volatile ", "");
 
 		if ( cType == "unsigned" )
