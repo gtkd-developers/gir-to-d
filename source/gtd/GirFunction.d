@@ -320,7 +320,7 @@ final class GirFunction
 
 		if ( instanceParam )
 		{
-			ext ~= stringToGtkD(instanceParam.type.cType, wrapper.aliasses, localAliases());
+			ext ~= tokenToGtkD(instanceParam.type.cType, wrapper.aliasses, localAliases(), false);
 			ext ~= " ";
 			ext ~= tokenToGtkD(instanceParam.name, wrapper.aliasses, localAliases());
 		}
@@ -330,7 +330,7 @@ final class GirFunction
 			if ( i > 0 || instanceParam )
 				ext ~= ", ";
 
-			type = stringToGtkD(param.type.cType, wrapper.aliasses, localAliases());
+			type = tokenToGtkD(param.type.cType, wrapper.aliasses, localAliases(), false);
 
 			if ( type.startsWith("bool") )
 				ext ~= type.replaceFirst("bool", "int");
