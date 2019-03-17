@@ -336,12 +336,12 @@ class GirWrapper
 						GirField arrayField;
 						int lengthID = -1;
 
-						foreach ( int i, field; currentStruct.fields )
+						foreach ( size_t i, field; currentStruct.fields )
 						{
 							if ( field.name == vals[0] )
 								arrayField = field;
 							else if ( field.name == vals[1] )
-								lengthID = i;
+								lengthID = cast(int)i;
 
 							if ( arrayField && lengthID > -1 )
 								break;
