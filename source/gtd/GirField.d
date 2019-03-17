@@ -44,10 +44,12 @@ final class GirField
 	GirStruct gtkStruct;
 
 	GirWrapper wrapper;
+	GirStruct strct;
 
-	this(GirWrapper wrapper)
+	this(GirWrapper wrapper, GirStruct strct)
 	{
 		this.wrapper = wrapper;
+		this.strct = strct;
 	}
 
 	void parse(T)(XMLReader!T reader)
@@ -89,7 +91,7 @@ final class GirField
 					type.parse(reader);
 					break;
 				case "callback":
-					callback = new GirFunction(wrapper, null);
+					callback = new GirFunction(wrapper, strct);
 					callback.parse(reader);
 					break;
 				case "source-position":
@@ -218,7 +220,7 @@ final class GirField
 		return buff;
 	}
 
-	string[] getProperty(GirStruct parent)
+	string[] getProperty()
 	{
 		string[] buff;
 
@@ -226,48 +228,48 @@ final class GirField
 			return null;
 
 		writeDocs(buff);
-		writeGetter(buff, parent);
+		writeGetter(buff);
 
 		buff ~= "";
 		if ( wrapper.includeComments )
 			buff ~= "/** Ditto */";
 
-		writeSetter(buff, parent);
+		writeSetter(buff);
 
 		return buff;
 	}
 
-	private void writeGetter(ref string[] buff, GirStruct parent)
+	private void writeGetter(ref string[] buff)
 	{
 		GirStruct dType;
 
 		if ( type.isArray() )
-			dType = parent.pack.getStruct(type.elementType.name);
-		else if ( auto dStrct = parent.pack.getStruct(parent.structWrap.get(type.name, "")) )
+			dType = strct.pack.getStruct(type.elementType.name);
+		else if ( auto dStrct = strct.pack.getStruct(strct.structWrap.get(type.name, "")) )
 			dType = dStrct;
 		else
-			dType = parent.pack.getStruct(type.name);
+			dType = strct.pack.getStruct(type.name);
 
 		if ( type.isString() )
 		{
 			if ( type.isArray() && type.elementType.isString() )
 			{
-				buff ~= "public @property string["~ ((type.size > 0)?type.size.to!string:"") ~"] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property string["~ ((type.size > 0)?type.size.to!string:"") ~"] "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"()";
 				buff ~= "{";
 
 				if ( type.length > -1 )
-					buff ~= "return Str.toStringArray("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", "~ getLengthID(parent) ~");";
+					buff ~= "return Str.toStringArray("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", "~ getLengthID(strct) ~");";
 				else if ( type.size > 0 )
 				{
 					buff ~= "string["~ type.size.to!string ~"] arr;";
-					buff ~= "foreach( i, str; "~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" )";
+					buff ~= "foreach( i, str; "~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" )";
 					buff ~= "{";
 					buff ~= "arr[i] = Str.toString(str);";
 					buff ~= "}";
 					buff ~= "return arr;";
 				}
 				else
-					buff ~= "return Str.toStringArray("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~");";
+					buff ~= "return Str.toStringArray("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~");";
 
 				buff ~= "}";
 			}
@@ -275,16 +277,16 @@ final class GirField
 			{
 				if ( type.size > 0 )
 				{
-					buff ~= "public @property char["~ type.size.to!string ~"] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+					buff ~= "public @property char["~ type.size.to!string ~"] "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"()";
 					buff ~= "{";
-					buff ~= "return "~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~";";
+					buff ~= "return "~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~";";
 					buff ~= "}";
 				}
 				else
 				{
-					buff ~= "public @property string "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+					buff ~= "public @property string "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"()";
 					buff ~= "{";
-					buff ~= "return Str.toString("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~");";
+					buff ~= "return Str.toString("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~");";
 					buff ~= "}";
 				}
 			}
@@ -293,8 +295,8 @@ final class GirField
 		{
 			string dTypeName;
 
-			if ( dType.name in parent.structWrap )
-				dTypeName = parent.structWrap[dType.name];
+			if ( dType.name in strct.structWrap )
+				dTypeName = strct.structWrap[dType.name];
 			else if ( dType.type == GirStructType.Interface )
 				dTypeName = dType.name ~"IF";
 			else
@@ -302,25 +304,25 @@ final class GirField
 
 			if ( type.isArray() )
 			{
-				buff ~= "public @property "~ dTypeName ~"["~ ((type.size > 0)?type.size.to!string:"") ~"] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property "~ dTypeName ~"["~ ((type.size > 0)?type.size.to!string:"") ~"] "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"()";
 				buff ~= "{";
 
 				if ( type.length > -1 )
-					buff ~= dTypeName ~"[] arr = new "~ dTypeName ~"["~ getLengthID(parent) ~"];";
+					buff ~= dTypeName ~"[] arr = new "~ dTypeName ~"["~ getLengthID(strct) ~"];";
 				else if ( type.size > 0 )
 					buff ~= dTypeName ~"["~ type.size.to!string ~"] arr;";
 				else
-					buff ~= dTypeName ~"[] arr = new "~ dTypeName ~"[getArrayLength("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~")];";
+					buff ~= dTypeName ~"[] arr = new "~ dTypeName ~"[getArrayLength("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~")];";
 				
 				buff ~= "for ( int i = 0; i < arr.length; i++ )";
 				buff ~= "{";
 				
 				if ( dType.pack.name.among("cairo", "glib", "gthread") )
-					buff ~= "arr[i] = new "~ dTypeName ~"("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
+					buff ~= "arr[i] = new "~ dTypeName ~"("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
 				else if( dType.type == GirStructType.Interface )
-					buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~"IF)("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
+					buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~"IF)("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
 				else
-					buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~")("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
+					buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~")("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
 
 				buff ~= "}";
 				buff ~= "";
@@ -329,15 +331,15 @@ final class GirField
 			}
 			else
 			{
-				buff ~= "public @property "~ dTypeName ~" "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property "~ dTypeName ~" "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"()";
 				buff ~= "{";
 				
 				if ( dType.pack.name.among("cairo", "glib", "gthread") )
-					buff ~= "return new "~ dTypeName ~"("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
+					buff ~= "return new "~ dTypeName ~"("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
 				else if( dType.type == GirStructType.Interface )
-					buff ~= "return ObjectG.getDObject!("~ dTypeName ~"IF)("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
+					buff ~= "return ObjectG.getDObject!("~ dTypeName ~"IF)("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
 				else
-					buff ~= "return ObjectG.getDObject!("~ dTypeName ~")("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
+					buff ~= "return ObjectG.getDObject!("~ dTypeName ~")("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~", false);";
 
 				buff ~= "}";
 			}
@@ -346,23 +348,23 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public @property bool["~ ((type.size > 0)?type.size.to!string:"") ~"] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property bool["~ ((type.size > 0)?type.size.to!string:"") ~"] "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"()";
 				buff ~= "{";
 
 				if ( type.length > -1 )
-					buff ~= "return "~ parent.getHandleVar ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[0.."~ getLengthID(parent) ~"];";
+					buff ~= "return "~ strct.getHandleVar ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[0.."~ getLengthID(strct) ~"];";
 				else if ( type.size > 0 )
-					buff ~= "return "~ parent.getHandleVar ~"."~ tokenToGtkD(name, wrapper.aliasses) ~";";
+					buff ~= "return "~ strct.getHandleVar ~"."~ tokenToGtkD(name, wrapper.aliasses) ~";";
 				else
-					error("Is boolean[] field: ", parent.name, ".", name, " really zero terminated?");
+					error("Is boolean[] field: ", strct.name, ".", name, " really zero terminated?");
 
 				buff ~= "}";
 			}
 			else
 			{
-				buff ~= "public @property bool "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property bool "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"()";
 				buff ~= "{";
-				buff ~= "return "~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" != 0;";
+				buff ~= "return "~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" != 0;";
 				buff ~= "}";
 			}
 		}
@@ -370,44 +372,44 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public @property "~ stringToGtkD(type.cType[0..$-1], wrapper.aliasses, parent.aliases) ~"["~ ((type.size > 0)?type.size.to!string:"") ~"] "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property "~ stringToGtkD(type.cType[0..$-1], wrapper.aliasses, strct.aliases) ~"["~ ((type.size > 0)?type.size.to!string:"") ~"] "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"()";
 				buff ~= "{";
 
 				if ( type.length > -1 )
-					buff ~= "return "~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[0.."~ getLengthID(parent) ~"];";
+					buff ~= "return "~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[0.."~ getLengthID(strct) ~"];";
 				else if ( type.size > 0 )
-					buff ~= "return "~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~";";
+					buff ~= "return "~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~";";
 				else
-					buff ~= "return "~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[0..getArrayLength("~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~")];";
+					buff ~= "return "~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[0..getArrayLength("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~")];";
 				
 				buff ~= "}";
 			}
 			else
 			{
-				buff ~= "public @property "~ stringToGtkD(type.cType, wrapper.aliasses, parent.aliases) ~" "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"()";
+				buff ~= "public @property "~ stringToGtkD(type.cType, wrapper.aliasses, strct.aliases) ~" "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"()";
 				buff ~= "{";
-				buff ~= "return "~ parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~";";
+				buff ~= "return "~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~";";
 				buff ~= "}";
 			}
 		}
 	}
 
-	private void writeSetter(ref string[] buff, GirStruct parent)
+	private void writeSetter(ref string[] buff)
 	{
 		GirStruct dType;
 
 		if ( type.isArray() )
-			dType = parent.pack.getStruct(type.elementType.name);
-		else if ( auto dStrct = parent.pack.getStruct(parent.structWrap.get(type.name, "")) )
+			dType = strct.pack.getStruct(type.elementType.name);
+		else if ( auto dStrct = strct.pack.getStruct(strct.structWrap.get(type.name, "")) )
 			dType = dStrct;
 		else
-			dType = parent.pack.getStruct(type.name);
+			dType = strct.pack.getStruct(type.name);
 
 		if ( type.isString() )
 		{
 			if ( type.isArray() && type.elementType.isString() )
 			{
-				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(string["~ ((type.size > 0)?type.size.to!string:"") ~"] value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"(string["~ ((type.size > 0)?type.size.to!string:"") ~"] value)";
 				buff ~= "{";
 
 				if ( type.size > 0 )
@@ -417,13 +419,13 @@ final class GirField
 					buff ~= "{";
 					buff ~= "arr[i] = Str.toStringz(str);";
 					buff ~= "}";
-					buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = arr;";
+					buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = arr;";
 				}
 				else
 				{
-					buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = Str.toStringzArray(value);";
+					buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = Str.toStringzArray(value);";
 					if ( type.length > -1 )
-						buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(parent.fields[type.length].name, wrapper.aliasses) ~" = cast("~ stringToGtkD(parent.fields[type.length].type.cType, wrapper.aliasses) ~")value.length;";
+						buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(strct.fields[type.length].name, wrapper.aliasses) ~" = cast("~ stringToGtkD(strct.fields[type.length].type.cType, wrapper.aliasses) ~")value.length;";
 				}
 				buff ~= "}";
 			}
@@ -431,16 +433,16 @@ final class GirField
 			{
 				if ( type.size > 0 )
 				{
-					buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(char["~ type.size.to!string ~"] value)";
+					buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"(char["~ type.size.to!string ~"] value)";
 					buff ~= "{";
-					buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";
+					buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";
 					buff ~= "}";
 				}
 				else
 				{
-					buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(string value)";
+					buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"(string value)";
 					buff ~= "{";
-					buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = Str.toStringz(value);";
+					buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = Str.toStringz(value);";
 					buff ~= "}";
 				}
 			}
@@ -449,8 +451,8 @@ final class GirField
 		{
 			string dTypeName;
 
-			if ( dType.name in parent.structWrap )
-				dTypeName = parent.structWrap[dType.name];
+			if ( dType.name in strct.structWrap )
+				dTypeName = strct.structWrap[dType.name];
 			else if ( dType.type == GirStructType.Interface )
 				dTypeName = dType.name ~"IF";
 			else
@@ -458,7 +460,7 @@ final class GirField
 
 			if ( type.isArray() )
 			{
-				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ dTypeName ~"["~ ((type.size > 0)?type.size.to!string:"") ~"] value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"("~ dTypeName ~"["~ ((type.size > 0)?type.size.to!string:"") ~"] value)";
 				buff ~= "{";
 				if ( type.size > 0 )
 					buff ~= dType.cType ~"*["~ type.size.to!string ~"] arr;";
@@ -470,18 +472,18 @@ final class GirField
 				buff ~= "}";
 				buff ~= "arr[value.length] = null;";
 				buff ~= "";
-				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = arr.ptr;";
+				buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = arr.ptr;";
 
 				if ( type.length > -1 )
-					buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(parent.fields[type.length].name, wrapper.aliasses) ~" = cast("~ stringToGtkD(parent.fields[type.length].type.cType, wrapper.aliasses) ~")value.length;";
+					buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(strct.fields[type.length].name, wrapper.aliasses) ~" = cast("~ stringToGtkD(strct.fields[type.length].type.cType, wrapper.aliasses) ~")value.length;";
 
 				buff ~= "}";
 			}
 			else
 			{
-				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ dTypeName ~" value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"("~ dTypeName ~" value)";
 				buff ~= "{";
-				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value."~ dType.getHandleFunc() ~"();";
+				buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value."~ dType.getHandleFunc() ~"();";
 				buff ~= "}";
 			}
 		}
@@ -489,25 +491,25 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(bool["~ ((type.size > 0)?type.size.to!string:"") ~"] value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"(bool["~ ((type.size > 0)?type.size.to!string:"") ~"] value)";
 				buff ~= "{";
 				if ( type.size > 0 )
 				{
-					buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";	
+					buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";	
 				}
 				else
 				{
-					buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value.ptr;";
+					buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value.ptr;";
 					if ( type.length > -1 )
-						buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(parent.fields[type.length].name, wrapper.aliasses) ~" = cast("~ stringToGtkD(parent.fields[type.length].type.cType, wrapper.aliasses) ~")value.length;";
+						buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(strct.fields[type.length].name, wrapper.aliasses) ~" = cast("~ stringToGtkD(strct.fields[type.length].type.cType, wrapper.aliasses) ~")value.length;";
 				}
 				buff ~= "}";
 			}
 			else
 			{
-				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"(bool value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"(bool value)";
 				buff ~= "{";
-				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";				
+				buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";				
 				buff ~= "}";
 			}
 		}
@@ -515,26 +517,26 @@ final class GirField
 		{
 			if ( type.isArray() )
 			{
-				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ stringToGtkD(type.cType[0..$-1], wrapper.aliasses, parent.aliases) ~"["~ ((type.size > 0)?type.size.to!string:"") ~"] value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"("~ stringToGtkD(type.cType[0..$-1], wrapper.aliasses, strct.aliases) ~"["~ ((type.size > 0)?type.size.to!string:"") ~"] value)";
 				buff ~= "{";
 
 				if ( type.size > 0 )
 				{
-					buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";	
+					buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";	
 				}
 				else
 				{
-					buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value.ptr;";
+					buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value.ptr;";
 					if ( type.length > -1 )
-						buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(parent.fields[type.length].name, wrapper.aliasses) ~" = cast("~ stringToGtkD(parent.fields[type.length].type.cType, wrapper.aliasses) ~")value.length;";
+						buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(strct.fields[type.length].name, wrapper.aliasses) ~" = cast("~ stringToGtkD(strct.fields[type.length].type.cType, wrapper.aliasses) ~")value.length;";
 				}
 				buff ~= "}";
 			}
 			else
 			{
-				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, parent.aliases) ~"("~ stringToGtkD(type.cType, wrapper.aliasses, parent.aliases) ~" value)";
+				buff ~= "public @property void "~ tokenToGtkD(name, wrapper.aliasses, strct.aliases) ~"("~ stringToGtkD(type.cType, wrapper.aliasses, strct.aliases) ~" value)";
 				buff ~= "{";
-				buff ~= parent.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";
+				buff ~= strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~" = value;";
 				buff ~= "}";
 			}
 		}
@@ -556,10 +558,10 @@ final class GirField
 		}
 	}
 
-	private string getLengthID(GirStruct parent)
+	private string getLengthID(GirStruct strct)
 	{
 		if ( type.length > -1 )
-			return parent.getHandleVar() ~"."~ tokenToGtkD(parent.fields[type.length].name, wrapper.aliasses);
+			return strct.getHandleVar() ~"."~ tokenToGtkD(strct.fields[type.length].name, wrapper.aliasses);
 		else if ( type.size > 0 )
 			return to!string(type.size);
 

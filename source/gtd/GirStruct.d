@@ -157,12 +157,12 @@ final class GirStruct
 					reader.popFront();
 					break;
 				case "field":
-					GirField field = new GirField(wrapper);
+					GirField field = new GirField(wrapper, this);
 					field.parse(reader);
 					fields ~= field;
 					break;
 				case "record":
-					GirField field = new GirField(wrapper);
+					GirField field = new GirField(wrapper, this);
 					GirStruct strct = new GirStruct(wrapper, null);
 					strct.parse(reader);
 					strct.cType = strct.cType.toUpper()[0..1] ~ strct.cType[1 .. $];
@@ -170,7 +170,7 @@ final class GirStruct
 					fields ~= field;
 					break;
 				case "union":
-					GirField field = new GirField(wrapper);
+					GirField field = new GirField(wrapper, this);
 					GirUnion uni = new GirUnion(wrapper);
 					uni.parse(reader);
 					field.gtkUnion = uni;
@@ -225,7 +225,7 @@ final class GirStruct
 
 		if ( type == GirStructType.Union )
 		{
-			GirField field = new GirField(wrapper);
+			GirField field = new GirField(wrapper, this);
 			GirUnion uni = new GirUnion(wrapper);
 			uni.fields = fields;
 			field.gtkUnion = uni;
@@ -494,7 +494,7 @@ final class GirStruct
 					continue;
 
 				buff ~= "\n";
-				buff ~= indenter.format(field.getProperty(this));
+				buff ~= indenter.format(field.getProperty());
 			}
 		}
 
@@ -1165,12 +1165,12 @@ final class GirUnion
 					reader.popFront();
 					break;
 				case "field":
-					GirField field = new GirField(wrapper);
+					GirField field = new GirField(wrapper, null);
 					field.parse(reader);
 					fields ~= field;
 					break;
 				case "record":
-					GirField field = new GirField(wrapper);
+					GirField field = new GirField(wrapper, null);
 					GirStruct strct = new GirStruct(wrapper, null);
 					strct.parse(reader);
 					strct.cType = strct.cType.toUpper()[0..1] ~ strct.cType[1 .. $];
