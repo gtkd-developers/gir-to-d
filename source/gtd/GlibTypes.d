@@ -40,6 +40,7 @@ enum string[string] glibTypes = [
 	"guintptr": "size_t",
 	"gfloat": "float",
 	"gdouble": "double",
+	"greal": "real",
 	"goffset": "long",
 	"gsize": "size_t",
 	"gssize": "ptrdiff_t",

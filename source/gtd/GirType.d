@@ -85,8 +85,8 @@ final class GirType
 
 		if ( name == "long double" )
 		{
-			name = "real";
-			cType = "real";
+			name = "greal";
+			cType = "greal";
 		}
 
 		cType = cType.replace("volatile ", "");
