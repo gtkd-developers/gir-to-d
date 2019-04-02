@@ -119,7 +119,12 @@ final class GirType
 			cType ~= "*";
 
 		if ( isArray() && (cType == "void" || cType.empty) )
-			cType = elementType.cType ~"*";
+		{
+			if ( size > 0 )
+				cType = elementType.cType;
+			else
+				cType = elementType.cType ~"*";
+		}
 	}
 
 	bool isString()
