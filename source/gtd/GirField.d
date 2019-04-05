@@ -384,11 +384,11 @@ final class GirField
 					buff ~= "{";
 					
 					if ( dType.pack.name.among("cairo", "glib", "gthread") )
-						buff ~= "arr[i] = new "~ dTypeName ~"("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
+						buff ~= "arr[i] = new "~ dTypeName ~"(&("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i]), false);";
 					else if( dType.type == GirStructType.Interface )
-						buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~"IF)("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
+						buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~"IF)(&("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i]), false);";
 					else
-						buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~")("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i], false);";
+						buff ~= "arr[i] = ObjectG.getDObject!("~ dTypeName ~")(&("~ strct.getHandleVar() ~"."~ tokenToGtkD(name, wrapper.aliasses) ~"[i]), false);";
 
 					buff ~= "}";
 					buff ~= "";
