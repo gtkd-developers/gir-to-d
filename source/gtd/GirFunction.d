@@ -577,7 +577,10 @@ final class GirFunction
 					{
 						if ( param.direction == GirParamDirection.Out )
 						{
-							buff ~= elementType.cType ~" out"~ id ~" = null;";
+							if ( param.type.size > 0 )
+								buff ~= elementType.cType ~"* out"~ id ~" = cast("~ elementType.cType ~"*)sliceAlloc0("~ elementType.cType ~".sizeof * "~ to!string(param.type.size) ~");";
+							else
+								buff ~= elementType.cType ~" out"~ id ~" = null;";
 						}
 						else
 						{
@@ -592,15 +595,21 @@ final class GirFunction
 							buff ~= elementType.cType.removePtr() ~ "** out"~ id ~" = inout"~ id ~".ptr;";
 						}
 
-						gtkCall ~= "&out"~ id;
+						if ( !elementType.cType.endsWith("*") )
+							gtkCall ~= "out"~ id;
+						else
+							gtkCall ~= "&out"~ id;
 
 						if ( !outToD.empty )
 							outToD ~= "";
-						outToD ~= id ~" = new "~ dElementType.name ~"["~ lenId(param.type, "out"~ id) ~"];";
+						if ( param.type.size <= 0 )
+							outToD ~= id ~" = new "~ dElementType.name ~"["~ lenId(param.type, "out"~ id) ~"];";
 						outToD ~= "for(size_t i = 0; i < "~ lenId(param.type, "out"~ id) ~"; i++)";
 						outToD ~= "{";
 						if ( elementType.cType.endsWith("**") )
 							outToD ~= id ~"[i] = " ~ construct(elementType.name) ~ "(cast(" ~ elementType.cType[0..$-1] ~ ") out"~ id ~"[i]);";
+						else if ( !elementType.cType.endsWith("*") )
+							outToD ~= id ~"[i] = " ~ construct(elementType.name) ~ "(cast(" ~ elementType.cType ~ "*) &out"~ id ~"[i]);";
 						else
 							outToD ~= id ~"[i] = " ~ construct(elementType.name) ~ "(cast(" ~ elementType.cType ~ ") &out"~ id ~"[i]);";
 						outToD ~= "}";
