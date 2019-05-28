@@ -1,4 +1,4 @@
-project('GIR-to-D', 'd', version: '0.19.0')
+project('GIR-to-D', 'd', version: '0.19.1')
 
 source = [
 	'source/girtod.d',
