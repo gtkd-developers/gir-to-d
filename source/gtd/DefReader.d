@@ -142,7 +142,7 @@ public final class DefReader
 
 			if ( lines.front.strip().endsWith("start") )
 				nestedBlocks++;
-			else
+			else if ( lines.front.strip().endsWith("end") )
 				nestedBlocks--;
 		}
 		while ( nestedBlocks > 0 );
