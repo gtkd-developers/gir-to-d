@@ -574,7 +574,42 @@ final class GirPackage
 	{
 		version (Windows)
 		{
-			return "\""~ libraries.join("\", \"") ~"\"";
+			//TODO: Only the gir files form msys are currently supported on windows.
+
+			string libs;
+
+			foreach ( lib; libraries )
+			{
+				auto match = matchFirst(lib, dllRegex);
+
+				//Msys
+				libs ~= "\""~ lib;
+
+				//wingtk
+				libs ~= ";";
+				libs ~= match[1][3..$];
+				if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
+				if ( !match[3].empty && match[2].canFind('.') )
+					libs ~= "-"~ match[3][1..$];
+				else if ( !match[3].empty && !match[2].empty )
+					libs ~= "-"~ match[2][$-1] ~"."~ match[3][1..$];
+				libs ~= ".dll";
+
+				//vcpkg
+				libs ~= ";";
+				libs ~= match[1][3..$];
+				if ( !match[2].empty && match[2].canFind('.') )
+					libs ~= "-"~ match[2][1..$].split('.')[0];
+				else if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
+				libs ~= ".dll\"";
+
+				if ( lib != libraries.back )
+					libs ~= ", ";
+			}
+
+			return libs;			
 		}
 		else version (OSX)
 		{
@@ -584,11 +619,32 @@ final class GirPackage
 			{
 				auto match = matchFirst(lib, dylibRegex);
 
+				//Msys
 				libs ~= "\""~ match[1];
 				if ( !match[2].empty )
 					libs ~= "-"~ match[2][1..$];
 				if ( !match[3].empty )
 					libs ~= "-"~ match[3][1..$];
+				libs ~= ".dll";
+
+				//wingtk
+				libs ~= ";";
+				libs ~= match[1][3..$];
+				if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
+				if ( !match[3].empty && match[2].canFind('.') )
+					libs ~= "-"~ match[3][1..$];
+				else if ( !match[3].empty && !match[2].empty )
+					libs ~= "-"~ match[2][$-1] ~"."~ match[3][1..$];
+				libs ~= ".dll";
+
+				//vcpkg
+				libs ~= ";";
+				libs ~= match[1][3..$];
+				if ( !match[2].empty && match[2].canFind('.') )
+					libs ~= "-"~ match[2][1..$].split('.')[0];
+				else if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
 				libs ~= ".dll\"";
 
 				if ( lib != libraries.back )
@@ -605,11 +661,32 @@ final class GirPackage
 			{
 				auto match = matchFirst(lib, soRegex);
 
+				//Msys
 				libs ~= "\""~ match[1];
 				if ( !match[2].empty )
 					libs ~= "-"~ match[2][1..$];
 				if ( !match[3].empty )
 					libs ~= "-"~ match[3][1..$];
+				libs ~= ".dll";
+
+				//wingtk
+				libs ~= ";";
+				libs ~= match[1][3..$];
+				if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
+				if ( !match[3].empty && match[2].canFind('.') )
+					libs ~= "-"~ match[3][1..$];
+				else if ( !match[3].empty && !match[2].empty )
+					libs ~= "-"~ match[2][$-1] ~"."~ match[3][1..$];
+				libs ~= ".dll";
+
+				//vcpkg
+				libs ~= ";";
+				libs ~= match[1][3..$];
+				if ( !match[2].empty && match[2].canFind('.') )
+					libs ~= "-"~ match[2][1..$].split('.')[0];
+				else if ( !match[2].empty )
+					libs ~= "-"~ match[2][1..$];
 				libs ~= ".dll\"";
 
 				if ( lib != libraries.back )
