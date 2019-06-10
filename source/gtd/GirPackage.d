@@ -587,7 +587,7 @@ final class GirPackage
 
 				//wingtk
 				libs ~= ";";
-				libs ~= match[1][3..$];
+				libs ~= match[1].replace("lib", "");
 				if ( !match[2].empty )
 					libs ~= "-"~ match[2][1..$];
 				if ( !match[3].empty && match[2].canFind('.') )
@@ -598,7 +598,7 @@ final class GirPackage
 
 				//vcpkg
 				libs ~= ";";
-				libs ~= match[1][3..$];
+				libs ~= match[1].replace("lib", "");
 				if ( !match[2].empty && match[2].canFind('.') )
 					libs ~= "-"~ match[2][1..$].split('.')[0];
 				else if ( !match[2].empty )
@@ -629,7 +629,7 @@ final class GirPackage
 
 				//wingtk
 				libs ~= ";";
-				libs ~= match[1][3..$];
+				libs ~= match[1].replace("lib", "");
 				if ( !match[2].empty )
 					libs ~= "-"~ match[2][1..$];
 				if ( !match[3].empty && match[2].canFind('.') )
@@ -640,7 +640,7 @@ final class GirPackage
 
 				//vcpkg
 				libs ~= ";";
-				libs ~= match[1][3..$];
+				libs ~= match[1].replace("lib", "");
 				if ( !match[2].empty && match[2].canFind('.') )
 					libs ~= "-"~ match[2][1..$].split('.')[0];
 				else if ( !match[2].empty )
@@ -671,7 +671,7 @@ final class GirPackage
 
 				//wingtk
 				libs ~= ";";
-				libs ~= match[1][3..$];
+				libs ~= match[1].replace("lib", "");
 				if ( !match[2].empty )
 					libs ~= "-"~ match[2][1..$];
 				if ( !match[3].empty && match[2].canFind('.') )
@@ -682,7 +682,7 @@ final class GirPackage
 
 				//vcpkg
 				libs ~= ";";
-				libs ~= match[1][3..$];
+				libs ~= match[1].replace("lib", "");
 				if ( !match[2].empty && match[2].canFind('.') )
 					libs ~= "-"~ match[2][1..$].split('.')[0];
 				else if ( !match[2].empty )
