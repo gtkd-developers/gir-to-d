@@ -115,7 +115,7 @@ final class GirType
 			reader.popFront();
 		}
 
-		if ( cType == elementType.cType && !cType.among("void*", "gpointer", "gconstpointer") )
+		if ( cType == elementType.cType && !cType.among("void*", "gpointer", "gconstpointer") && size < 0 )
 			cType ~= "*";
 
 		if ( isArray() && (cType == "void" || cType.empty) )
