@@ -199,6 +199,10 @@ final class GirPackage
 				case "function":
 					parseFunction(reader);
 					break;
+				case "function-macro":
+					// We are not able to wrap these.
+					reader.skipTag();
+					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirPackage: ", name, reader);
 			}
