@@ -73,6 +73,7 @@ enum string[string] glibTypes = [
 	"instance": "instance_",
 	"interface": "interface_",
 	"module": "module_",
+	"new": "new_",
 	"out": "out_",
 	"package": "package_",
 	"real": "real_",
