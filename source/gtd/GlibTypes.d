@@ -59,6 +59,7 @@ enum string[string] glibTypes = [
 	"alias": "alias_",
 	"align": "align_",
 	"body": "body_",
+	"cast": "cast_",
 	"continue": "continue_",
 	"debug": "debug_",
 	"default": "default_",
