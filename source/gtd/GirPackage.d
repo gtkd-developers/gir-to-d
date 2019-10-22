@@ -203,6 +203,10 @@ final class GirPackage
 					// We are not able to wrap these.
 					reader.skipTag();
 					break;
+				case "field":
+					// We are not able to wrap these.
+					reader.skipTag();
+					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirPackage: ", name, reader);
 			}
@@ -221,7 +225,7 @@ final class GirPackage
 			stockIDs.members ~= member;
 			return;
 		}
-		else if ( reader.front.attributes["c:type"].startsWith("GDK_KEY_") )
+		else if ( "c:type" in reader.front.attributes && reader.front.attributes["c:type"].startsWith("GDK_KEY_") )
 		{
 			GirEnumMember member = GirEnumMember(wrapper);
 			member.parse(reader);
