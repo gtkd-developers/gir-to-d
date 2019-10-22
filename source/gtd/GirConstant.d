@@ -60,6 +60,7 @@ final class GirConstant
 			switch(reader.front.value)
 			{
 				case "type":
+				case "array":
 					type = new GirType(wrapper);
 					type.parse(reader);
 					break;
