@@ -69,6 +69,10 @@ final class GirType
 		if ( cType is null && name is null )
 		{
 			name = "none";
+		}
+
+		// Some GIR files have a none type name.
+		if (name == "none") {
 			cType = "void";
 		}
 
