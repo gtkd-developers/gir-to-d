@@ -794,6 +794,9 @@ final class GirStruct
 		if ( cType == "PangoAttribute" || cType == "GTestLogMsg" || cType == "GArray" || cType == "GByteArray" || cType == "GtkTreeIter" )
 			return false;
 
+		if ( pack.name == "cairo" )
+			return false;
+
 		if ( lookupClass || lookupInterface || noDecleration || noNamespace )
 			return false;
 
