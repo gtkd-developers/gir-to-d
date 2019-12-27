@@ -337,6 +337,10 @@ final class GirFunction
 			else
 				ext ~= type;
 
+			// Treat C fixed-size array parameters like pointers
+			if ( param.type.isArray() && param.type.size > 0 )
+				ext ~= "*";
+
 			ext ~= " ";
 			//Both name and type are ... for Variadic functions.
 			if ( param.name != "..." )
