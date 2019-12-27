@@ -338,7 +338,7 @@ final class GirFunction
 				ext ~= type;
 
 			// Treat C fixed-size array parameters like pointers
-			if ( param.type.isArray() && param.type.size > 0 )
+			if ( param.type.isArray() && param.type.size > 0 && !type.endsWith("*") )
 				ext ~= "*";
 
 			ext ~= " ";
@@ -1275,7 +1275,7 @@ final class GirFunction
 
 			string elmType = getType(type.elementType, direction);
 
-			if ( elmType == type.cType )
+			if ( elmType == type.cType && elmType.endsWith("*") )
 				elmType = elmType[0..$-1];
 
 			return elmType ~"["~ size ~"]";
