@@ -260,7 +260,7 @@ final class GirFunction
 		return buff;
 	}
 
-	string[] getFunctionPointerDecleration()
+	string[] getFunctionPointerDeclaration()
 	{
 		string[] buff;
 
@@ -1076,7 +1076,7 @@ final class GirFunction
 		return signalName;
 	}
 
-	string getDelegateDecleration()
+	string getDelegateDeclaration()
 	{
 		assert(type == GirFunctionType.Signal);
 
@@ -1104,7 +1104,7 @@ final class GirFunction
 		string[] buff;
 
 		writeDocs(buff);
-		buff ~= "gulong addOn"~ getSignalName() ~"("~ getDelegateDecleration() ~" dlg, ConnectFlags connectFlags=cast(ConnectFlags)0)";
+		buff ~= "gulong addOn"~ getSignalName() ~"("~ getDelegateDeclaration() ~" dlg, ConnectFlags connectFlags=cast(ConnectFlags)0)";
 
 		return buff;
 	}

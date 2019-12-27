@@ -378,7 +378,7 @@ final class GirPackage
 		buff ~= indenter.format(lookupStructs);
 		foreach ( s; collectedStructs )
 		{
-			if ( s.noExternal || s.noDecleration )
+			if ( s.noExternal || s.noDeclaration )
 				continue;
 
 			buff ~= "\n";

@@ -59,7 +59,7 @@ final class GirStruct
 	bool lookupInterface = false;
 	bool lookupParent = false;  /// is the parent set with the lookup file.
 	bool noCode = false;        /// Only generate the C declarations.
-	bool noDecleration = false; /// Don't generate a Declaration of the C struct.
+	bool noDeclaration = false; /// Don't generate a Declaration of the C struct.
 	bool noExternal = false;    /// Don't generate a Declaration of the C struct. And don't generate the C function declarations.
 	bool noNamespace = false;   /// Generate the functions as global functions.
 	string[string] structWrap;
@@ -801,7 +801,7 @@ final class GirStruct
 		if ( pack.name == "cairo" )
 			return false;
 
-		if ( lookupClass || lookupInterface || noDecleration || noNamespace )
+		if ( lookupClass || lookupInterface || noDeclaration || noNamespace )
 			return false;
 
 		if ( disguised || fields.length == 0 )

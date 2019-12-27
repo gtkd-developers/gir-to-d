@@ -450,7 +450,7 @@ class GirWrapper
 					currentStruct.functions[defReader.value~"-signal"].noCode = true;
 					break;
 				case "noStruct":
-					currentStruct.noDecleration = true;
+					currentStruct.noDeclaration = true;
 					break;
 				case "structWrap":
 					loadAA(currentStruct.structWrap, defReader);
@@ -727,7 +727,7 @@ class GirWrapper
 		strct.name = name;
 		strct.cType = pack.cTypePrefix ~ name;
 		strct.type = GirStructType.Record;
-		strct.noDecleration = true;
+		strct.noDeclaration = true;
 		pack.collectedStructs["lookup"~name] = strct;
 
 		return strct;
