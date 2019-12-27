@@ -95,6 +95,10 @@ final class GirStruct
 		return copy;
 	}
 
+	pure string getFullyQualifiedDName() {
+		return "D"~ parentStruct.pack.name.capitalize() ~ parentStruct.name;
+	}
+
 	void parse(T)(XMLReader!T reader)
 	{
 		name = reader.front.attributes["name"];
@@ -333,7 +337,7 @@ final class GirStruct
 		else if ( parentStruct && parentStruct.name != name )
 			buff ~= " : "~ parentStruct.name;
 		else if ( parentStruct )
-			buff ~= " : "~ parentStruct.pack.name.capitalize() ~ parentStruct.name;
+			buff ~= " : "~ getFullyQualifiedDName();
 
 		bool first = !parentStruct;
 
@@ -874,7 +878,7 @@ final class GirStruct
 		}
 		else if ( parentStruct )
 		{
-			string QParent = parentStruct.pack.name.capitalize() ~ parentStruct.name;
+			string QParent = getFullyQualifiedDName();
 			imports ~= parentStruct.pack.name ~"."~ parentStruct.name ~" : "~ QParent ~" = "~ parentStruct.name;
 			structWrap[parent] = QParent;
 		}
