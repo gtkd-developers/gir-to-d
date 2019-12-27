@@ -250,7 +250,9 @@ final class GirPackage
 
 		GirConstant constant = new GirConstant(wrapper, this);
 		constant.parse(reader);
-		collectedConstants[constant.name] = constant;
+
+		if (constant.name != "true" && constant.name != "false")
+			collectedConstants[constant.name] = constant;
 	}
 
 	void parseFunction(T)(XMLReader!T reader)
