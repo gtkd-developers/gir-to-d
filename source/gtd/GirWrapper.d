@@ -427,7 +427,7 @@ class GirWrapper
 						break;
 					}
 					if ( defReader.value !in currentStruct.functions )
-						error("Unknown function ", defReader.value, defReader);
+						error("Unknown function ", defReader.value, ". Possible values: ", currentStruct.functions.keys, defReader);
 
 					currentStruct.functions[defReader.value].noCode = true;
 					break;
@@ -460,13 +460,13 @@ class GirWrapper
 				case "in":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
+						error("Unknown function ", vals[0], ". Possible values: ", currentStruct.functions, defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Default;
 					break;
 				case "out":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
+						error("Unknown function ", vals[0], ". Possible values: ", currentStruct.functions, defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Out;
 					break;
 				case "override":
@@ -476,7 +476,7 @@ class GirWrapper
 				case "ref":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
+						error("Unknown function ", vals[0], ". Possible values: ", currentStruct.functions, defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.InOut;
 					break;
 
