@@ -1310,7 +1310,7 @@ final class GirFunction
 			return stringToGtkD(type.name, wrapper.aliasses, localAliases());
 		}
 
-		if ( direction != GirParamDirection.Default )
+		if ( direction != GirParamDirection.Default && type.cType.endsWith("*") )
 			return stringToGtkD(type.cType[0..$-1], wrapper.aliasses, localAliases());
 
 		return stringToGtkD(type.cType, wrapper.aliasses, localAliases());
