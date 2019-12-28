@@ -823,7 +823,7 @@ string tokenToGtkD(string token, string[string] aliases, string[string] localAli
 		return localAliases[token];
 	else if ( token in aliases )
 		return aliases[token];
-	else if ( token.startsWith("cairo_") && token.endsWith("_t", "_t*", "_t**") )
+	else if ( token.endsWith("_t", "_t*", "_t**") )
 		return token;
 	else if ( token == "pid_t" || token == "size_t" )
 		return token;
