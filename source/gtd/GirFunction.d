@@ -871,7 +871,7 @@ final class GirFunction
 		}
 		else if ( type == GirFunctionType.Constructor )
 		{
-			buff ~= "auto p = " ~ gtkCall ~";";
+			buff ~= "auto __p = " ~ gtkCall ~";";
 
 			if ( throws )
 			{
@@ -879,7 +879,7 @@ final class GirFunction
 			}
 
 			buff ~= "";
-			buff ~= "if(p is null)";
+			buff ~= "if(__p is null)";
 			buff ~= "{";
 			buff ~= "throw new ConstructionException(\"null returned by " ~ name ~ "\");";
 			buff ~= "}";
@@ -896,9 +896,9 @@ final class GirFunction
 			 * can return void pointers or base types.
 			 */
 			if ( returnOwnership == GirTransferOwnership.Full && strct.getAncestor().name == "ObjectG" )
-				buff ~= "this(cast(" ~ strct.cType ~ "*) p, true);";
+				buff ~= "this(cast(" ~ strct.cType ~ "*) __p, true);";
 			else
-				buff ~= "this(cast(" ~ strct.cType ~ "*) p);";
+				buff ~= "this(cast(" ~ strct.cType ~ "*) __p);";
 
 			return buff;
 		}
@@ -950,7 +950,7 @@ final class GirFunction
 		}
 		else if ( returnDType && returnDType.isDClass() )
 		{
-			buff ~= "auto p = "~ gtkCall ~";";
+			buff ~= "auto __p = "~ gtkCall ~";";
 
 			if ( throws )
 			{
@@ -964,7 +964,7 @@ final class GirFunction
 			}
 
 			buff ~= "";
-			buff ~= "if(p is null)";
+			buff ~= "if(__p is null)";
 			buff ~= "{";
 			buff ~= "return null;";
 			buff ~= "}";
@@ -976,9 +976,9 @@ final class GirFunction
 				buff ~= "for(int i = 0; i < "~ lenId(returnType) ~"; i++)";
 				buff ~= "{";
 				if ( returnType.elementType.cType.endsWith("*") )
-					buff ~= "\tarr[i] = "~ construct(returnType.elementType.name) ~"(cast("~ returnType.elementType.cType ~") p[i]);";
+					buff ~= "\tarr[i] = "~ construct(returnType.elementType.name) ~"(cast("~ returnType.elementType.cType ~") __p[i]);";
 				else
-					buff ~= "\tarr[i] = "~ construct(returnType.elementType.name) ~"(cast("~ returnType.elementType.cType ~"*) &p[i]);";
+					buff ~= "\tarr[i] = "~ construct(returnType.elementType.name) ~"(cast("~ returnType.elementType.cType ~"*) &__p[i]);";
 				buff ~= "}";
 				buff ~= "";
 				buff ~= "return arr;";
@@ -986,9 +986,9 @@ final class GirFunction
 			else
 			{
 				if ( returnOwnership == GirTransferOwnership.Full && !(returnDType.pack.name == "cairo") )
-					buff ~= "return "~ construct(returnType.name) ~"(cast("~ returnDType.cType ~"*) p, true);";
+					buff ~= "return "~ construct(returnType.name) ~"(cast("~ returnDType.cType ~"*) __p, true);";
 				else
-					buff ~= "return "~ construct(returnType.name) ~"(cast("~ returnDType.cType ~"*) p);";
+					buff ~= "return "~ construct(returnType.name) ~"(cast("~ returnDType.cType ~"*) __p);";
 			}
 
 			return buff;
@@ -1004,7 +1004,7 @@ final class GirFunction
 				return buff;
 			}
 
-			buff ~= "auto p = "~ gtkCall ~";";
+			buff ~= "auto __p = "~ gtkCall ~";";
 
 			if ( throws )
 			{
@@ -1025,21 +1025,21 @@ final class GirFunction
 					buff ~= "bool[] r = new bool["~ lenId(returnType) ~"];";
 					buff ~= "for(size_t i = 0; i < "~ lenId(returnType) ~"; i++)";
 					buff ~= "{";
-					buff ~= "r[i] = p[i] != 0;";
+					buff ~= "r[i] = __p[i] != 0;";
 					buff ~= "}";
 					buff ~= "return r;";
 				}
 				else if ( returnType.elementType.cType.empty && returnType.cType[0..$-1] != returnType.elementType.name )
 				{
-					buff ~= "return cast("~ getType(returnType) ~")p[0 .. "~ lenId(returnType) ~"];";
+					buff ~= "return cast("~ getType(returnType) ~")__p[0 .. "~ lenId(returnType) ~"];";
 				}
 				else
 				{
-					buff ~= "return p[0 .. "~ lenId(returnType) ~"];";
+					buff ~= "return __p[0 .. "~ lenId(returnType) ~"];";
 				}
 			}
 			else
-				buff ~= "return p;";
+				buff ~= "return __p;";
 
 			return buff;
 		}
@@ -1356,7 +1356,7 @@ final class GirFunction
 		return false;
 	}
 
-	private string lenId(GirType type, string paramName = "p")
+	private string lenId(GirType type, string paramName = "__p")
 	{
 		if ( type.length > -1 && params[type.length].direction == GirParamDirection.Default && paramName != "p" )
 			return "cast("~ tokenToGtkD(params[type.length].type.cType.removePtr(), wrapper.aliasses, localAliases()) ~")"~ paramName.replaceFirst("out", "") ~".length";
