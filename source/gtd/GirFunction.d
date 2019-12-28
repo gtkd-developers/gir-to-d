@@ -344,9 +344,7 @@ final class GirFunction
 		}
 
 		if ( throws )
-		{
-			ext ~= (params.length == 0 ? "GError** err" : ", GError** err");
-		}
+			ext ~= ", GError** err";
 
 		return ext;
 	}
@@ -824,7 +822,7 @@ final class GirFunction
 		if ( throws )
 		{
 			buff ~= "GError* err = null;";
-			gtkCall ~= (params.length == 0 ? "&err" : ", &err");
+			gtkCall ~= ", &err";
 		}
 
 		enum throwGException = [
