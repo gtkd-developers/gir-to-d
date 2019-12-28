@@ -777,10 +777,14 @@ final class GirFunction
 					if ( param.direction != GirParamDirection.Default )
 					{
 						string outType = param.type.elementType.cType;
+						string outName = "out" ~ id;
+
 						if ( outType.empty )
 							outType = param.type.elementType.name ~"*";
+						else if ( param.type.isArray() && param.type.size > 0)
+							outType = param.type.elementType.name ~ "[" ~ to!string(param.type.size) ~ "]";
 
-						buff ~= stringToGtkD(outType, wrapper.aliasses, localAliases) ~" out"~ id ~" = ";
+						buff ~= stringToGtkD(outType, wrapper.aliasses, localAliases) ~ " " ~ outName ~" = ";
 
 						if ( param.direction == GirParamDirection.Out )
 							buff[$-1] ~= "null;";
@@ -788,11 +792,13 @@ final class GirFunction
 							buff[$-1] ~= id ~".ptr";
 
 						if ( param.type.elementType.cType.empty )
-							gtkCall ~= "cast("~stringToGtkD(param.type.cType, wrapper.aliasses, localAliases) ~")&out"~ id ~"";
+							gtkCall ~= "cast("~stringToGtkD(param.type.cType, wrapper.aliasses, localAliases) ~")&" ~ outName;
+						else if ( param.type.isArray() && param.type.size > 0)
+							gtkCall ~= outName ~ ".ptr";
 						else
-							gtkCall ~= "&out"~ id ~"";
+							gtkCall ~= "&" ~ outName;
 
-						outToD ~= id ~" = out"~ id ~"[0 .. "~ lenId(param.type, "out"~ id) ~"];";
+						outToD ~= id ~" = "~ outName ~"[0 .. "~ lenId(param.type, outName) ~"];";
 					}
 					// T[]
 					else
