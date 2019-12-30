@@ -59,7 +59,7 @@ final class GirStruct
 	bool lookupInterface = false;
 	bool lookupParent = false;  /// is the parent set with the lookup file.
 	bool noCode = false;        /// Only generate the C declarations.
-	bool noDecleration = false; /// Don't generate a Declaration of the C struct.
+	bool noDeclaration = false; /// Don't generate a Declaration of the C struct.
 	bool noExternal = false;    /// Don't generate a Declaration of the C struct. And don't generate the C function declarations.
 	bool noNamespace = false;   /// Generate the functions as global functions.
 	string[string] structWrap;
@@ -93,6 +93,10 @@ final class GirStruct
 			copy.tupleof[i] = field;
 
 		return copy;
+	}
+
+	pure string getFullyQualifiedDName() {
+		return "D"~ parentStruct.pack.name.capitalize() ~ parentStruct.name;
 	}
 
 	void parse(T)(XMLReader!T reader)
@@ -333,7 +337,7 @@ final class GirStruct
 		else if ( parentStruct && parentStruct.name != name )
 			buff ~= " : "~ parentStruct.name;
 		else if ( parentStruct )
-			buff ~= " : "~ parentStruct.pack.name.capitalize() ~ parentStruct.name;
+			buff ~= " : "~ getFullyQualifiedDName();
 
 		bool first = !parentStruct;
 
@@ -797,7 +801,7 @@ final class GirStruct
 		if ( pack.name == "cairo" )
 			return false;
 
-		if ( lookupClass || lookupInterface || noDecleration || noNamespace )
+		if ( lookupClass || lookupInterface || noDeclaration || noNamespace )
 			return false;
 
 		if ( disguised || fields.length == 0 )
@@ -874,7 +878,7 @@ final class GirStruct
 		}
 		else if ( parentStruct )
 		{
-			string QParent = parentStruct.pack.name.capitalize() ~ parentStruct.name;
+			string QParent = getFullyQualifiedDName();
 			imports ~= parentStruct.pack.name ~"."~ parentStruct.name ~" : "~ QParent ~" = "~ parentStruct.name;
 			structWrap[parent] = QParent;
 		}

@@ -260,7 +260,7 @@ final class GirFunction
 		return buff;
 	}
 
-	string[] getFunctionPointerDecleration()
+	string[] getFunctionPointerDeclaration()
 	{
 		string[] buff;
 
@@ -336,6 +336,10 @@ final class GirFunction
 				ext ~= type.replaceFirst("bool", "int");
 			else
 				ext ~= type;
+
+			// Treat C fixed-size array parameters like pointers
+			if ( param.type.isArray() && param.type.size > 0 && !type.endsWith("*") )
+				ext ~= "*";
 
 			ext ~= " ";
 			//Both name and type are ... for Variadic functions.
@@ -773,10 +777,14 @@ final class GirFunction
 					if ( param.direction != GirParamDirection.Default )
 					{
 						string outType = param.type.elementType.cType;
+						string outName = "out" ~ id;
+
 						if ( outType.empty )
 							outType = param.type.elementType.name ~"*";
+						else if ( param.type.isArray() && param.type.size > 0)
+							outType = param.type.elementType.name ~ "[" ~ to!string(param.type.size) ~ "]";
 
-						buff ~= stringToGtkD(outType, wrapper.aliasses, localAliases) ~" out"~ id ~" = ";
+						buff ~= stringToGtkD(outType, wrapper.aliasses, localAliases) ~ " " ~ outName ~" = ";
 
 						if ( param.direction == GirParamDirection.Out )
 							buff[$-1] ~= "null;";
@@ -784,11 +792,13 @@ final class GirFunction
 							buff[$-1] ~= id ~".ptr";
 
 						if ( param.type.elementType.cType.empty )
-							gtkCall ~= "cast("~stringToGtkD(param.type.cType, wrapper.aliasses, localAliases) ~")&out"~ id ~"";
+							gtkCall ~= "cast("~stringToGtkD(param.type.cType, wrapper.aliasses, localAliases) ~")&" ~ outName;
+						else if ( param.type.isArray() && param.type.size > 0)
+							gtkCall ~= outName ~ ".ptr";
 						else
-							gtkCall ~= "&out"~ id ~"";
+							gtkCall ~= "&" ~ outName;
 
-						outToD ~= id ~" = out"~ id ~"[0 .. "~ lenId(param.type, "out"~ id) ~"];";
+						outToD ~= id ~" = "~ outName ~"[0 .. "~ lenId(param.type, outName) ~"];";
 					}
 					// T[]
 					else
@@ -861,7 +871,7 @@ final class GirFunction
 		}
 		else if ( type == GirFunctionType.Constructor )
 		{
-			buff ~= "auto p = " ~ gtkCall ~";";
+			buff ~= "auto __p = " ~ gtkCall ~";";
 
 			if ( throws )
 			{
@@ -869,7 +879,7 @@ final class GirFunction
 			}
 
 			buff ~= "";
-			buff ~= "if(p is null)";
+			buff ~= "if(__p is null)";
 			buff ~= "{";
 			buff ~= "throw new ConstructionException(\"null returned by " ~ name ~ "\");";
 			buff ~= "}";
@@ -886,9 +896,9 @@ final class GirFunction
 			 * can return void pointers or base types.
 			 */
 			if ( returnOwnership == GirTransferOwnership.Full && strct.getAncestor().name == "ObjectG" )
-				buff ~= "this(cast(" ~ strct.cType ~ "*) p, true);";
+				buff ~= "this(cast(" ~ strct.cType ~ "*) __p, true);";
 			else
-				buff ~= "this(cast(" ~ strct.cType ~ "*) p);";
+				buff ~= "this(cast(" ~ strct.cType ~ "*) __p);";
 
 			return buff;
 		}
@@ -940,7 +950,7 @@ final class GirFunction
 		}
 		else if ( returnDType && returnDType.isDClass() )
 		{
-			buff ~= "auto p = "~ gtkCall ~";";
+			buff ~= "auto __p = "~ gtkCall ~";";
 
 			if ( throws )
 			{
@@ -954,7 +964,7 @@ final class GirFunction
 			}
 
 			buff ~= "";
-			buff ~= "if(p is null)";
+			buff ~= "if(__p is null)";
 			buff ~= "{";
 			buff ~= "return null;";
 			buff ~= "}";
@@ -966,9 +976,9 @@ final class GirFunction
 				buff ~= "for(int i = 0; i < "~ lenId(returnType) ~"; i++)";
 				buff ~= "{";
 				if ( returnType.elementType.cType.endsWith("*") )
-					buff ~= "\tarr[i] = "~ construct(returnType.elementType.name) ~"(cast("~ returnType.elementType.cType ~") p[i]);";
+					buff ~= "\tarr[i] = "~ construct(returnType.elementType.name) ~"(cast("~ returnType.elementType.cType ~") __p[i]);";
 				else
-					buff ~= "\tarr[i] = "~ construct(returnType.elementType.name) ~"(cast("~ returnType.elementType.cType ~"*) &p[i]);";
+					buff ~= "\tarr[i] = "~ construct(returnType.elementType.name) ~"(cast("~ returnType.elementType.cType ~"*) &__p[i]);";
 				buff ~= "}";
 				buff ~= "";
 				buff ~= "return arr;";
@@ -976,9 +986,9 @@ final class GirFunction
 			else
 			{
 				if ( returnOwnership == GirTransferOwnership.Full && !(returnDType.pack.name == "cairo") )
-					buff ~= "return "~ construct(returnType.name) ~"(cast("~ returnDType.cType ~"*) p, true);";
+					buff ~= "return "~ construct(returnType.name) ~"(cast("~ returnDType.cType ~"*) __p, true);";
 				else
-					buff ~= "return "~ construct(returnType.name) ~"(cast("~ returnDType.cType ~"*) p);";
+					buff ~= "return "~ construct(returnType.name) ~"(cast("~ returnDType.cType ~"*) __p);";
 			}
 
 			return buff;
@@ -994,7 +1004,7 @@ final class GirFunction
 				return buff;
 			}
 
-			buff ~= "auto p = "~ gtkCall ~";";
+			buff ~= "auto __p = "~ gtkCall ~";";
 
 			if ( throws )
 			{
@@ -1015,21 +1025,21 @@ final class GirFunction
 					buff ~= "bool[] r = new bool["~ lenId(returnType) ~"];";
 					buff ~= "for(size_t i = 0; i < "~ lenId(returnType) ~"; i++)";
 					buff ~= "{";
-					buff ~= "r[i] = p[i] != 0;";
+					buff ~= "r[i] = __p[i] != 0;";
 					buff ~= "}";
 					buff ~= "return r;";
 				}
 				else if ( returnType.elementType.cType.empty && returnType.cType[0..$-1] != returnType.elementType.name )
 				{
-					buff ~= "return cast("~ getType(returnType) ~")p[0 .. "~ lenId(returnType) ~"];";
+					buff ~= "return cast("~ getType(returnType) ~")__p[0 .. "~ lenId(returnType) ~"];";
 				}
 				else
 				{
-					buff ~= "return p[0 .. "~ lenId(returnType) ~"];";
+					buff ~= "return __p[0 .. "~ lenId(returnType) ~"];";
 				}
 			}
 			else
-				buff ~= "return p;";
+				buff ~= "return __p;";
 
 			return buff;
 		}
@@ -1072,7 +1082,7 @@ final class GirFunction
 		return signalName;
 	}
 
-	string getDelegateDecleration()
+	string getDelegateDeclaration()
 	{
 		assert(type == GirFunctionType.Signal);
 
@@ -1100,7 +1110,7 @@ final class GirFunction
 		string[] buff;
 
 		writeDocs(buff);
-		buff ~= "gulong addOn"~ getSignalName() ~"("~ getDelegateDecleration() ~" dlg, ConnectFlags connectFlags=cast(ConnectFlags)0)";
+		buff ~= "gulong addOn"~ getSignalName() ~"("~ getDelegateDeclaration() ~" dlg, ConnectFlags connectFlags=cast(ConnectFlags)0)";
 
 		return buff;
 	}
@@ -1271,7 +1281,7 @@ final class GirFunction
 
 			string elmType = getType(type.elementType, direction);
 
-			if ( elmType == type.cType )
+			if ( elmType == type.cType && elmType.endsWith("*") )
 				elmType = elmType[0..$-1];
 
 			return elmType ~"["~ size ~"]";
@@ -1306,7 +1316,7 @@ final class GirFunction
 			return stringToGtkD(type.name, wrapper.aliasses, localAliases());
 		}
 
-		if ( direction != GirParamDirection.Default )
+		if ( direction != GirParamDirection.Default && type.cType.endsWith("*") )
 			return stringToGtkD(type.cType[0..$-1], wrapper.aliasses, localAliases());
 
 		return stringToGtkD(type.cType, wrapper.aliasses, localAliases());
@@ -1346,7 +1356,7 @@ final class GirFunction
 		return false;
 	}
 
-	private string lenId(GirType type, string paramName = "p")
+	private string lenId(GirType type, string paramName = "__p")
 	{
 		if ( type.length > -1 && params[type.length].direction == GirParamDirection.Default && paramName != "p" )
 			return "cast("~ tokenToGtkD(params[type.length].type.cType.removePtr(), wrapper.aliasses, localAliases()) ~")"~ paramName.replaceFirst("out", "") ~".length";

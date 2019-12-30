@@ -427,7 +427,7 @@ class GirWrapper
 						break;
 					}
 					if ( defReader.value !in currentStruct.functions )
-						error("Unknown function ", defReader.value, defReader);
+						error("Unknown function ", defReader.value, ". Possible values: ", currentStruct.functions.keys, defReader);
 
 					currentStruct.functions[defReader.value].noCode = true;
 					break;
@@ -450,7 +450,7 @@ class GirWrapper
 					currentStruct.functions[defReader.value~"-signal"].noCode = true;
 					break;
 				case "noStruct":
-					currentStruct.noDecleration = true;
+					currentStruct.noDeclaration = true;
 					break;
 				case "structWrap":
 					loadAA(currentStruct.structWrap, defReader);
@@ -460,13 +460,13 @@ class GirWrapper
 				case "in":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
+						error("Unknown function ", vals[0], ". Possible values: ", currentStruct.functions, defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Default;
 					break;
 				case "out":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
+						error("Unknown function ", vals[0], ". Possible values: ", currentStruct.functions, defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Out;
 					break;
 				case "override":
@@ -476,7 +476,7 @@ class GirWrapper
 				case "ref":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
-						error("Unknown function ", vals[0], defReader);
+						error("Unknown function ", vals[0], ". Possible values: ", currentStruct.functions, defReader);
 					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.InOut;
 					break;
 
@@ -727,7 +727,7 @@ class GirWrapper
 		strct.name = name;
 		strct.cType = pack.cTypePrefix ~ name;
 		strct.type = GirStructType.Record;
-		strct.noDecleration = true;
+		strct.noDeclaration = true;
 		pack.collectedStructs["lookup"~name] = strct;
 
 		return strct;
@@ -823,7 +823,7 @@ string tokenToGtkD(string token, string[string] aliases, string[string] localAli
 		return localAliases[token];
 	else if ( token in aliases )
 		return aliases[token];
-	else if ( token.startsWith("cairo_") && token.endsWith("_t", "_t*", "_t**") )
+	else if ( token.endsWith("_t", "_t*", "_t**") )
 		return token;
 	else if ( token == "pid_t" || token == "size_t" )
 		return token;

@@ -138,7 +138,7 @@ final class GirField
 			{
 				if ( bitcount > 0 )
 					endBitfield();
-				buff ~= field.callback.getFunctionPointerDecleration();
+				buff ~= field.callback.getFunctionPointerDeclaration();
 				continue;
 			}
 

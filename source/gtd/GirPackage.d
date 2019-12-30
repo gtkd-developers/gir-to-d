@@ -250,7 +250,9 @@ final class GirPackage
 
 		GirConstant constant = new GirConstant(wrapper, this);
 		constant.parse(reader);
-		collectedConstants[constant.name] = constant;
+
+		if (constant.name != "true" && constant.name != "false")
+			collectedConstants[constant.name] = constant;
 	}
 
 	void parseFunction(T)(XMLReader!T reader)
@@ -378,7 +380,7 @@ final class GirPackage
 		buff ~= indenter.format(lookupStructs);
 		foreach ( s; collectedStructs )
 		{
-			if ( s.noExternal || s.noDecleration )
+			if ( s.noExternal || s.noDeclaration )
 				continue;
 
 			buff ~= "\n";
