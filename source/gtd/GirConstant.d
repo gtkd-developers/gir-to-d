@@ -33,6 +33,8 @@ final class GirConstant
 	string cType;
 	string value;
 	string doc;
+	bool isDeprecated;
+	string docDeprecated;
 
 	GirType type;
 	GirPackage pack;
@@ -52,6 +54,8 @@ final class GirConstant
 			cType = reader.front.attributes["c:type"];
 		else
 			cType = reader.front.attributes["c:identifier"];
+		if ( "deprecated" in reader.front.attributes )
+			isDeprecated = reader.front.attributes["deprecated"] == "1";
 
 		reader.popFront();
 
@@ -71,7 +75,8 @@ final class GirConstant
 					break;
 				case "doc-deprecated":
 					reader.popFront();
-					doc ~= "\n\nDeprecated: "~ reader.front.value;
+					docDeprecated = reader.front.value;
+					doc ~= "\n\nDeprecated: "~ docDeprecated;
 					reader.popFront();
 					break;
 				case "source-position":
@@ -100,6 +105,14 @@ final class GirConstant
 			foreach ( line; doc.splitLines() )
 				buff ~= " * "~ line.strip();
 			buff ~= " */";
+		}
+
+		if ( isDeprecated )
+		{
+			if ( docDeprecated )
+				buff ~= `deprecated("` ~ docDeprecated ~ `")`;
+			else
+				buff ~= `deprecated("` ~ name ~ ` has been deprecated.")`;
 		}
 
 		if ( type.name in pack.collectedAliases && pack.collectedAliases[type.name].baseType.cType.among("gint64", "guint64") )
