@@ -1358,13 +1358,13 @@ final class GirFunction
 
 	private string lenId(GirType type, string paramName = "__p")
 	{
-		if ( type.length > -1 && params[type.length].direction == GirParamDirection.Default && paramName != "p" )
+		if ( type.length > -1 && params[type.length].direction == GirParamDirection.Default && paramName != "__p" )
 			return "cast("~ tokenToGtkD(params[type.length].type.cType.removePtr(), wrapper.aliasses, localAliases()) ~")"~ paramName.replaceFirst("out", "") ~".length";
 		else if ( type.length > -1 )
 			return tokenToGtkD(params[type.length].name, wrapper.aliasses, localAliases());
 		//The c function returns the length.
 		else if ( type.length == -2 )
-			return "p";
+			return "__p";
 		else if ( type.size > -1 )
 			return to!string(type.size);
 
