@@ -207,6 +207,10 @@ final class GirPackage
 					// We are not able to wrap these.
 					reader.skipTag();
 					break;
+				case "docsection":
+					// General documentation.
+					reader.skipTag();
+					break;
 				default:
 					error("Unexpected tag: ", reader.front.value, " in GirPackage: ", name, reader);
 			}
