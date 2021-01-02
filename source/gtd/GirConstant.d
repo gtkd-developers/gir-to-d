@@ -78,7 +78,7 @@ final class GirConstant
 					reader.skipTag();
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirConstant: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirConstant: ", name, reader);
 			}
 			reader.popFront();
 		}

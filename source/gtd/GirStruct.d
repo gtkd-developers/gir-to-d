@@ -215,7 +215,7 @@ final class GirStruct
 					reader.skipTag();
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirStruct: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirStruct: ", name, reader);
 			}
 
 			reader.popFront();
@@ -1188,7 +1188,7 @@ final class GirUnion
 					reader.skipTag();
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirUnion: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirUnion: ", name, reader);
 			}
 			reader.popFront();
 		}

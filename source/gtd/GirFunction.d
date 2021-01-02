@@ -159,7 +159,7 @@ final class GirFunction
 								returnType.parse(reader);
 								break;
 							default:
-								error("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
+								warning("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
 						}
 						reader.popFront();
 					}
@@ -180,7 +180,7 @@ final class GirFunction
 								params ~= param;
 								break;
 							default:
-								error("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
+								warning("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
 						}
 						reader.popFront();
 					}
@@ -189,7 +189,7 @@ final class GirFunction
 					reader.skipTag();
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirFunction: ", name, reader);
 			}
 			reader.popFront();
 		}
@@ -1510,7 +1510,7 @@ final class GirParam
 					reader.skipTag();
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirParam: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirParam: ", name, reader);
 			}
 
 			reader.popFront();

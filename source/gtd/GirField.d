@@ -98,7 +98,7 @@ final class GirField
 					reader.skipTag();
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirField: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirField: ", name, reader);
 			}
 			reader.popFront();
 		}

@@ -212,7 +212,7 @@ final class GirPackage
 					reader.skipTag();
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirPackage: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirPackage: ", name, reader);
 			}
 			reader.popFront();
 		}

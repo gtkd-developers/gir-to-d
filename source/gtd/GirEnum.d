@@ -89,7 +89,7 @@ final class GirEnum
 					reader.skipTag();
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirEnum: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirEnum: ", name, reader);
 			}
 			reader.popFront();
 		}
@@ -181,7 +181,7 @@ struct GirEnumMember
 						value = "\""~ value ~"\"";
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirEnumMember: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirEnumMember: ", name, reader);
 			}
 			reader.popFront();
 		}

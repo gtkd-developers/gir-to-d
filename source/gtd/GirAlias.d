@@ -67,7 +67,7 @@ final class GirAlias
 					reader.skipTag();
 					break;
 				default:
-					error("Unexpected tag: ", reader.front.value, " in GirAlias: ", name, reader);
+					warning("Unexpected tag: ", reader.front.value, " in GirAlias: ", name, reader);
 			}
 			reader.popFront();
 		}
