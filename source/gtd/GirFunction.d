@@ -789,12 +789,12 @@ final class GirFunction
 						else if ( param.type.isArray() && param.type.size > 0)
 							outType = param.type.elementType.name ~ "[" ~ to!string(param.type.size) ~ "]";
 
-						buff ~= stringToGtkD(outType, wrapper.aliasses, localAliases) ~ " " ~ outName ~" = ";
+						buff ~= stringToGtkD(outType, wrapper.aliasses, localAliases) ~" " ~ outName;
 
 						if ( param.direction == GirParamDirection.Out )
-							buff[$-1] ~= "null;";
+							buff[$-1] ~= ";";
 						else
-							buff[$-1] ~= id ~".ptr";
+							buff[$-1] ~=" = "~ id ~".ptr";
 
 						if ( param.type.elementType.cType.empty )
 							gtkCall ~= "cast("~stringToGtkD(param.type.cType, wrapper.aliasses, localAliases) ~")&" ~ outName;
