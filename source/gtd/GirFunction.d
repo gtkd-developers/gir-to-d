@@ -588,6 +588,8 @@ final class GirFunction
 						{
 							if ( param.type.size > 0 )
 								buff ~= elementType.cType ~"* out"~ id ~" = cast("~ elementType.cType ~"*)sliceAlloc0("~ elementType.cType ~".sizeof * "~ to!string(param.type.size) ~");";
+							else if ( !elementType.cType.endsWith("*") )
+								buff ~= elementType.cType ~"* out"~ id ~" = null;";
 							else
 								buff ~= elementType.cType ~" out"~ id ~" = null;";
 						}
