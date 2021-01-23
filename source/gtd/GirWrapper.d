@@ -146,12 +146,22 @@ class GirWrapper
 						error("No version specified.", defReader);
 
 					bool parseVersion = checkOsVersion(defReader.subKey);
+					bool smalerThen = false;
+
+					if ( defReader.subKey.length > 1 && defReader.subKey[0] == '<' && defReader.subKey[1].isNumber() )
+					{
+						smalerThen = true;
+						defReader.subKey.popFront();
+					}
 
 					if ( !parseVersion && defReader.subKey[0].isNumber() )
 					{
 						if ( !currentPackage )
 							error("Only use OS versions before wrap.", defReader);
 						parseVersion = defReader.subKey <= currentPackage._version;
+
+						if ( smalerThen )
+							parseVersion = !parseVersion;
 					}
 
 					if ( defReader.value == "start" )
@@ -307,6 +317,9 @@ class GirWrapper
 							GirParam param = findParam(currentStruct, vals[0], vals[1]);
 							GirType elementType = new GirType(this);
 
+							if ( !param )
+								error("Unknown parameter ", vals[1], " in function ", vals[0]);
+
 							elementType.name = param.type.name;
 							elementType.cType = param.type.cType[0..$-1];
 							param.type.elementType = elementType;
@@ -461,13 +474,19 @@ class GirWrapper
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
 						error("Unknown function ", vals[0], ". Possible values: ", currentStruct.functions, defReader);
-					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Default;
+					GirParam param = findParam(currentStruct, vals[0], vals[1]);
+					if ( !param )
+						error("Unknown parameter ", vals[1], " in function ", vals[0]);
+					param.direction = GirParamDirection.Default;
 					break;
 				case "out":
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
 						error("Unknown function ", vals[0], ". Possible values: ", currentStruct.functions, defReader);
-					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.Out;
+					GirParam param = findParam(currentStruct, vals[0], vals[1]);
+					if ( !param )
+						error("Unknown parameter ", vals[1], " in function ", vals[0]);
+					param.direction = GirParamDirection.Out;
 					break;
 				case "override":
 					currentStruct.functions[defReader.value].lookupOverride = true;
@@ -477,7 +496,10 @@ class GirWrapper
 					string[] vals = defReader.value.split();
 					if ( vals[0] !in currentStruct.functions )
 						error("Unknown function ", vals[0], ". Possible values: ", currentStruct.functions, defReader);
-					findParam(currentStruct, vals[0], vals[1]).direction = GirParamDirection.InOut;
+					GirParam param = findParam(currentStruct, vals[0], vals[1]);
+					if ( !param )
+						error("Unknown parameter ", vals[1], " in function ", vals[0]);
+					param.direction = GirParamDirection.InOut;
 					break;
 
 				default:
