@@ -930,8 +930,10 @@ final class GirStruct
 					else
 						imports ~= dType.pack.name ~"."~ dType.name;
 				}
-				else if ( field.type.isString() || (field.type.isArray() && field.type.elementType.isString())  )
+				else if ( field.type.isString() || (field.type.isArray() && field.type.elementType.isString())  ) {
 					imports ~= "glib.Str";
+					imports ~= "glib.c.functions";
+				}
 			}
 		}
 
@@ -969,8 +971,10 @@ final class GirStruct
 					else
 						imports ~= dType.pack.name ~"."~ dType.name;
 				}
-				else if ( type.name.among("utf8", "filename") || type.cType.among("guchar**") )
+				else if ( type.name.among("utf8", "filename") || type.cType.among("guchar**") ) {
 					imports ~= "glib.Str";
+					imports ~= "glib.c.functions";
+				}
 			}
 
 			if ( func.returnType && func.returnType.cType !in structWrap )
