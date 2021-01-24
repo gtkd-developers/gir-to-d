@@ -911,7 +911,8 @@ final class GirFunction
 		}
 		else if ( returnType.isString() )
 		{
-			if ( outToD.empty && !throws && !(returnOwnership == GirTransferOwnership.Full) )
+			if ( outToD.empty && !throws &&
+			     !(returnOwnership == GirTransferOwnership.Full || returnOwnership == GirTransferOwnership.Container) )
 			{
 				if ( isStringArray(returnType) )
 					buff ~= "return Str.toStringArray(" ~ gtkCall ~");";
@@ -942,6 +943,10 @@ final class GirFunction
 					buff ~= "scope(exit) Str.freeStringArray(retStr);";
 				else
 					buff ~= "scope(exit) Str.freeString(retStr);";
+			} else if ( returnOwnership == GirTransferOwnership.Container )
+			{
+				if ( isStringArray(returnType) )
+					buff ~= "scope(exit) g_free(retStr);";
 			}
 
 			string len = lenId(returnType);
