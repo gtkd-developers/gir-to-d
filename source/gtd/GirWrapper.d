@@ -24,6 +24,7 @@ import std.uni;
 import std.path;
 import std.stdio;
 import std.string;
+import std.process : environment;
 
 import gtd.DefReader;
 import gtd.GirField;
@@ -558,15 +559,17 @@ class GirWrapper
 
 	string getAbsoluteGirPath(string girFile)
 	{
-		if ( commandlineGirPath )
+		string[] girDirectories = getGirDirectories();
+		foreach(dir; girDirectories) 
 		{
-			string cmdGirFile = buildNormalizedPath(commandlineGirPath, girFile);
-
-			if ( exists(cmdGirFile) )
-				return cmdGirFile;
+			string girFilePath = buildNormalizedPath(dir, girFile);
+			if (exists(girFilePath) && isFile(girFilePath))
+				return girFilePath;
 		}
 
-		return buildNormalizedPath(getGirDirectory(), girFile);
+		error("Couldn't find the gir file: ", girFile, " in any of: ", girDirectories.join(", "));
+		// Error shouldn't return anyways
+		assert(0);
 	}
 
 	private void printFilePath(string fileName)
@@ -585,56 +588,56 @@ class GirWrapper
 		}
 	}
 
-	private string getGirDirectory()
+	private string[] getGirDirectories()
 	{
+		static string[] dirs;
+		if(dirs !is null)
+		{
+			return dirs;
+		}
+		else
+		{
+			dirs = [];
+		}
+
+		if ( commandlineGirPath )
+		{
+			dirs ~= commandlineGirPath;
+		}
+
 		version(Windows)
 		{
-			import std.process : environment;
-
-			static string path;
-
-			if (path !is null)
-				return path;
-
 			foreach (p; splitter(environment.get("PATH"), ';'))
 			{
 				string dllPath = buildNormalizedPath(p, "libgtk-3-0.dll");
 
-				if ( exists(dllPath) )
-					path = p.buildNormalizedPath("../share/gir-1.0");
+				dirs ~= p.buildNormalizedPath("../share/gir-1.0");
 			}
 
-			return path;
 		}
 		else version(OSX)
 		{
-			import std.process : environment;
-
-			static string path;
-
-			if (path !is null)
-				return path;
-
-			path = environment.get("GTK_BASEPATH");
+			string path = environment.get("GTK_BASEPATH");
 			if(path)
 			{
-				path = path.buildNormalizedPath("../share/gir-1.0");
+				dirs ~= path.buildNormalizedPath("../share/gir-1.0");
 			}
-			else
-			{
-				path = environment.get("HOMEBREW_ROOT");
-				if(path)
+			path = environment.get("HOMEBREW_ROOT");
+			if(path)
 				{
-					path = path.buildNormalizedPath("share/gir-1.0");
+					dirs ~= path.buildNormalizedPath("share/gir-1.0");
 				}
-			}
-
-			return path;
 		}
 		else
 		{
-			return "/usr/share/gir-1.0";
+			string xdgDataDirs = environment.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share");
+		        foreach (p; splitter(xdgDataDirs, ':'))
+		        {
+		        	dirs ~= p.buildNormalizedPath("gir-1.0");
+		        }
 		}
+
+		return dirs;
 	}
 
 	private GirParam findParam(GirStruct strct, string func, string name)
