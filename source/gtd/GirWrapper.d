@@ -595,10 +595,6 @@ class GirWrapper
 		{
 			return dirs;
 		}
-		else
-		{
-			dirs = [];
-		}
 
 		if ( commandlineGirPath )
 		{
