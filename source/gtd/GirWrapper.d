@@ -605,8 +605,6 @@ class GirWrapper
 		{
 			foreach (p; splitter(environment.get("PATH"), ';'))
 			{
-				string dllPath = buildNormalizedPath(p, "libgtk-3-0.dll");
-
 				dirs ~= p.buildNormalizedPath("../share/gir-1.0");
 			}
 
@@ -634,7 +632,7 @@ class GirWrapper
 		        }
 		}
 
-		return dirs;
+		return dirs.filter!(p=> exists(p) && isDir(p) ).array;
 	}
 
 	private GirParam findParam(GirStruct strct, string func, string name)
