@@ -622,11 +622,12 @@ class GirWrapper
 			{
 				dirs ~= path.buildNormalizedPath("../share/gir-1.0");
 			}
+
 			path = environment.get("HOMEBREW_ROOT");
 			if(path)
-				{
-					dirs ~= path.buildNormalizedPath("share/gir-1.0");
-				}
+			{
+				dirs ~= path.buildNormalizedPath("share/gir-1.0");
+			}
 		}
 		else
 		{
