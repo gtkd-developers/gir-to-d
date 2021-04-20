@@ -17,7 +17,7 @@
 
 module gtd.IndentedStringBuilder;
 
-import std.algorithm: canFind, startsWith, endsWith;
+import std.algorithm: canFind, count, startsWith, endsWith;
 import std.range: empty;
 import std.string: strip;
 
@@ -59,7 +59,7 @@ public class IndentedStringBuilder
 			return tabs ~" "~ line ~ "\n";
 		}
 
-		if ( endsWith(line, "}", "};") || startsWith(line, "}", "};") || line == "));" || line == "connectFlags);" || (paramList && endsWith(line, ");", ")")) )
+		if ( endsWith(line, "}", "};") || startsWith(line, "}", "};") || line == "));" || line == "connectFlags);" || (paramList > 0 && endsWith(line, ");", ")") && count(line, '(') != count(line, ')')) )
 		{
 			if ( !canFind(line, '{') && tabs.length > 0 )
 				tabs.length = tabs.length -1;
