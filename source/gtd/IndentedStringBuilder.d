@@ -26,7 +26,7 @@ public class IndentedStringBuilder
 {
 	string tabs;
 	bool statement;
-	bool paramList;
+	int paramList = 0;
 
 	this()
 	{
@@ -70,7 +70,8 @@ public class IndentedStringBuilder
 			if ( endsWith(line, ");") && !endsWith(line, "));") && line != ");" )
 				statement = true;
 
-			paramList = false;
+			if ( paramList > 0 )
+				paramList--;
 		}
 
 		if ( line.empty )
@@ -102,7 +103,7 @@ public class IndentedStringBuilder
 		else if ( endsWith(line, "(") )
 		{
 			tabs ~= '\t';
-			paramList = true;
+			paramList++;
 		}
 
 		return text;
