@@ -76,7 +76,7 @@ final class GirConstant
 				case "doc-deprecated":
 					reader.popFront();
 					docDeprecated = reader.front.value;
-					doc ~= "\n\nDeprecated: "~ docDeprecated;
+					doc ~= "\n\nDeprecated: " ~ docDeprecated;
 					reader.popFront();
 					break;
 				case "source-position":
