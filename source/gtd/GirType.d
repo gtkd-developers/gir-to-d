@@ -18,7 +18,7 @@
 module gtd.GirType;
 
 import std.algorithm: among, canFind, startsWith;
-import std.array: replace;
+import std.array: replace, split;
 import std.conv: to;
 import std.range: empty;
 
@@ -102,6 +102,13 @@ final class GirType
 
 		if ( cType is null && (name == "filename" || name == "utf8") )
 			cType = "gchar*";
+
+		//Vala libraries can have the package name in there name twice, befoer and after the dot.
+		string[] arr = split(name, '.');
+		if ( arr.length > 1 && arr[1].startsWith(arr[0]) )
+		{
+			name = arr[1][arr[0].length .. $];
+		}
 
 		if ( reader.front.type == XMLNodeType.EmptyTag )
 			return;
