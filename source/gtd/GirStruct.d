@@ -901,7 +901,7 @@ final class GirStruct
 			imports ~= "glib.MemorySlice";
 
 		if ( wrapper.useRuntimeLinker && (shouldFree() || isSimpleStruct()) )
-			imports ~= "gtkd.Loader";
+			imports ~= "linker.Loader";
 
 		if ( isSimpleStruct() )
 		{
