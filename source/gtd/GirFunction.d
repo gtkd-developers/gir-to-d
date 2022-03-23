@@ -398,7 +398,7 @@ final class GirFunction
 			if ( returnType.length > -1 && param == params[returnType.length] && params[returnType.length].direction != GirParamDirection.Default )
 				continue;
 
-			if ( paramCount == 0 && strct.type == GirStructType.Record && isInstanceParam(param) )
+			if ( paramCount == 0 && strct.type == GirStructType.Record && isInstanceParam(param) && type != GirFunctionType.Constructor )
 				continue;
 
 			if ( paramCount++ > 0 )
@@ -444,26 +444,15 @@ final class GirFunction
 
 		if ( instanceParam || ( !params.empty && isInstanceParam(params[0])) )
 		{
-			GirStruct dType;
+			GirParam instance = instanceParam ? instanceParam : params[0];
+			GirStruct dType = strct.pack.getStruct(instance.type.name);
 
-			if ( instanceParam )
+			if ( dType.cType != instance.type.cType.removePtr() && !instance.type.cType.among("gpointer", "gconstpointer") )
+				gtkCall ~= "cast("~ stringToGtkD(instance.type.cType, wrapper.aliasses, localAliases()) ~")";
+
+			if ( instance && instance.type.name in strct.structWrap )
 			{
-				dType = strct.pack.getStruct(instanceParam.type.name);
-
-				if ( dType.cType != instanceParam.type.cType.removePtr() && !instanceParam.type.cType.among("gpointer", "gconstpointer") )
-					gtkCall ~= "cast("~ stringToGtkD(instanceParam.type.cType, wrapper.aliasses, localAliases()) ~")";
-			}
-			else
-			{
-				dType = strct.pack.getStruct(params[0].type.name);
-
-				if ( dType.cType != params[0].type.cType.removePtr() && !params[0].type.cType.among("gpointer", "gconstpointer") )
-					gtkCall ~= "cast("~ stringToGtkD(params[0].type.cType, wrapper.aliasses, localAliases()) ~")";
-			}
-
-			if ( instanceParam && instanceParam.type.name in strct.structWrap )
-			{
-				GirStruct insType = strct.pack.getStruct(strct.structWrap[instanceParam.type.name]);
+				GirStruct insType = strct.pack.getStruct(strct.structWrap[instance.type.name]);
 
 				if ( insType )
 					dType = insType;
@@ -471,7 +460,7 @@ final class GirFunction
 
 			if ( type == GirFunctionType.Constructor || strct.isNamespace() || strct.noNamespace )
 			{
-				string id = tokenToGtkD(instanceParam.name, wrapper.aliasses, localAliases());
+				string id = tokenToGtkD(instance.name, wrapper.aliasses, localAliases());
 
 				if ( dType && !(dType.isNamespace() || dType.noNamespace) )
 					gtkCall ~= "("~ id ~" is null) ? null : "~ id ~"."~ dType.getHandleFunc() ~"()";
