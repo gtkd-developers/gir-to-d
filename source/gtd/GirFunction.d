@@ -1277,6 +1277,9 @@ final class GirFunction
 			if ( type.cType == "guchar*" )
 				return "char[]";
 
+			if ( type.cType == "gunichar2*" )
+				return "wchar[]";
+
 			if ( type.size > -1 )
 				size = to!string(type.size);
 
