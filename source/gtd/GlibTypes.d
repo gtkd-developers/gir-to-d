@@ -45,6 +45,7 @@ enum string[string] glibTypes = [
 	"goffset": "long",
 	"gsize": "size_t",
 	"gssize": "ptrdiff_t",
+	"gintptr": "ptrdiff_t",
 	"va_list": "void*",
 	"unichar": "dchar",
 	"unichar2": "wchar",
