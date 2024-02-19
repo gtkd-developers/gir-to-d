@@ -455,7 +455,7 @@ final class GirPackage
 		if ( name == "gdk" || name == "pango" )
 			buff ~= "import cairo.c.types;\n";
 
-		buff ~= "import gtkd.Loader;\n\n";
+		buff ~= "import linker.Loader;\n\n";
 		buff ~= getLibraries();
 		buff ~= "\n\nshared static this()\n{";
 
