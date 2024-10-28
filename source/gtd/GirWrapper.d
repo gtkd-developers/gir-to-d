@@ -490,6 +490,8 @@ class GirWrapper
 					param.direction = GirParamDirection.Out;
 					break;
 				case "override":
+					if ( defReader.value !in currentStruct.functions )
+						error("Unknown function ", defReader.value, ". Possible values: ", currentStruct.functions.keys, defReader);
 					currentStruct.functions[defReader.value].lookupOverride = true;
 					break;
 				case "inout":
