@@ -55,6 +55,8 @@ final class GirFunction
 	string cType;
 	string libVersion;
 	string movedTo;
+	bool isDeprecated;
+	string docDeprecated;
 	bool virtual = false;
 	bool throws = false;
 	bool lookupOverride; /// Force marking this function with override.
@@ -107,6 +109,8 @@ final class GirFunction
 			throws = reader.front.attributes["throws"] == "1";
 		if ( "moved-to" in reader.front.attributes )
 			movedTo = reader.front.attributes["moved-to"];
+		if ( "deprecated" in reader.front.attributes )
+			isDeprecated = reader.front.attributes["deprecated"] == "1";
 
 		reader.popFront();
 
@@ -127,7 +131,8 @@ final class GirFunction
 					break;
 				case "doc-deprecated":
 					reader.popFront();
-					doc ~= "\n\nDeprecated: "~ reader.front.value;
+					docDeprecated = reader.front.value;
+					doc ~= "\n\nDeprecated: " ~ docDeprecated;
 					reader.popFront();
 					break;
 				case "doc-version":
@@ -369,6 +374,14 @@ final class GirFunction
 
 		resolveLength();
 		writeDocs(buff);
+
+		if ( isDeprecated )
+		{
+			if ( docDeprecated.length )
+				buff ~= `deprecated("` ~ docDeprecated ~ `")`;
+			else
+				buff ~= `deprecated("` ~ name ~ ` has been deprecated.")`;
+		}
 
 		if ( type == GirFunctionType.Constructor )
 		{
