@@ -68,6 +68,7 @@ enum string[string] glibTypes = [
 	"delete": "delete_",
 	"deprecated": "deprecated_",
 	"export": "export_",
+	"for": "for_",
 	"foreach": "foreach_",
 	"function": "function_",
 	"Function": "Function_",
