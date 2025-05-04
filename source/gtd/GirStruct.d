@@ -434,7 +434,7 @@ final class GirStruct
 					buff ~= indenter.format("{");
 
 					if ( wrapper.useRuntimeLinker )
-						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.replace(".","").toUpper() ~") && ownedRef )");
+						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.replace(".","").toUpper() ~"[0]) && ownedRef )");
 					else
 						buff ~= indenter.format("if ( ownedRef )");
 
@@ -452,7 +452,7 @@ final class GirStruct
 					buff ~= indenter.format("{");
 
 					if ( wrapper.useRuntimeLinker )
-						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.replace(".","").toUpper() ~") && ownedRef )");
+						buff ~= indenter.format("if ( Linker.isLoaded(LIBRARY_"~ pack.name.replace(".","").toUpper() ~"[0]) && ownedRef )");
 					else
 						buff ~= indenter.format("if ( ownedRef )");
 
@@ -901,7 +901,7 @@ final class GirStruct
 			imports ~= "glib.MemorySlice";
 
 		if ( wrapper.useRuntimeLinker && (shouldFree() || isSimpleStruct()) )
-			imports ~= "gtkd.Loader";
+			imports ~= "linker.Loader";
 
 		if ( isSimpleStruct() )
 		{
